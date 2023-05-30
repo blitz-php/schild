@@ -1,0 +1,86 @@
+{
+    "name": "blitz-php/schild",
+    "description": "Authentification et Autorisation pour BlitzPHP",
+    "license": "MIT",
+    "type": "library",
+    "keywords": [
+        "BlitzPHP",
+        "authentication",
+        "authorization"
+    ],
+    "authors": [
+        {
+            "name": "Dimitri Sitchet Tomkeu",
+            "email": "dimitrisitchet@gmail.com"
+        }
+    ],
+    "homepage": "https://github.com/blitz-php/shield",
+    "require": {
+        "php": ">=8.0",
+        "blitz-php/wolke": "^0.1"
+    },
+    "require-dev": {
+        "blitz-php/coding-standard": "^1.1",
+        "blitz-php/framework": "^0.2",
+        "firebase/php-jwt": "^6.4",
+        "phpstan/phpstan": "^1.4.7",
+        "scrutinizer/ocular": "^1.8.1",
+        "kahlan/kahlan": "^5.2"
+    },
+    "suggest": {
+        "ext-curl": "Required to use the password validation rule via PwnedValidator class.",
+        "ext-openssl": "Required to use the JWT Authenticator."
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "BlitzPHP\\Schild\\": "src/"
+        },
+        "exclude-from-classmap": [
+            "**/Database/Migrations/**"
+        ],
+        "files": [
+            "src/Config/constants.php",
+            "src/Config/helpers.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests",
+            "Tests\\Support\\": "tests/_support"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "phpstan/extension-installer": true
+        }
+    },
+    "scripts": {
+        "analyze": [
+            "phpstan analyze"
+        ],
+        "sa": "@analyze",
+        "ci": [
+            "Composer\\Config::disableProcessTimeout",
+            "@cs",
+            "@analyze",
+            "@test"
+        ],
+        "cs": [
+            "php-cs-fixer fix --ansi --verbose --dry-run --diff"
+        ],
+        "cs-fix": [
+            "php-cs-fixer fix --ansi --verbose --diff"
+        ],
+        "style": "@cs-fix",
+        "test": "kahlan",
+        "test-coverage": "kahlan --coverage=3 --reporter=verbose --clover=clover.xml"
+    },
+    "support": {
+        "forum": "https://github.com/blitz-php/schild/discussions",
+        "source": "https://github.com/blitz-php/schild",
+        "issues": "https://github.com/blitz-php/schild/issues",
+        "docs": "https://github.com/blitz-php/schild/blob/develop/docs/index.md"
+    }
+}
