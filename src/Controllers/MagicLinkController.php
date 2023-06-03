@@ -98,13 +98,12 @@ class MagicLinkController extends BaseController
         $date      = Date::now()->toDateTimeString();
 
         // Envoyer à l'utilisateur un e-mail avec le code
-        $email = emailer()
-            ->from(config('email.from.email'), config('email.from.name') ?? '')
+        $email = Services::mail()->merge(['debug' => false])
             ->to($user->email)
-            ->ubject(lang('Auth.magicLinkSubject'))
-            ->message($this->view($this->config->views['magic-link-email'], ['token' => $token, 'ipAddress' => $ipAddress, 'userAgent' => $userAgent, 'date' => $date]));
+            ->subject(lang('Auth.magicLinkSubject'))
+            ->view($this->config->views['magic-link-email'], ['token' => $token, 'ipAddress' => $ipAddress, 'userAgent' => $userAgent, 'date' => $date]);
 
-        if ($email->send(false) === false) {
+        if ($email->send() === false) {
             logger('error', $email->printDebugger(['headers']));
 
             return redirect()->route('magic-link')->with('error', lang('Auth.unableSendEmailToUser', [$user->email]));
@@ -129,7 +128,7 @@ class MagicLinkController extends BaseController
      */
     public function verify(): Redirection
     {
-        $token = $this->request->getGet('token');
+        $token = $this->request->query('token');
 
         /** @var UserIdentityModel $identityModel */
         $identityModel = model(UserIdentityModel::class);
@@ -182,7 +181,7 @@ class MagicLinkController extends BaseController
         Services::event()->trigger('magicLogin');
 
         // Obtenez notre URL de redirection de connexion
-        return redirect()->to(config(Auth::class)->loginRedirect());
+        return redirect()->to(call_user_func(config('auth.loginRedirect')));
     }
 
     /**

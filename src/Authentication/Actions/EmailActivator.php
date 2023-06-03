@@ -61,13 +61,12 @@ class EmailActivator implements ActionInterface
         $date      = Date::now()->toDateTimeString();
 
         // Envoyez le courriel
-        $email = emailer()
-            ->from(config('email.from.email'), config('email.from.name') ?? '')
+        $email = Services::mail()->merge(['debug' => false])
             ->to($userEmail)
             ->subject(lang('Auth.emailActivateSubject'))
-            ->message($this->view(config('auth.views.action_email_activate_email'), compact('code', 'ipAddress', 'userAgent', 'date')));
+            ->view(config('auth.views.action_email_activate_email'), compact('code', 'ipAddress', 'userAgent', 'date'));
 
-        if ($email->send(false) === false) {
+        if ($email->send() === false) {
             throw new RuntimeException('Impossible d\'envoyer un e-mail à l\'utilisateur: ' . $user->email . "\n" . $email->printDebugger(['headers']));
         }
 
