@@ -31,7 +31,7 @@ abstract class Entity extends BaseEntity
         'int_bool' => IntBoolCast::class,
     ];
 
-    private array $authTables = [
+    protected array $authTables = [
         User::class         => 'users',
         Login::class        => 'logins',
         UserIdentity::class => 'identities',

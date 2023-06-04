@@ -77,6 +77,17 @@ class User extends Entity
     ];
 
     /**
+     * {@inheritDoc}
+     * 
+     * @internal 
+     */
+    public function getTable(): string
+    {
+        return config('auth.tables')[$this->authTables[self::class]] ?: parent::getTable();
+    }
+
+
+    /**
      * Returns the first identity of the given $type for this user.
      *
      * @param string $type See const ID_TYPE_* in Authenticator.
