@@ -324,7 +324,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
         // Cela serait dû à la modification de l'algorithme de hachage ou du coût de hachage depuis la dernière fois qu'un utilisateur s'est connecté.
         if ($passwords->needsRehash($user->password_hash) || $needsRehash) {
             $user->password_hash = $passwords->hash($givenPassword);
-            $this->provider->save($user);
+            // $this->provider->save($user);
         }
 
         return new Result([

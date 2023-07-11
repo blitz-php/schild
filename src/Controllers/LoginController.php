@@ -15,7 +15,6 @@ use BlitzPHP\Http\Redirection;
 use BlitzPHP\Schild\Authentication\Authenticators\Session;
 use BlitzPHP\Schild\Authentication\Passwords;
 use BlitzPHP\Schild\Config\Registrar;
-use BlitzPHP\Session\Cookie\CookieCollection;
 use BlitzPHP\Validation\Validation;
 use BlitzPHP\Validation\Validator;
 
@@ -71,14 +70,10 @@ class LoginController extends BaseController
 
         // Si une action a été définie pour la connexion, démarrez-la.
         if ($authenticator->hasAction()) {
-            return redirect()->route('auth-action-show')->withCookieCollection(
-                CookieCollection::createFromServerRequest($this->request)
-            );
+            return redirect()->route('auth-action-show');
         }
 
-        return redirect()->to(($this->config->loginRedirect)())->withCookieCollection(
-            CookieCollection::createFromServerRequest($this->request)
-        );
+        return redirect()->to(call_user_func($this->config->loginRedirect));
     }
 
     /**
@@ -97,6 +92,8 @@ class LoginController extends BaseController
             'username' => lang('Auth.username'),
             'email'    => lang('Auth.email'),
             'password' => lang('Auth.password'),
+        ])->messages([
+            'password:required' => lang('Auth.errorPasswordEmpty')
         ]);
     }
 

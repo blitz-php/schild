@@ -51,7 +51,7 @@ class MagicLinkController extends BaseController
     public function loginView()
     {
         if (auth()->loggedIn()) {
-            return redirect()->to($this->config->loginRedirect());
+            return redirect()->to(call_user_func($this->config->loginRedirect));
         }
 
         return $this->view($this->config->views['magic-link-login']);
@@ -104,7 +104,7 @@ class MagicLinkController extends BaseController
             ->view($this->config->views['magic-link-email'], ['token' => $token, 'ipAddress' => $ipAddress, 'userAgent' => $userAgent, 'date' => $date]);
 
         if ($email->send() === false) {
-            logger('error', $email->printDebugger(['headers']));
+            // logger('error', $email->printDebugger(['headers']));
 
             return redirect()->route('magic-link')->with('error', lang('Auth.unableSendEmailToUser', [$user->email]));
         }

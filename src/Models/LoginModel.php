@@ -17,29 +17,7 @@ use BlitzPHP\Utilities\Date;
 
 class LoginModel extends BaseModel
 {
-    protected $primaryKey     = 'id';
-    protected $returnType     = Login::class;
-    protected $useSoftDeletes = false;
-    protected $allowedFields  = [
-        'ip_address',
-        'user_agent',
-        'id_type',
-        'identifier',
-        'user_id',
-        'date',
-        'success',
-    ];
-    protected $useTimestamps   = false;
-    protected $validationRules = [
-        'ip_address' => 'required',
-        'id_type'    => 'required',
-        'identifier' => 'permit_empty|string',
-        'user_agent' => 'permit_empty|string',
-        'user_id'    => 'permit_empty|integer',
-        'date'       => 'required|valid_date',
-    ];
-    protected $validationMessages = [];
-    protected $skipValidation     = false;
+    protected string $returnType     = Login::class;
 
     public function __construct()
     {
@@ -93,7 +71,7 @@ class LoginModel extends BaseModel
             ->where('success', 1)
             ->where('user_id', $user->id)
             ->sortDesc('id')
-            ->limit(1, 1)->first(Login::class);
+            ->limit(1, 1)->first($this->returnType);
     }
 
     /**
@@ -105,6 +83,6 @@ class LoginModel extends BaseModel
             ->where('success', 1)
             ->where('user_id', $user->id)
             ->sortDesc('id')
-            ->first(Login::class);
+            ->first($this->returnType);
     }
 }

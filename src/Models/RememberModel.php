@@ -17,16 +17,7 @@ use stdClass;
 
 class RememberModel extends BaseModel
 {
-    protected $primaryKey     = 'id';
-    protected $returnType     = 'object';
-    protected $useSoftDeletes = false;
-    protected $allowedFields  = [
-        'selector',
-        'hashedValidator',
-        'user_id',
-        'expires',
-    ];
-    protected $useTimestamps = true;
+    protected string $returnType     = 'object';
 
     public function __construct()
     {

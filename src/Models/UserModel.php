@@ -25,21 +25,10 @@ use PDO;
  */
 class UserModel extends BaseModel
 {
-    protected $primaryKey     = 'id';
-    protected $returnType     = User::class;
-    protected $useSoftDeletes = true;
-    protected $allowedFields  = [
-        'username',
-        'status',
-        'status_message',
-        'active',
-        'last_active',
-        'deleted_at',
-    ];
-    protected $useTimestamps = true;
-    protected $afterFind     = ['fetchIdentities'];
-    protected $afterInsert   = ['saveEmailIdentity'];
-    protected $afterUpdate   = ['saveEmailIdentity'];
+    protected string $returnType   = User::class;
+    protected array $afterFind     = ['fetchIdentities'];
+    protected array $afterInsert   = ['saveEmailIdentity'];
+    protected array $afterUpdate   = ['saveEmailIdentity'];
 
     /**
      * Whether identity records should be included
@@ -61,8 +50,6 @@ class UserModel extends BaseModel
 
     /**
      * Mark the next find* query to include identities
-     *
-     * @return $this
      */
     public function withIdentities(): self
     {
@@ -72,9 +59,8 @@ class UserModel extends BaseModel
     }
 
     /**
-     * Populates identities for all records
-     * returned from a find* method. Called
-     * automatically when $this->fetchIdentities == true
+     * Populates identities for all records returned from a find* method. 
+     * Called automatically when $this->fetchIdentities == true
      *
      * Model event callback called by `afterFind`.
      */
@@ -168,7 +154,7 @@ class UserModel extends BaseModel
         return $this->select([$this->tables['users'] . '.*', $this->tables['identities'] . '.secret As email'])
             ->where([$this->tables['users'] . '.id' => $id])
             ->join($this->tables['identities'], [$this->tables['users'] . '.id' => $this->tables['identities'] . '.user_id'])
-            ->first(User::class);
+            ->first($this->returnType);
     }
 
     /**
@@ -219,7 +205,8 @@ class UserModel extends BaseModel
             $id = $data['id'];
             unset($data['id']);
 
-            $user                = new User($data);
+            $className           = $this->returnType;
+            $user                = new $className($data);
             $user->id            = $id;
             $user->email         = $email;
             $user->password_hash = $password_hash;
@@ -228,7 +215,7 @@ class UserModel extends BaseModel
             return $user;
         }
 
-        return $this->first(User::class);
+        return $this->first($this->returnType);
     }
 
     /**

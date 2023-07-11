@@ -25,21 +25,7 @@ use InvalidArgumentException;
 
 class UserIdentityModel extends BaseModel
 {
-    protected $primaryKey     = 'id';
-    protected $returnType     = UserIdentity::class;
-    protected $useSoftDeletes = false;
-    protected $allowedFields  = [
-        'user_id',
-        'type',
-        'name',
-        'secret',
-        'secret2',
-        'expires',
-        'extra',
-        'force_reset',
-        'last_used_at',
-    ];
-    protected $useTimestamps = true;
+    protected string $returnType = UserIdentity::class;
 
     public function __construct()
     {
@@ -74,7 +60,8 @@ class UserIdentityModel extends BaseModel
     {
         $this->checkUserId($user);
 
-        $identity = new UserIdentity();
+        $className = $this->returnType;
+        $identity = new $className();
         $identity->forceFill([
             'user_id' => $user->id,
             'type'    => Session::ID_TYPE_EMAIL_PASSWORD,
@@ -213,7 +200,7 @@ class UserIdentityModel extends BaseModel
 
         return $this->where('type', $type)
             ->where('secret', $secret)
-            ->first(UserIdentity::class);
+            ->first($this->returnType);
     }
 
     /**
@@ -224,8 +211,9 @@ class UserIdentityModel extends BaseModel
     public function getIdentities(User $user): array
     {
         $this->checkUserId($user);
+        $className = $this->returnType;
 
-        return UserIdentity::where('user_id', $user->id)->orderBy($this->primaryKey)->all();
+        return $className::where('user_id', $user->id)->orderBy($this->primaryKey)->all();
     }
 
     /**
@@ -235,7 +223,7 @@ class UserIdentityModel extends BaseModel
      */
     public function getIdentitiesByUserIds(array $userIds): array
     {
-        return $this->whereIn('user_id', $userIds)->orderBy($this->primaryKey)->all(UserIdentity::class);
+        return $this->whereIn('user_id', $userIds)->orderBy($this->primaryKey)->all($this->returnType);
     }
 
     /**
@@ -248,7 +236,7 @@ class UserIdentityModel extends BaseModel
         return $this->where('user_id', $user->id)
             ->where('type', $type)
             ->orderBy($this->primaryKey)
-            ->first(UserIdentity::class);
+            ->first($this->returnType);
     }
 
     /**
@@ -269,7 +257,7 @@ class UserIdentityModel extends BaseModel
         return $this->where('user_id', $user->id)
             ->whereIn('type', $types)
             ->orderBy($this->primaryKey)
-            ->all(UserIdentity::class);
+            ->all($this->returnType);
     }
 
     /**

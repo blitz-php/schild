@@ -51,7 +51,7 @@ class SessionAuth implements MiddlewareInterface
                 $error = $user->getBanMessage() ?? lang('Auth.logOutBannedUser');
                 $authenticator->logout();
 
-                return redirect()->to(config('auth.logoutRedirect')())->with('error', $error);
+                return redirect()->to(call_user_func(config('auth.logoutRedirect')))->with('error', $error);
             }
 
             if ($user !== null && ! $user->isActivated()) {

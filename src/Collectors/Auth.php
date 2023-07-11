@@ -22,31 +22,23 @@ class Auth extends BaseCollector
 {
     /**
      * {@inheritDoc}
-     *
-     * @var bool
      */
-    protected $hasTimeline = false;
+    protected bool $hasTimeline = false;
 
     /**
      * {@inheritDoc}
-     *
-     * @var bool
      */
-    protected $hasTabContent = true;
+    protected bool $hasTabContent = true;
 
     /**
      * {@inheritDoc}
-     *
-     * @var bool
      */
-    protected $hasVarData = false;
+    protected bool $hasVarData = false;
 
     /**
      * {@inheritDoc}
-     *
-     * @var string
      */
-    protected $title = 'Auth';
+    protected string $title = 'Auth';
 
     private SchildAuth $auth;
 

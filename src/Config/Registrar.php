@@ -52,21 +52,19 @@ class Registrar
     ];
 
     /**
-     * Registers the Shield filters.
+     * Enregistre les middlewares Schild.
      */
-    public static function Filters(): array
+    public static function middlewares(): array
     {
         return [
-            'aliases' => [
-                'session'     => SessionAuth::class,
-                'tokens'      => TokenAuth::class,
-                'chain'       => ChainAuth::class,
-                'auth-rates'  => AuthRates::class,
-                'group'       => GroupFilter::class,
-                'permission'  => PermissionFilter::class,
-                'force-reset' => ForcePasswordResetFilter::class,
-                'jwt'         => JWTAuth::class,
-            ],
+            'session'     => SessionAuth::class,
+            'tokens'      => TokenAuth::class,
+            'chain'       => ChainAuth::class,
+            'auth-rates'  => AuthRates::class,
+            'group'       => GroupFilter::class,
+            'permission'  => PermissionFilter::class,
+            'force-reset' => ForcePasswordResetFilter::class,
+            'jwt'         => JWTAuth::class,
         ];
     }
 

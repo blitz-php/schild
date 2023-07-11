@@ -11,7 +11,7 @@
 
 namespace BlitzPHP\Schild\Config;
 
-use BlitzPHP\Loader\Services as BaseServices;
+use BlitzPHP\Container\Services as BaseServices;
 use BlitzPHP\Schild\Auth;
 use BlitzPHP\Schild\Authentication\Authentication;
 use BlitzPHP\Schild\Authentication\Jwt\JwtManager;

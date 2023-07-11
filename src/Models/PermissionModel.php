@@ -12,22 +12,10 @@
 namespace BlitzPHP\Schild\Models;
 
 use BlitzPHP\Schild\Entities\User;
-use PDO;
 
 class PermissionModel extends BaseModel
 {
-    protected $primaryKey     = 'id';
-    protected $returnType     = 'array';
-    protected $useSoftDeletes = false;
-    protected $allowedFields  = [
-        'user_id',
-        'permission',
-        'created_at',
-    ];
-    protected $useTimestamps      = false;
-    protected $validationRules    = [];
-    protected $validationMessages = [];
-    protected $skipValidation     = false;
+    protected string $returnType     = 'array';
 
     public function __construct()
     {
@@ -41,7 +29,7 @@ class PermissionModel extends BaseModel
         $rows = $this->builder()
             ->select('permission')
             ->where('user_id', $user->id)
-            ->result(PDO::FETCH_ASSOC);
+            ->result($this->returnType);
 
         return array_column($rows, 'permission');
     }
