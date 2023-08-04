@@ -104,7 +104,7 @@ class LoginController extends BaseController
     {
         // Capturez l'URL de redirection de déconnexion avant la déconnexion d'authentification,
         // sinon vous ne pouvez pas vérifier l'utilisateur dans `logoutRedirect()`.
-        $url = ($this->config->logoutRedirect)();
+        $url = call_user_func($this->config->logoutRedirect);
 
         auth()->logout();
 

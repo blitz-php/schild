@@ -44,9 +44,7 @@ class User extends Entity
      */
     private ?array $identities = null;
 
-    public ?string $email          = null;
-    private ?string $password      = null;
-    private ?string $password_hash = null;
+    public ?string $email = null;
 
     /**
      * @var string[]
@@ -237,19 +235,19 @@ class User extends Entity
 
     public function getPassword(): ?string
     {
-        return $this->password;
+        return $this->attributes['password'] ?? null;
     }
 
     public function setPassword(string $password): User
     {
-        $this->password = $password;
+        $this->attributes['password'] = $password;
 
         return $this;
     }
 
     public function setPasswordHash(string $hash): User
     {
-        $this->password_hash = $hash;
+        $this->attributes['password_hash'] = $hash;
 
         return $this;
     }
@@ -261,11 +259,11 @@ class User extends Entity
      */
     public function getPasswordHash(): ?string
     {
-        if ($this->password_hash === null) {
-            $this->password_hash = $this->getEmailIdentity()->secret2 ?? null;
+        if (empty($this->attributes['password_hash'])) {
+            $this->attributes['password_hash'] = $this->getEmailIdentity()?->secret2 ?? null;
         }
 
-        return $this->password_hash;
+        return $this->attributes['password_hash'] ?? null;
     }
 
     /**

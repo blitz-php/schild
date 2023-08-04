@@ -74,7 +74,7 @@ class MagicLinkController extends BaseController
         $user  = $this->provider->findByCredentials(['email' => $email]);
 
         if ($user === null) {
-            return redirect()->route('magic-link')->with('error', lang('Auth.invalidEmail'));
+            return redirect()->route('magic-link')->with('error', lang('Auth.invalidEmail'))->withInput();
         }
 
         /** @var UserIdentityModel $identityModel */
@@ -106,7 +106,7 @@ class MagicLinkController extends BaseController
         if ($email->send() === false) {
             // logger('error', $email->printDebugger(['headers']));
 
-            return redirect()->route('magic-link')->with('error', lang('Auth.unableSendEmailToUser', [$user->email]));
+            return redirect()->route('magic-link')->with('error', lang('Auth.unableSendEmailToUser', [$user->email]))->withInput();
         }
 
         // Effacer l'e-mail
@@ -148,7 +148,7 @@ class MagicLinkController extends BaseController
         }
 
         // Supprimez l'entrée db afin qu'elle ne puisse plus être utilisée.
-        $identityModel->delete($identity->id);
+		$identity->delete();
 
         // Jeton expiré ?
         if (Date::now()->isAfter($identity->expires)) {
