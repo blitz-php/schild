@@ -12,7 +12,6 @@
 namespace BlitzPHP\Schild\Entities;
 
 use BlitzPHP\Schild\Config\Services;
-use BlitzPHP\Schild\Entities\Cast\IntBoolCast;
 use BlitzPHP\Utilities\Date;
 
 /**
@@ -45,7 +44,7 @@ class UserIdentity extends Entity
      */
     protected array $casts = [
         'id'          => '?integer',
-        'force_reset' => IntBoolCast::class,
+        'force_reset' => 'boolean',
     ];
 
     /**

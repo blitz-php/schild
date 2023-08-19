@@ -20,6 +20,6 @@ class Login extends Entity
      */
     protected array $casts = [
         'date'    => 'datetime',
-        'success' => 'int_bool',
+        'success' => 'boolean',
     ];
 }

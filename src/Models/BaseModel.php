@@ -11,9 +11,11 @@
 
 namespace BlitzPHP\Schild\Models;
 
-use BlitzPHP\Models\BaseModel as ModelsBaseModel;
+use BlitzPHP\Contracts\Database\ConnectionResolverInterface;
+use BlitzPHP\Database\Model;
+use BlitzPHP\Schild\Config\Services;
 
-abstract class BaseModel extends ModelsBaseModel
+abstract class BaseModel extends Model
 {
     use CheckQueryReturnTrait;
 
@@ -24,7 +26,7 @@ abstract class BaseModel extends ModelsBaseModel
 
     protected object $authConfig;
 
-    public function __construct()
+    public function __construct(?ConnectionResolverInterface $resolver = null)
     {
         $this->authConfig = (object) config('auth');
 
@@ -34,6 +36,6 @@ abstract class BaseModel extends ModelsBaseModel
 
         $this->tables = $this->authConfig->tables;
 
-        parent::__construct();
+        parent::__construct($resolver ?: Services::singleton(ConnectionResolverInterface::class));
     }
 }

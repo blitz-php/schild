@@ -15,7 +15,6 @@ use BlitzPHP\Schild\Authentication\Authenticators\Session;
 use BlitzPHP\Schild\Authentication\Traits\HasAccessTokens;
 use BlitzPHP\Schild\Authorization\Traits\Authorizable;
 use BlitzPHP\Schild\Config\Services;
-use BlitzPHP\Schild\Entities\Cast\IntBoolCast;
 use BlitzPHP\Schild\Models\LoginModel;
 use BlitzPHP\Schild\Models\UserIdentityModel;
 use BlitzPHP\Schild\Traits\Activatable;
@@ -65,7 +64,7 @@ class User extends Entity
      */
     protected array $casts = [
         'id'          => '?integer',
-        'active'      => IntBoolCast::class,
+        'active'      => 'boolean',
         'permissions' => 'array',
         'groups'      => 'array',
     ];

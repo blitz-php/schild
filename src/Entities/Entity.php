@@ -13,13 +13,13 @@ declare(strict_types=1);
 
 namespace BlitzPHP\Schild\Entities;
 
-use BlitzPHP\Models\BaseEntity;
-use BlitzPHP\Schild\Entities\Cast\IntBoolCast;
+use BlitzPHP\Wolke\Casts\AsIntBool;
+use BlitzPHP\Wolke\Model;
 
 /**
  * Base Entity
  */
-abstract class Entity extends BaseEntity
+abstract class Entity extends Model
 {
     /**
      * Custom convert handlers
@@ -28,7 +28,7 @@ abstract class Entity extends BaseEntity
      * @phpstan-var array<string, class-string>
      */
     protected $castHandlers = [
-        'int_bool' => IntBoolCast::class,
+        'int_bool' => AsIntBool::class,
     ];
 
     protected array $authTables = [
