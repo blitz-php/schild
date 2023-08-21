@@ -17,7 +17,7 @@ use BlitzPHP\Utilities\Date;
 
 class LoginModel extends BaseModel
 {
-    protected string $returnType     = Login::class;
+    protected string $returnType = Login::class;
 
     public function __construct()
     {

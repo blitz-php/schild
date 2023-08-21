@@ -17,7 +17,7 @@ use stdClass;
 
 class RememberModel extends BaseModel
 {
-    protected string $returnType     = 'object';
+    protected string $returnType = 'object';
 
     public function __construct()
     {

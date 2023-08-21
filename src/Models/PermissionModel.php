@@ -15,7 +15,7 @@ use BlitzPHP\Schild\Entities\User;
 
 class PermissionModel extends BaseModel
 {
-    protected string $returnType     = 'array';
+    protected string $returnType = 'array';
 
     public function __construct()
     {

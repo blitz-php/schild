@@ -311,22 +311,22 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
 
         $passwords = Services::passwords();
 
-		// Vérifiez si le mot de passe doit être ressassé.
-		// Cela serait dû à la modification de l'algorithme de hachage ou du coût de hachage depuis la dernière fois qu'un utilisateur s'est connecté.
-		if ($passwords->needsRehash($user->password_hash)) {
-			$user->password_hash = $passwords->hash($givenPassword);
-			$user->getIdentity(static::ID_TYPE_EMAIL_PASSWORD)->forceFill([
-				'secret2' => $user->password_hash,
-			])->save();
-		}
+        // Vérifiez si le mot de passe doit être ressassé.
+        // Cela serait dû à la modification de l'algorithme de hachage ou du coût de hachage depuis la dernière fois qu'un utilisateur s'est connecté.
+        if ($passwords->needsRehash($user->password_hash)) {
+            $user->password_hash = $passwords->hash($givenPassword);
+            $user->getIdentity(static::ID_TYPE_EMAIL_PASSWORD)->forceFill([
+                'secret2' => $user->password_hash,
+            ])->save();
+        }
 
         // Maintenant, essayez de faire correspondre les mots de passe.
         if (! $passwords->verify($givenPassword, $user->password_hash)) {
-	        return new Result([
-				'success' => false,
-				'reason'  => lang('Auth.invalidPassword'),
-			]);
-		}
+            return new Result([
+                'success' => false,
+                'reason'  => lang('Auth.invalidPassword'),
+            ]);
+        }
 
         return new Result([
             'success'   => true,

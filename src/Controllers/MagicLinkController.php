@@ -51,7 +51,7 @@ class MagicLinkController extends BaseController
     public function loginView()
     {
         if (auth()->loggedIn()) {
-            return redirect()->to(call_user_func($this->config->loginRedirect));
+            return redirect()->to(($this->config->loginRedirect)());
         }
 
         return $this->view($this->config->views['magic-link-login']);
@@ -148,7 +148,7 @@ class MagicLinkController extends BaseController
         }
 
         // Supprimez l'entrée db afin qu'elle ne puisse plus être utilisée.
-		$identity->delete();
+        $identity->delete();
 
         // Jeton expiré ?
         if (Date::now()->isAfter($identity->expires)) {

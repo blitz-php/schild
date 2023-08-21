@@ -39,7 +39,7 @@ class UserIdentityModel extends BaseModel
      *
      * @throws DatabaseException
      */
-    public function create(array|object|null $data = null, bool $returnID = true): void
+    public function create(null|array|object $data = null, bool $returnID = true): void
     {
         if (null === $data) {
             throw new InvalidArgumentException('$data doit etre un objet ou un tableau');
@@ -61,7 +61,7 @@ class UserIdentityModel extends BaseModel
         $this->checkUserId($user);
 
         $className = $this->returnType;
-        $identity = new $className();
+        $identity  = new $className();
         $identity->forceFill([
             'user_id' => $user->id,
             'type'    => Session::ID_TYPE_EMAIL_PASSWORD,

@@ -25,10 +25,10 @@ use PDO;
  */
 class UserModel extends BaseModel
 {
-    protected string $returnType   = User::class;
-    protected array $afterFind     = ['fetchIdentities'];
-    protected array $afterInsert   = ['saveEmailIdentity'];
-    protected array $afterUpdate   = ['saveEmailIdentity'];
+    protected string $returnType = User::class;
+    protected array $afterFind   = ['fetchIdentities'];
+    protected array $afterInsert = ['saveEmailIdentity'];
+    protected array $afterUpdate = ['saveEmailIdentity'];
 
     /**
      * Whether identity records should be included
@@ -59,7 +59,7 @@ class UserModel extends BaseModel
     }
 
     /**
-     * Populates identities for all records returned from a find* method. 
+     * Populates identities for all records returned from a find* method.
      * Called automatically when $this->fetchIdentities == true
      *
      * Model event callback called by `afterFind`.

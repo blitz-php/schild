@@ -17,7 +17,7 @@
     "homepage": "https://github.com/blitz-php/shield",
     "require": {
         "php": ">=8.0",
-        "blitz-php/wolke": "^0.1",
+        "blitz-php/wolke": "^0.2",
         "phpmailer/phpmailer": "^6.8"
     },
     "require-dev": {

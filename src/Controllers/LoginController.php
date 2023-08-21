@@ -73,7 +73,7 @@ class LoginController extends BaseController
             return redirect()->route('auth-action-show');
         }
 
-        return redirect()->to(call_user_func($this->config->loginRedirect));
+        return redirect()->to(($this->config->loginRedirect)());
     }
 
     /**
@@ -93,7 +93,7 @@ class LoginController extends BaseController
             'email'    => lang('Auth.email'),
             'password' => lang('Auth.password'),
         ])->messages([
-            'password:required' => lang('Auth.errorPasswordEmpty')
+            'password:required' => lang('Auth.errorPasswordEmpty'),
         ]);
     }
 
@@ -104,7 +104,7 @@ class LoginController extends BaseController
     {
         // Capturez l'URL de redirection de déconnexion avant la déconnexion d'authentification,
         // sinon vous ne pouvez pas vérifier l'utilisateur dans `logoutRedirect()`.
-        $url = call_user_func($this->config->logoutRedirect);
+        $url = ($this->config->logoutRedirect)();
 
         auth()->logout();
 
