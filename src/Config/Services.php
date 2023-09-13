@@ -17,7 +17,7 @@ use BlitzPHP\Schild\Authentication\Authentication;
 use BlitzPHP\Schild\Authentication\Jwt\JwtManager;
 use BlitzPHP\Schild\Authentication\Passwords;
 
-abstract class Services extends BaseServices
+class Services extends BaseServices
 {
     /**
      * La classe d'authentification de base
