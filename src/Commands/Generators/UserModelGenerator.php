@@ -34,26 +34,26 @@ class UserModelGenerator extends Command
     /**
      * @var string
      */
-    protected $description = 'Generate a new UserModel file.';
+    protected $description = 'Générer un nouveau fichier UserModel.';
 
     /**
      * @var array<string, string>
      */
     protected $arguments = [
-        'name' => 'The model class name. If not provided, this will default to `UserModel`.',
+        'name' => 'Nom de la classe de modèle. S\'il n\'a pas été fourni, il sera mis à `UserModel` par défaut.',
     ];
 
     /**
      * @var array<string, string>
      */
     protected $options = [
-        '--namespace' => 'Set root namespace. Default: "APP_NAMESPACE".',
-        '--suffix'    => 'Append the component title to the class name (e.g. User => UserModel).',
-        '--force'     => 'Force overwrite existing file.',
+        '--namespace' => 'Defini le namespace racine. Defaut: "APP_NAMESPACE".',
+        '--suffix'    => 'Ajouter le titre du composant au nom de la classe (ex. User => UserModel).',
+        '--force'     => 'Forcer le remplacement du fichier existant.',
     ];
 
     /**
-     * Actually execute the command.
+     * {@inheritDoc}
      */
     public function execute(array $params)
     {
@@ -68,7 +68,7 @@ class UserModelGenerator extends Command
         $class = $this->argument('name', 'UserModel');
 
         if (! $this->verifyChosenModelClassName($class, $params)) {
-            $this->error('Cannot use `SchildUserModel` as class name as this conflicts with the parent class.');
+            $this->error('Impossible d\'utiliser le nom de `SchildUserModel` en tant que nom de classe car cela entre en conflit avec la classe parente.');
 
             return 1;
         }
@@ -81,7 +81,7 @@ class UserModelGenerator extends Command
     }
 
     /**
-     * The chosen class name should not conflict with the alias of the parent class.
+     * Le nom de classe choisi ne doit pas être en conflit avec l'alias de la classe parente.
      */
     private function verifyChosenModelClassName(string $class, array $params): bool
     {

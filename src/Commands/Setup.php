@@ -11,7 +11,6 @@
 
 namespace BlitzPHP\Schild\Commands;
 
-use BlitzPHP\Cli\Commands\Database\Migration\Migrate;
 use BlitzPHP\Cli\Console\Command;
 use BlitzPHP\Cli\Traits\ContentReplacer;
 
@@ -57,7 +56,6 @@ class Setup extends Command
         $this->publishConfigAuthGroups();
 
         // $this->setupConstants();
-        $this->setupHelper();
         $this->setupRoutes();
 
         $this->runMigrations();
@@ -83,11 +81,11 @@ class Setup extends Command
     {
         $file  = 'Config/constants.php';
         $path  = $this->distPath($file);
-        $label = 'Updated:';
+        $label = 'Modifié:';
 
         if (! file_exists($path)) {
             file_put_contents($path, "<?php \n");
-            $label = 'Created:';
+            $label = 'Créé:';
         }
 
         $content = file_get_contents($this->sourcePath($file));
@@ -95,27 +93,7 @@ class Setup extends Command
         file_put_contents($path, str_replace('<?php', '', $content), FILE_APPEND);
 
         $cleanPath = clean_path($path);
-        $this->success($cleanPath, true, $label);
-    }
-
-    private function setupHelper(): void
-    {
-        $file  = 'Controllers/BaseController.php';
-        $check = '$this->helpers = array_merge($this->helpers, [\'auth\']);';
-
-        // Remplacer l'ancienne configuration de l'assistant
-        $replaces = [
-            '$this->helpers = array_merge($this->helpers, [\'auth\']);' => $check,
-        ];
-        if ($this->replace($file, $replaces)) {
-            return;
-        }
-
-        // Ajouter une configuration d'assistance
-        $pattern = '/(' . preg_quote('// Do Not Edit This Line', '/') . ')/u';
-        $replace = $check . "\n\n        " . '$1';
-
-        $this->addContent($file, $check, $pattern, $replace);
+        $this->success($cleanPath, true, $label)->eol();
     }
 
     private function setupRoutes(): void
@@ -131,11 +109,10 @@ class Setup extends Command
 
     private function runMigrations(): void
     {
-        if (! $this->confirm('Run `klinge migrate --all` now?')) {
+        if (! $this->confirm('Exécuter `klinge migrate --all` maintenant?')) {
             return;
         }
 
-        $command = new Migrate($this->app, $this->logger);
-        $command->setOptions(['all' => true])->execute(['all' => true]);
+        $this->eol()->app->call('migrate', ['all' => true], ['all' => true]);
     }
 }
