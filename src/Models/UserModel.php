@@ -149,9 +149,14 @@ class UserModel extends BaseModel
      *
      * @param int|string $id
      */
-    public function findById($id): ?User
+    public function findById($id, bool $withPassword = false): ?User
     {
-        return $this->select([$this->tables['users'] . '.*', $this->tables['identities'] . '.secret As email'])
+        $fields = [$this->tables['users'] . '.*', $this->tables['identities'] . '.secret As email'];
+        if ($withPassword) {
+            $fields[] = $this->tables['identities'] . '.secret2 As password_hash';
+        }
+        
+        return $this->select($fields)
             ->where([$this->tables['users'] . '.id' => $id])
             ->join($this->tables['identities'], [$this->tables['users'] . '.id' => $this->tables['identities'] . '.user_id'])
             ->first($this->returnType);

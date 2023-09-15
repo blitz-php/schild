@@ -51,20 +51,20 @@ class SessionAuth implements MiddlewareInterface
                 $error = $user->getBanMessage() ?? lang('Auth.logOutBannedUser');
                 $authenticator->logout();
 
-                return redirect()->to(call_user_func(config('auth.logoutRedirect')))->with('error', $error);
+                return redirect()->to(call_user_func(config('auth.logoutRedirect')))->withErrors($error);
             }
 
             if ($user !== null && ! $user->isActivated()) {
                 $authenticator->logout();
 
-                return redirect()->route('login')->with('error', lang('Auth.activationBlocked'));
+                return redirect()->route('login')->withErrors(lang('Auth.activationBlocked'));
             }
 
             return $handler->handle($request);
         }
 
         if ($authenticator->isPending()) {
-            return redirect()->route('auth-action-show')->with('error', $authenticator->getPendingMessage());
+            return redirect()->route('auth-action-show')->withErrors($authenticator->getPendingMessage());
         }
 
         return redirect()->route('login');

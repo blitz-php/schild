@@ -84,6 +84,20 @@ class User extends Entity
     }
 
     /**
+     * {@inheritDoc}
+     * 
+     * @internal
+     */
+    protected function getAttributesForInsert(): array
+    {
+        $attributes = parent::getAttributesForInsert();
+
+        unset($attributes['password'], $attributes['password_hash']);
+
+        return $attributes;
+    }
+
+    /**
      * Returns the first identity of the given $type for this user.
      *
      * @param string $type See const ID_TYPE_* in Authenticator.
