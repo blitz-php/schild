@@ -17,6 +17,7 @@ use BlitzPHP\Schild\Middlewares\AuthRates;
 use BlitzPHP\Schild\Middlewares\ChainAuth;
 use BlitzPHP\Schild\Middlewares\ForcePasswordResetFilter;
 use BlitzPHP\Schild\Middlewares\GroupFilter;
+use BlitzPHP\Schild\Middlewares\Guest;
 use BlitzPHP\Schild\Middlewares\JWTAuth;
 use BlitzPHP\Schild\Middlewares\PermissionFilter;
 use BlitzPHP\Schild\Middlewares\SessionAuth;
@@ -65,6 +66,7 @@ class Registrar
             'permission'  => PermissionFilter::class,
             'force-reset' => ForcePasswordResetFilter::class,
             'jwt'         => JWTAuth::class,
+            'guest'       => Guest::class,
         ];
     }
 
