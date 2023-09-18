@@ -22,7 +22,7 @@
     },
     "require-dev": {
         "blitz-php/coding-standard": "^1.1",
-        "blitz-php/framework": "^0.2",
+        "blitz-php/framework": "^0.2 || ^0.8",
         "firebase/php-jwt": "^6.4",
         "phpstan/phpstan": "^1.4.7",
         "scrutinizer/ocular": "^1.8.1",
