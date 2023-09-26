@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of Blitz PHP framework - Schild.
  *
@@ -43,7 +45,7 @@ class Setup extends Command
     /**
      * {@inheritDoc}
      */
-    public function execute(array $params)
+    public function execute(array $params): void
     {
         $this->sourcePath = __DIR__ . '/../';
 

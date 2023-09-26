@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of Blitz PHP framework - Schild.
  *
@@ -230,10 +232,10 @@ trait Authorizable
 
         // Vérifiez les groupes auxquels l'utilisateur appartient
         $this->populateGroups();
-        
+
         foreach ($permissions as $permission) {
             // L'autorisation doit contenir une portée et une action
-            if (strpos($permission, '.') === false) {
+            if (! str_contains($permission, '.')) {
                 throw new LogicException(
                     'Une autorisation doit être une chaîne composée d\'une portée et d\'une action, comme `users.create`.'
                     . ' Autorisation non valide: ' . $permission

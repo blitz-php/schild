@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of Blitz PHP framework - Schild.
  *
@@ -23,7 +25,6 @@ use BlitzPHP\Schild\Authentication\Passwords\ValidatorInterface;
 use BlitzPHP\Schild\Models\UserModel;
 
 return [
-
     'views' => [
         'login'                       => '\BlitzPHP\Schild\Views\login',
         'register'                    => '\BlitzPHP\Schild\Views\register',
@@ -116,7 +117,7 @@ return [
      *
      * Vous devez enregistrer les actions dans l'ordre des actions à effectuer.
      *
-     * Actions disponibles avec Schild :
+     * Actions disponibles avec Schild :
      * - register: \BlitzPHP\Schild\Authentication\Actions\EmailActivator::class
      * - login:    \BlitzPHP\Schild\Authentication\Actions\Email2FA::class
      *
@@ -419,7 +420,7 @@ return [
         $final_url = '';
 
         switch (true) {
-            case strpos($url, 'http://') === 0 || strpos($url, 'https://') === 0: // L'URL commence par 'http' ou 'https'. Par exemple. http://exemple.com
+            case str_starts_with($url, 'http://') || str_starts_with($url, 'https://')  : // L'URL commence par 'http' ou 'https'. Par exemple. http://exemple.com
                 $final_url = $url;
                 break;
 

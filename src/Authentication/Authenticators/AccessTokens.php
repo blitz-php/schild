@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of Blitz PHP framework - Schild.
  *
@@ -123,7 +125,7 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
             ]);
         }
 
-        if (strpos($credentials['token'], 'Bearer') === 0) {
+        if (str_starts_with($credentials['token'], 'Bearer')) {
             $credentials['token'] = trim(substr($credentials['token'], 6));
         }
 

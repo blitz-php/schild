@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of Blitz PHP framework - Schild.
  *
@@ -28,13 +30,13 @@ class ValidationRules
     /**
      * Une méthode d'aide à la validation pour vérifier si le mot de passe transmis passera tous les validateurs actuellement définis.
      *
-     * Pratique à utiliser lors de la validation, 
-     * mais vous obtiendrez une sécurité légèrement meilleure si cela est fait manuellement, 
+     * Pratique à utiliser lors de la validation,
+     * mais vous obtiendrez une sécurité légèrement meilleure si cela est fait manuellement,
      * puisque vous pouvez personnaliser en fonction d'un utilisateur spécifique à ce stade.
      *
      * @param string $value  Valeur du champ
      * @param string $error1 Erreur qui sera renvoyée (pour un appel sans tableau de données de validation)
-     * @param array $data Tableau de données de validation
+     * @param array  $data   Tableau de données de validation
      * @param string $error2 Erreur qui sera renvoyée (pour un appel avec un tableau de données de validation)
      */
     public function strong_password(string $value, ?string &$error1 = null, array $data = [], ?string &$error2 = null): bool

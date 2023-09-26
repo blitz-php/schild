@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of Blitz PHP framework - Schild.
  *
@@ -56,6 +58,6 @@ trait Activatable
      */
     private function shouldActivate(): bool
     {
-        return strpos(config('auth.actions')['register'] ?? '', 'Activator') !== false;
+        return str_contains(config('auth.actions')['register'] ?? '', 'Activator');
     }
 }

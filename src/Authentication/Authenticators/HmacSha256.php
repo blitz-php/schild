@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of Blitz PHP framework - Schild.
  *
@@ -131,7 +133,7 @@ class HmacSha256 extends BaseAuthenticator implements AuthenticatorInterface
             ]);
         }
 
-        if (strpos($credentials['token'], 'HMAC-SHA256') === 0) {
+        if (str_starts_with($credentials['token'], 'HMAC-SHA256')) {
             $credentials['token'] = trim(substr($credentials['token'], 11)); // HMAC-SHA256
         }
 

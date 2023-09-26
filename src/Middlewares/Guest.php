@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of Blitz PHP framework - Schild.
  *
@@ -23,14 +25,14 @@ use Psr\Http\Server\RequestHandlerInterface;
 class Guest extends BaseMiddleware implements MiddlewareInterface
 {
     protected array $fillable = [
-        'authenticator'
+        'authenticator',
     ];
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $authenticator = auth($this->arguments['authenticator'] ?? config('auth.default_authenticator', 'session'))->getAuthenticator();
 
-        if (! $authenticator->loggedIn()) {   
+        if (! $authenticator->loggedIn()) {
             return $handler->handle($request);
         }
 

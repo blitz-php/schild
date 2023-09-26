@@ -27,8 +27,8 @@ $overrides = [
 ];
 
 $options = [
-    'cacheFile'    => 'build/.php-cs-fixer.cache',
-    'finder'       => $finder,
+    'cacheFile' => 'build/.php-cs-fixer.cache',
+    'finder'    => $finder,
 ];
 
 return Factory::create(new Blitz(), $overrides, $options)->forLibrary(

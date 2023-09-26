@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of Blitz PHP framework - Schild.
  *
@@ -18,7 +20,7 @@ use BlitzPHP\Validation\Rules\AbstractRule;
 
 class CurrentPassword extends AbstractRule
 {
-    protected $message        = ':value is not the password of the current user';
+    protected $message = ':value is not the password of the current user';
 
     /**
      * @var array
@@ -30,9 +32,9 @@ class CurrentPassword extends AbstractRule
         if (null === $id = auth($this->parameter('guard'))->id()) {
             return false;
         }
-        
+
         $user = model(UserModel::class)->findById($id, true);
-        
+
         $passwords = Services::passwords();
 
         // Vérifiez si le mot de passe doit être ressassé.

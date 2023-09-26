@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of Blitz PHP framework - Schild.
  *
@@ -139,7 +141,7 @@ class MagicLinkController extends BaseController
         if (! $this->config->allow_magic_link_logins) {
             return redirect()->route('login')->withErrors(lang('Auth.magicLinkDisabled'));
         }
-        
+
         $token = $this->request->query('token');
 
         /** @var UserIdentityModel $identityModel */

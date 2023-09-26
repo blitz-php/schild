@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of Blitz PHP framework - Schild.
  *
@@ -126,8 +128,8 @@ class NothingPersonalValidator extends BaseValidator implements ValidatorInterfa
                     }
 
                     // regarde dans les deux sens si le mot de passe est un sous-ensemble de l'aiguille
-                    if (strpos($haystack, $needle) !== false
-                        || strpos($needle, $haystack) !== false) {
+                    if (str_contains($haystack, $needle)
+                        || str_contains($needle, $haystack)) {
                         $valid = false;
                         break 2;
                     }

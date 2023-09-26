@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of Blitz PHP framework - Schild.
  *
@@ -155,7 +157,7 @@ class UserModel extends BaseModel
         if ($withPassword) {
             $fields[] = $this->tables['identities'] . '.secret2 As password_hash';
         }
-        
+
         return $this->select($fields)
             ->where([$this->tables['users'] . '.id' => $id])
             ->join($this->tables['identities'], [$this->tables['users'] . '.id' => $this->tables['identities'] . '.user_id'])

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of Blitz PHP framework - Schild.
  *
@@ -29,7 +31,7 @@ trait HasHmacTokens
     /**
      * Génère un nouveau jeton HMAC personnel pour cet utilisateur.
      *
-     * @param string $name Nom du jeton
+     * @param string   $name   Nom du jeton
      * @param string[] $scopes Autorisations accordées par le jeton
      *
      * @throws ReflectionException

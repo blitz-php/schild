@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of Blitz PHP framework - Schild.
  *
@@ -64,7 +66,7 @@ class JWTAuth implements MiddlewareInterface
             $config->authenticator_header ?? 'Authorization'
         );
 
-        if (strpos($tokenHeader, 'Bearer') === 0) {
+        if (str_starts_with($tokenHeader, 'Bearer')) {
             return trim(substr($tokenHeader, 6));
         }
 

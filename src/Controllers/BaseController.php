@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of Blitz PHP framework - Schild.
  *
@@ -31,7 +33,7 @@ class BaseController extends ApplicationController
      */
     protected object $config;
 
-    public function initialize(ServerRequestInterface $request, ResponseInterface $response, LoggerInterface $logger)
+    public function initialize(ServerRequestInterface $request, ResponseInterface $response, LoggerInterface $logger): void
     {
         parent::initialize($request, $response, $logger);
 

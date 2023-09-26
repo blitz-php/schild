@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of Blitz PHP framework - Schild.
  *
@@ -20,7 +22,7 @@ return [
      * ------------------------------------------------- -------------------
      * Spécifiez quelles tentatives de connexion sont enregistrées dans la base de données.
      *
-     * Les valeurs valides sont :
+     * Les valeurs valides sont :
      * - RECORD_LOGIN_ATTEMPT_NONE
      * - RECORD_LOGIN_ATTEMPT_FAILURE
      * - RECORD_LOGIN_ATTEMPT_ALL
@@ -52,13 +54,12 @@ return [
      */
     'unused_token_lifetime' => YEAR,
 
-
     /**
      * -------------------------------------------------- -------------------
      * Taille en octets de la clé secrète HMAC
      * ------------------------------------------------- -------------------
      * Spécifiez en entier la taille d'octet souhaitée de la taille d'octet HMAC SHA256
-     * 
+     *
      * @var int
      */
     'hmac_secret_key_byte_size' => 32,
