@@ -177,7 +177,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
         }
 
         /** @var ActionInterface $action */
-        $action = Services::injector()->make($actionClass); // @phpstan-ignore-line
+        $action = Services::container()->make($actionClass); // @phpstan-ignore-line
 
         // Créer une identité pour l'action.
         $action->createIdentity($user);
@@ -199,7 +199,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
             return null;
         }
 
-        return Services::injector()->make($actionClass); // @phpstan-ignore-line
+        return Services::container()->make($actionClass); // @phpstan-ignore-line
     }
 
     /**
@@ -448,7 +448,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
             }
 
             /** @var ActionInterface $action */
-            $action = Services::injector()->make($actionClass);  // @phpstan-ignore-line
+            $action = Services::container()->make($actionClass);  // @phpstan-ignore-line
 
             $identity = $this->userIdentityModel->getIdentityByType($this->user, $action->getType());
 
@@ -492,7 +492,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
             }
 
             /** @var ActionInterface $action */
-            $action  = Services::injector()->make($actionClass);  // @phpstan-ignore-line
+            $action  = Services::container()->make($actionClass);  // @phpstan-ignore-line
             $types[] = $action->getType();
         }
 

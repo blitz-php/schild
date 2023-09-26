@@ -12,6 +12,7 @@
 use BlitzPHP\Schild\Authentication\Actions\ActionInterface;
 use BlitzPHP\Schild\Authentication\AuthenticatorInterface;
 use BlitzPHP\Schild\Authentication\Authenticators\AccessTokens;
+use BlitzPHP\Schild\Authentication\Authenticators\HmacSha256;
 use BlitzPHP\Schild\Authentication\Authenticators\JWT;
 use BlitzPHP\Schild\Authentication\Authenticators\Session;
 use BlitzPHP\Schild\Authentication\Passwords\CompositionValidator;
@@ -108,15 +109,14 @@ return [
     ],
 
     /**
-     * --------------------------------------------------------------------
-     * Authentication Actions
-     * --------------------------------------------------------------------
-     * Specifies the class that represents an action to take after
-     * the user logs in or registers a new account at the site.
+     * --------------------------------------------------- -----------------
+     * Actions d'authentification
+     * ------------------------------------------------- -------------------
+     * Spécifie la classe qui représente une action à entreprendre une fois que l'utilisateur s'est connecté ou a enregistré un nouveau compte sur le site.
      *
-     * You must register actions in the order of the actions to be performed.
+     * Vous devez enregistrer les actions dans l'ordre des actions à effectuer.
      *
-     * Available actions with Shield:
+     * Actions disponibles avec Schild :
      * - register: \BlitzPHP\Schild\Authentication\Actions\EmailActivator::class
      * - login:    \BlitzPHP\Schild\Authentication\Actions\Email2FA::class
      *
@@ -132,7 +132,7 @@ return [
      * Authentificateur par défaut
      * --------------------------------------------------------------------
      * L'authentificateur à utiliser en cas de spécification.
-     * Utilise la clé $ du tableau $ Authenticators ci-dessus.
+     * Utilise une clé du tableau $authenticators ci-dessus.
      *
      * @var string
      */
@@ -151,32 +151,9 @@ return [
     'authenticators' => [
         'tokens'  => AccessTokens::class,
         'session' => Session::class,
+        'hmac'    => HmacSha256::class,
         // 'jwt'     => JWT::class,
     ],
-
-    /**
-     * -------------------------------------------------- ------------------
-     * Nom de l'en-tête de l'authentificateur
-     * ------------------------------------------------- -------------------
-     * Le nom de l'en-tête dans lequel le jeton d'autorisation doit être trouvé.
-     * Selon les spécifications, cela devrait être "Autorisation", mais de rares
-     * circonstances peuvent nécessiter un en-tête différent.
-     *
-     * @var array
-     */
-    'authenticator_header' => [
-        'tokens' => 'Authorization',
-    ],
-
-    /**
-     * --------------------------------------------------------------------
-     * Durée de vie du jeton inutilisé
-     * ------------------------------------------------- -------------------
-     * Détermine la durée, en secondes, pendant laquelle un jeton d'accès inutilisé peut être utilisé.
-     *
-     * @var int
-     */
-    'unused_token_lifetime' => YEAR,
 
     /**
      * --------------------------------------------------------------------
@@ -192,14 +169,15 @@ return [
     'authentication_chain' => [
         'session',
         'tokens',
+        'hmac',
         // 'jwt',
     ],
 
     /**
      * --------------------------------------------------------------------
-     * Allow Registration
-     * --------------------------------------------------------------------
-     * Determines whether users can register for the site.
+     * Autoriser l'inscription
+     * ------------------------------------------------- -------------------
+     * Détermine si les utilisateurs peuvent s'inscrire sur le site.
      *
      * @var bool
      */
@@ -290,10 +268,10 @@ return [
     ],
 
     /**
-     * --------------------------------------------------------------------
-     * Valid login fields
-     * --------------------------------------------------------------------
-     * Fields that are available to be used as credentials for login.
+     * -------------------------------------------------- -------------------
+     * Champs de connexion valides
+     * ------------------------------------------------- -------------------
+     * Champs pouvant être utilisés comme informations d'identification pour la connexion.
      *
      * @var array
      */
@@ -303,64 +281,57 @@ return [
     ],
 
     /**
-     * --------------------------------------------------------------------
-     * Additional Fields for "Nothing Personal"
-     * --------------------------------------------------------------------
-     * The NothingPersonalValidator prevents personal information from
-     * being used in passwords. The email and username fields are always
-     * considered by the validator. Do not enter those field names here.
+     *-------------------------------------------------- -------------------
+     * Champs supplémentaires pour "Rien de personnel"
+     * ------------------------------------------------- -------------------
+     * NothingPersonalValidator empêche l'utilisation d'informations personnelles dans les mots de passe.
+     * Les champs email et nom d'utilisateur sont toujours pris en compte par le validateur.
+     * N'entrez pas ces noms de champs ici.
      *
-     * An extended User Entity might include other personal info such as
-     * first and/or last names. $personalFields is where you can add
-     * fields to be considered as "personal" by the NothingPersonalValidator.
-     * For example:
-     *     $personalFields = ['firstname', 'lastname'];
+     * Une entité utilisateur étendue peut inclure d'autres informations personnelles telles que le prénom et/ou le nom.
+     * $personal_fields est l'endroit où vous pouvez ajouter des champs qui seront considérés comme "personnels" par NothingPersonalValidator.
+     * Par exemple:
+     *    $personal_fields = ['firstname', 'lastname'];
      */
     'personal_fields' => [],
 
     /**
-     * --------------------------------------------------------------------
-     * Password / Username Similarity
-     * --------------------------------------------------------------------
-     * Among other things, the NothingPersonalValidator checks the
-     * amount of sameness between the password and username.
-     * Passwords that are too much like the username are invalid.
+     * -------------------------------------------------- -------------------
+     * Similitude mot de passe / nom d'utilisateur
+     * ------------------------------------------------- -------------------
+     * Entre autres choses, NothingPersonalValidator vérifie le degré de similitude entre le mot de passe et le nom d'utilisateur.
+     * Les mots de passe qui ressemblent trop au nom d'utilisateur ne sont pas valides.
      *
-     * The value set for $maxSimilarity represents the maximum percentage
-     * of similarity at which the password will be accepted. In other words, any
-     * calculated similarity equal to, or greater than $maxSimilarity
-     * is rejected.
+     * La valeur définie pour $max_similarity représente le pourcentage maximum de similarité auquel le mot de passe sera accepté.
+     * En d'autres termes, toute similarité calculée égale ou supérieure à $maxSimilarity est rejetée.
      *
-     * The accepted range is 0-100, with 0 (zero) meaning don't check similarity.
-     * Using values at either extreme of the *working range* (1-100) is
-     * not advised. The low end is too restrictive and the high end is too permissive.
-     * The suggested value for $maxSimilarity is 50.
+     * La plage acceptée est comprise entre 0 et 100, 0 (zéro) signifiant ne pas vérifier la similarité.
+     * L'utilisation de valeurs situées aux extrémités de la *plage de travail* (1-100) n'est pas conseillée.
+     * Le bas de gamme est trop restrictif et le haut de gamme est trop permissif.
+     * La valeur suggérée pour $maxSimilarity est 50.
      *
-     * You may be thinking that a value of 100 should have the effect of accepting
-     * everything like a value of 0 does. That's logical and probably true,
-     * but is unproven and untested. Besides, 0 skips the work involved
-     * making the calculation unlike when using 100.
+     * Vous pensez peut-être qu'une valeur de 100 devrait avoir pour effet de tout accepter comme le fait une valeur de 0.
+     * C'est logique et probablement vrai, mais ce n'est ni prouvé ni testé.
+     * De plus, 0 ignore le travail nécessaire pour effectuer le calcul, contrairement à l'utilisation de 100.
      *
-     * The (admittedly limited) testing that's been done suggests a useful working range
-     * of 50 to 60. You can set it lower than 50, but site users will probably start
-     * to complain about the large number of proposed passwords getting rejected.
-     * At around 60 or more it starts to see pairs like 'captain joe' and 'joe*captain' as
-     * perfectly acceptable which clearly they are not.
+     * Les tests (certes limités) qui ont été effectués suggèrent une plage de travail utile de 50 à 60.
+     * Vous pouvez le définir à une valeur inférieure à 50, mais les utilisateurs du site commenceront probablement à se plaindre du rejet d'un grand nombre de mots de passe proposés.
+     * Vers 60 ans ou plus, on commence à considérer des paires comme « capitaine Joe » et « joe*capitaine » comme parfaitement acceptables, ce qui n'est clairement pas le cas.
      *
-     * To disable similarity checking set the value to 0.
-     *     public $maxSimilarity = 0;
+     * Pour désactiver la vérification de similarité, définissez la valeur sur 0.
+     *    $max_similarity = 0;
      */
     'max_similarity' => 50,
 
     /**
-     * --------------------------------------------------------------------
-     * Hashing Algorithm to use
-     * --------------------------------------------------------------------
-     * Valid values are
-     * - PASSWORD_DEFAULT (default)
+     * -------------------------------------------------- -------------------
+     * Algorithme de hachage à utiliser
+     * ------------------------------------------------- -------------------
+     * Les valeurs valides sont
+     * - PASSWORD_DEFAULT (par défaut)
      * - PASSWORD_BCRYPT
-     * - PASSWORD_ARGON2I  - As of PHP 7.2 only if compiled with support for it
-     * - PASSWORD_ARGON2ID - As of PHP 7.3 only if compiled with support for it
+     * - PASSWORD_ARGON2I - À partir de PHP 7.2 uniquement s'il est compilé avec son support
+     * - PASSWORD_ARGON2ID - À partir de PHP 7.3 uniquement s'il est compilé avec son support
      */
     'hash_algorithm' => PASSWORD_DEFAULT,
 
@@ -404,7 +375,8 @@ return [
      * Renvoie l'URL vers laquelle un utilisateur doit être redirigé après une connexion réussie.
      */
     'loginRedirect' => static function (): string {
-        $url = config('auth.redirects.login');
+        $session = session();
+        $url     = $session->getTempdata('beforeLoginUrl') ?? config('auth.redirects.login');
 
         return call_user_func(config('auth.getUrl'), $url);
     },

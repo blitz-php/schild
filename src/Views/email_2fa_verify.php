@@ -11,9 +11,16 @@
 
             <p><?= lang('Auth.emailConfirmCode') ?></p>
 
-            <?php if (session('error') !== null) : ?>
-            <div class="alert alert-danger"><?= session('error') ?></div>
-            <?php endif ?>
+			<?php if($error = $errors->line('default')) : ?>
+				<div class="alert alert-danger" role="alert"><?= $error ?></div>
+			<?php elseif ($errors->count()): ?>
+				<div class="alert alert-danger" role="alert">
+					<?php foreach ($errors->all() as $error) : ?>
+						<?= $error ?>
+						<br>
+					<?php endforeach ?>
+				</div>
+			<?php endif ?>
 
             <form action="<?= url_to('auth-action-verify') ?>" method="post">
                 <!-- Code -->

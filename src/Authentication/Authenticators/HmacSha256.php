@@ -20,9 +20,9 @@ use BlitzPHP\Schild\Models\UserModel;
 use BlitzPHP\Schild\Result;
 use BlitzPHP\Utilities\Date;
 
-class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
+class HmacSha256 extends BaseAuthenticator implements AuthenticatorInterface
 {
-    public const ID_TYPE_ACCESS_TOKEN = 'access_token';
+    public const ID_TYPE_HMAC_TOKEN = 'hmac_sha256';
 
     protected TokenLoginModel $loginModel;
 
@@ -40,10 +40,12 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
      * Tente d'authentifier un utilisateur avec les $credentials donnés.
      * Connecte l'utilisateur avec une vérification réussie.
      *
-     * @throws AuthenticationException
+     * @param array{token?: string} $credentials
      */
     public function attempt(array $credentials): Result
     {
+        $config = (object) config('auth-token');
+
         $request = Services::request();
 
         $ipAddress = $request->ip();
@@ -52,10 +54,10 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
         $result = $this->check($credentials);
 
         if (! $result->isOK()) {
-            if (config('auth-token.record_login_attempt') >= RECORD_LOGIN_ATTEMPT_FAILURE) {
-                // Enregistrez toutes les tentatives de connexion échouées.
+            if ($config->record_login_attempt >= RECORD_LOGIN_ATTEMPT_FAILURE) {
+                // Enregistrer une tentative de connexion échouée.
                 $this->loginModel->recordLoginAttempt(
-                    self::ID_TYPE_ACCESS_TOKEN,
+                    self::ID_TYPE_HMAC_TOKEN,
                     $credentials['token'] ?? '',
                     false,
                     $ipAddress,
@@ -69,14 +71,15 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
         $user = $result->extraInfo();
 
         if ($user->isBanned()) {
-            if (config('auth-token.record_login_attempt') >= RECORD_LOGIN_ATTEMPT_FAILURE) {
+            if ($config->record_login_attempt >= RECORD_LOGIN_ATTEMPT_FAILURE) {
                 // Enregistrer une tentative de connexion interdite.
                 $this->loginModel->recordLoginAttempt(
-                    self::ID_TYPE_ACCESS_TOKEN,
+                    self::ID_TYPE_HMAC_TOKEN,
                     $credentials['token'] ?? '',
                     false,
                     $ipAddress,
-                    $userAgent
+                    $userAgent,
+                    $user->id
                 );
             }
 
@@ -88,16 +91,16 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
             ]);
         }
 
-        $user = $user->setAccessToken(
-            $user->getAccessToken($this->getBearerToken())
+        $user = $user->setHmacToken(
+            $user->getHmacToken($this->getHmacKeyFromToken())
         );
 
         $this->login($user);
 
-        if (config('auth-token.record_login_attempt') >= RECORD_LOGIN_ATTEMPT_ALL) {
+        if ($config->record_login_attempt === RECORD_LOGIN_ATTEMPT_ALL) {
             // Enregistrez une tentative de connexion réussie.
             $this->loginModel->recordLoginAttempt(
-                self::ID_TYPE_ACCESS_TOKEN,
+                self::ID_TYPE_HMAC_TOKEN,
                 $credentials['token'] ?? '',
                 true,
                 $ipAddress,
@@ -113,26 +116,43 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
      * Vérifie les $credentials d'un utilisateur pour voir s'ils correspondent à un utilisateur existant.
      *
      * Dans ce cas, $credentials n'a qu'une seule valeur valide : token, qui est le jeton de texte brut à renvoyer.
+     *
+     * @param array{token?: string} $credentials
      */
     public function check(array $credentials): Result
     {
-        if (! array_key_exists('token', $credentials) || empty($credentials['token'])) {
+        if (! array_key_exists('token', $credentials) || $credentials['token'] === '') {
             return new Result([
                 'success' => false,
-                'reason'  => lang('Auth.noToken', [config('auth-token.authenticator_header.tokens')]),
+                'reason'  => lang(
+                    'Auth.noToken',
+                    [config('auth-token.authenticator_header.hmac')]
+                ),
             ]);
         }
 
-        if (strpos($credentials['token'], 'Bearer') === 0) {
-            $credentials['token'] = trim(substr($credentials['token'], 6));
+        if (strpos($credentials['token'], 'HMAC-SHA256') === 0) {
+            $credentials['token'] = trim(substr($credentials['token'], 11)); // HMAC-SHA256
         }
+
+        // Extraire la signature UserToken et HMACSHA256 du jeton d'autorisation
+        [$userToken, $signature] = $this->getHmacAuthTokens($credentials['token']);
 
         /** @var UserIdentityModel $identityModel */
         $identityModel = model(UserIdentityModel::class);
 
-        $token = $identityModel->getAccessTokenByRawToken($credentials['token']);
+        $token = $identityModel->getHmacTokenByKey($userToken);
 
         if ($token === null) {
+            return new Result([
+                'success' => false,
+                'reason'  => lang('Auth.badToken'),
+            ]);
+        }
+
+        // Vérifier la signature...
+        $hash = hash_hmac('sha256', $credentials['body'], $token->secret2);
+        if ($hash !== $signature) {
             return new Result([
                 'success' => false,
                 'reason'  => lang('Auth.badToken'),
@@ -143,8 +163,10 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
 
         // N'a pas été utilisé depuis longtemps
         if (
-            $token->last_used_at
-            && $token->last_used_at->isBefore(Date::now()->subSeconds(config('auth.unused_token_lifetime')))
+            isset($token->last_used_at)
+            && $token->last_used_at->isBefore(
+                Date::now()->subSeconds(config('auth-token.unused_token_lifetime'))
+            )
         ) {
             return new Result([
                 'success' => false,
@@ -158,9 +180,9 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
             $identityModel->save($token);
         }
 
-        // Assurez-vous que le jeton est défini comme le jeton actuel
+        // Assurez-vous que le jeton est défini comme jeton actuel
         $user = $token->user();
-        $user->setAccessToken($token);
+        $user->setHmacToken($token);
 
         return new Result([
             'success'   => true,
@@ -175,21 +197,21 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
      */
     public function loggedIn(): bool
     {
-        if (! empty($this->user)) {
+        if ($this->user !== null) {
             return true;
         }
 
         $request = Services::request();
 
         return $this->attempt([
-            'token' => $request->getHeaderLine(config('auth-token.authenticator_header.tokens')),
+            'token' => $request->getHeaderLine(config('auth-token.authenticator_header.hmac')),
         ])->isOK();
     }
 
     /**
-     * Connecte un utilisateur en fonction de son ID.
+     * Connecte un utilisateur en fonction de son identifiant.
      *
-     * @param int|string $userId
+     * @param int|string $userId User ID
      *
      * @throws AuthenticationException
      */
@@ -197,30 +219,74 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
     {
         $user = $this->provider->findById($userId);
 
-        if (empty($user)) {
+        if ($user === null) {
             throw AuthenticationException::invalidUser();
         }
 
-        $user->setAccessToken(
-            $user->getAccessToken($this->getBearerToken())
+        $user->setHmacToken(
+            $user->getHmacToken($this->getHmacKeyFromToken())
         );
 
         $this->login($user);
     }
 
     /**
-     * Renvoie le jeton Bearer de l'en-tête d'autorisation
+     * Renvoie le jeton d'autorisation HMAC complète à partir de l'en-tête d'autorisation
+     *
+     * @return ?string Jeton d'autorisation coupé de l'en-tête
      */
-    public function getBearerToken(): ?string
+    public function getFullHmacToken(): ?string
     {
         $request = Services::request();
 
-        $header = $request->getHeaderLine(config('auth-token.authenticator_header.tokens'));
+        $header = $request->getHeaderLine(config('auth-token.authenticator_header.hmac'));
 
-        if (empty($header)) {
+        if ($header === '') {
             return null;
         }
 
-        return trim(substr($header, 6));   // 'Bearer'
+        return trim(substr($header, 11));   // 'HMAC-SHA256'
+    }
+
+    /**
+     * Obtenez la clé et le hachage HMAC à partir du jeton d'authentification
+     *
+     * @return ?array [key, hmacHash]
+     */
+    public function getHmacAuthTokens(?string $fullToken = null): ?array
+    {
+        if (! isset($fullToken)) {
+            $fullToken = $this->getFullHmacToken();
+        }
+
+        if (isset($fullToken)) {
+            return preg_split('/:/', $fullToken, -1, PREG_SPLIT_NO_EMPTY);
+        }
+
+        return null;
+    }
+
+    /**
+     * Récupérer la clé du jeton d'authentification
+     *
+     * @return ?string Clé du jeton HMAC
+     */
+    public function getHmacKeyFromToken(): ?string
+    {
+        [$key, $secretKey] = $this->getHmacAuthTokens();
+
+        return $key;
+    }
+
+    /**
+     * Récupérer le hachage HMAC du jeton d'authentification
+     *
+     * @return ?string Hachage HMAC
+     */
+    public function getHmacHashFromToken(): ?string
+    {
+        [$key, $hash] = $this->getHmacAuthTokens();
+
+        return $hash;
     }
 }

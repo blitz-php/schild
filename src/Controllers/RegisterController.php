@@ -43,7 +43,7 @@ class RegisterController extends BaseController
 
         // Vérifier si l'inscription est autorisée
         if (! $this->config->allow_registration) {
-            return redirect()->back()->withInput()->with('error', lang('Auth.registerDisabled'));
+            return redirect()->back()->withInput()->withErrors(lang('Auth.registerDisabled'));
         }
 
         /** @var Session $authenticator */
@@ -68,8 +68,7 @@ class RegisterController extends BaseController
 
         // Vérifier si l'inscription est autorisée
         if (! $this->config->allow_registration) {
-            return redirect()->back()->withInput()
-                ->with('error', lang('Auth.registerDisabled'));
+            return redirect()->back()->withInput()->withErrors(lang('Auth.registerDisabled'));
         }
 
         $users = $this->getUserProvider();
@@ -77,7 +76,7 @@ class RegisterController extends BaseController
         // Validez ici d'abord, car certaines choses,
         // comme le mot de passe, ne peut être validé correctement qu'ici.
         if (($validation = $this->processValidate())->fails()) {
-            return redirect()->back()->withInput()->with('errors', $validation->errors()->all());
+            return redirect()->back()->withInput()->withErrors($validation->errors()->all());
         }
 
         // Enregistrer l'utilisateur

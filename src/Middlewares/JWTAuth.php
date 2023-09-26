@@ -58,7 +58,7 @@ class JWTAuth implements MiddlewareInterface
     {
         assert($request instanceof ServerRequest);
 
-        $config = (object) config('auth');
+        $config = (object) config('auth-jwt');
 
         $tokenHeader = $request->getHeaderLine(
             $config->authenticator_header ?? 'Authorization'

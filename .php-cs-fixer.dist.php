@@ -13,24 +13,22 @@ declare(strict_types=1);
 
 use BlitzPHP\CodingStandard\Blitz;
 use Nexus\CsConfig\Factory;
-use Nexus\CsConfig\Fixer\Comment\NoCodeSeparatorCommentFixer;
-use Nexus\CsConfig\FixerGenerator;
 use PhpCsFixer\Finder;
 
 $finder = Finder::create()
     ->files()
-    ->in([__DIR__ . '/src'])
+    ->in([__DIR__ . '/src', __DIR__ . '/spec'])
+    ->exclude('build')
     ->append([__FILE__]);
 
-$overrides = [];
+$overrides = [
+    'declare_strict_types' => true,
+    'void_return'          => true,
+];
 
 $options = [
     'cacheFile'    => 'build/.php-cs-fixer.cache',
     'finder'       => $finder,
-    'customFixers' => FixerGenerator::create('vendor/nexusphp/cs-config/src/Fixer', 'Nexus\\CsConfig\\Fixer'),
-    'customRules'  => [
-        NoCodeSeparatorCommentFixer::name() => true,
-    ],
 ];
 
 return Factory::create(new Blitz(), $overrides, $options)->forLibrary(

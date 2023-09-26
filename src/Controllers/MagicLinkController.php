@@ -50,6 +50,10 @@ class MagicLinkController extends BaseController
      */
     public function loginView()
     {
+        if (! $this->config->allow_magic_link_logins) {
+            return redirect()->route('login')->withErrors(lang('Auth.magicLinkDisabled'));
+        }
+
         if (auth()->loggedIn()) {
             return redirect()->to(($this->config->loginRedirect)());
         }
@@ -64,9 +68,13 @@ class MagicLinkController extends BaseController
      */
     public function loginAction()
     {
+        if (! $this->config->allow_magic_link_logins) {
+            return redirect()->route('login')->withErrors(lang('Auth.magicLinkDisabled'));
+        }
+
         // Valider le format de l'e-mail
         if (($validation = $this->processValidate())->fails()) {
-            return redirect()->route('magic-link')->with('errors', $validation->errors()->all());
+            return redirect()->route('magic-link')->withErrors($validation->errors()->all());
         }
 
         // Vérifier si l'utilisateur existe
@@ -128,6 +136,10 @@ class MagicLinkController extends BaseController
      */
     public function verify(): Redirection
     {
+        if (! $this->config->allow_magic_link_logins) {
+            return redirect()->route('login')->withErrors(lang('Auth.magicLinkDisabled'));
+        }
+        
         $token = $this->request->query('token');
 
         /** @var UserIdentityModel $identityModel */

@@ -50,7 +50,7 @@ class LoginController extends BaseController
         // Validez ici d'abord, car certaines choses,
         // comme le mot de passe, ne peut être validé correctement qu'ici.
         if (($validation = $this->processValidate())->fails()) {
-            return redirect()->back()->withInput()->with('errors', $validation->errors()->all());
+            return redirect()->back()->withInput()->withErrors($validation->errors()->all());
         }
 
         /** @var array $credentials */
@@ -65,7 +65,7 @@ class LoginController extends BaseController
         // Tentative de connexion
         $result = $authenticator->remember($remember)->attempt($credentials);
         if (! $result->isOK()) {
-            return redirect()->route('login')->withInput()->with('error', $result->reason());
+            return redirect()->route('login')->withInput()->withErrors($result->reason());
         }
 
         // Si une action a été définie pour la connexion, démarrez-la.

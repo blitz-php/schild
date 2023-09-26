@@ -11,23 +11,25 @@
 
 namespace BlitzPHP\Schild\Middlewares;
 
+use BlitzPHP\Middlewares\BaseMiddleware;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-abstract class AbstractAuthMiddleware implements MiddlewareInterface
+abstract class AbstractAuthMiddleware extends BaseMiddleware implements MiddlewareInterface
 {
-    public function __construct(protected array $arguments = [])
-    {
-    }
-
     /**
      * {@inheritDoc}
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         if (! auth()->loggedIn()) {
+            // Définir l'URL d'entrée pour rediriger un utilisateur après une connexion réussie
+            if (! url_is('login')) {
+                session()->setTempdata('beforeLoginUrl', current_url(), 300);
+            }
+
             return redirect()->route('login');
         }
 
@@ -36,7 +38,7 @@ abstract class AbstractAuthMiddleware implements MiddlewareInterface
         }
 
         // Sinon, nous les enverrons simplement à la page d'accueil.
-        return redirect()->to('/')->with('error', lang('Auth.notEnoughPrivilege'));
+        return redirect()->to('/')->withErrors(lang('Auth.notEnoughPrivilege'));
     }
 
     /**

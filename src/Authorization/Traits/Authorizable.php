@@ -221,45 +221,49 @@ trait Authorizable
      * Vérifie les autorisations d'utilisateur et leurs autorisations de groupe
      * pour voir si l'utilisateur dispose d'une autorisation spécifique.
      *
-     * @param string $permission chaîne composée d'une portée et d'une action, comme les users.create
+     * @param string $permission chaînes composées d'une portée et d'une action, comme les users.create
      */
-    public function can(string $permission): bool
+    public function can(string ...$permissions): bool
     {
-        if (strpos($permission, '.') === false) {
-            throw new LogicException(
-                'Une autorisation doit être une chaîne composée d\'une portée et d\'une action, comme `users.create`.'
-                . ' Autorisation non valide: ' . $permission
-            );
-        }
-
+        // Obtenez les autorisations de l'utilisateur et stockez-les dans le cache
         $this->populatePermissions();
-
-        $permission = strtolower($permission);
-
-        // Vérifier les autorisations de l'utilisateur
-        if (in_array($permission, $this->permissionsCache, true)) {
-            return true;
-        }
 
         // Vérifiez les groupes auxquels l'utilisateur appartient
         $this->populateGroups();
+        
+        foreach ($permissions as $permission) {
+            // L'autorisation doit contenir une portée et une action
+            if (strpos($permission, '.') === false) {
+                throw new LogicException(
+                    'Une autorisation doit être une chaîne composée d\'une portée et d\'une action, comme `users.create`.'
+                    . ' Autorisation non valide: ' . $permission
+                );
+            }
 
-        if (! count($this->groupCache)) {
-            return false;
-        }
+            $permission = strtolower($permission);
 
-        $matrix = config('auth-groups.matrix');
-
-        foreach ($this->groupCache as $group) {
-            // Vérifier correspondance exacte
-            if (isset($matrix[$group]) && in_array($permission, $matrix[$group], true)) {
+            // Vérifier les autorisations de l'utilisateur
+            if (in_array($permission, $this->permissionsCache, true)) {
                 return true;
             }
 
-            // Vérifier match joker
-            $check = substr($permission, 0, strpos($permission, '.')) . '.*';
-            if (isset($matrix[$group]) && in_array($check, $matrix[$group], true)) {
-                return true;
+            if (! count($this->groupCache)) {
+                return false;
+            }
+
+            $matrix = config('auth-groups.matrix');
+
+            foreach ($this->groupCache as $group) {
+                // Vérifier correspondance exacte
+                if (isset($matrix[$group]) && in_array($permission, $matrix[$group], true)) {
+                    return true;
+                }
+
+                // Vérifier match joker
+                $check = substr($permission, 0, strpos($permission, '.')) . '.*';
+                if (isset($matrix[$group]) && in_array($check, $matrix[$group], true)) {
+                    return true;
+                }
             }
         }
 

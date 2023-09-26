@@ -13,6 +13,7 @@ namespace BlitzPHP\Schild\Entities;
 
 use BlitzPHP\Schild\Authentication\Authenticators\Session;
 use BlitzPHP\Schild\Authentication\Traits\HasAccessTokens;
+use BlitzPHP\Schild\Authentication\Traits\HasHmacTokens;
 use BlitzPHP\Schild\Authorization\Traits\Authorizable;
 use BlitzPHP\Schild\Config\Services;
 use BlitzPHP\Schild\Models\LoginModel;
@@ -34,6 +35,7 @@ class User extends Entity
 {
     use Authorizable;
     use HasAccessTokens;
+    use HasHmacTokens;
     use Resettable;
     use Activatable;
     use Bannable;
@@ -149,6 +151,11 @@ class User extends Entity
         }
 
         return $identities;
+    }
+
+    public function setIdentities(array $identities): void
+    {
+        $this->identities = $identities;
     }
 
     /**

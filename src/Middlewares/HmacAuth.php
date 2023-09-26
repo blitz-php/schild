@@ -14,7 +14,7 @@ namespace BlitzPHP\Schild\Middlewares;
 use BlitzPHP\Contracts\Http\StatusCode;
 use BlitzPHP\Http\ServerRequest;
 use BlitzPHP\Middlewares\BaseMiddleware;
-use BlitzPHP\Schild\Authentication\Authenticators\AccessTokens;
+use BlitzPHP\Schild\Authentication\Authenticators\HmacSha256;
 use BlitzPHP\Schild\Config\Services;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -24,7 +24,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 /**
  * Authentification par jeton d'accès personnel pour les applications Web.
  */
-class TokenAuth extends BaseMiddleware implements MiddlewareInterface
+class HmacAuth extends BaseMiddleware implements MiddlewareInterface
 {
     /**
      * Faites le traitement que ce filtre doit faire.
@@ -39,14 +39,15 @@ class TokenAuth extends BaseMiddleware implements MiddlewareInterface
             return $handler->handle($request);
         }
 
-        /** @var AccessTokens $authenticator */
-        $authenticator = auth('tokens')->getAuthenticator();
+        /** @var HmacSha256 $authenticator */
+        $authenticator = auth('hmac')->getAuthenticator();
 
         $result = $authenticator->attempt([
-            'token' => $request->getHeaderLine(config('auth-token.authenticator_header.tokens', 'Authorization')),
+            'token' => $request->getHeaderLine(config('auth-token.authenticator_header.hmac', 'Authorization')),
+            'body'  => $request->getBody()->getContents() ?? '',
         ]);
 
-        if (! $result->isOK() || (! empty($this->arguments) && $result->extraInfo()->tokenCant($this->arguments[0]))) {
+        if (! $result->isOK() || (! empty($this->arguments) && $result->extraInfo()->hmacTokenCant($this->arguments[0]))) {
             return Services::response()->json(['message' => lang('Auth.badToken')], StatusCode::UNAUTHORIZED);
         }
 

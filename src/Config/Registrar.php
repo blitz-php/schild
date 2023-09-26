@@ -18,6 +18,7 @@ use BlitzPHP\Schild\Middlewares\ChainAuth;
 use BlitzPHP\Schild\Middlewares\ForcePasswordResetFilter;
 use BlitzPHP\Schild\Middlewares\GroupFilter;
 use BlitzPHP\Schild\Middlewares\Guest;
+use BlitzPHP\Schild\Middlewares\HmacAuth;
 use BlitzPHP\Schild\Middlewares\JWTAuth;
 use BlitzPHP\Schild\Middlewares\PermissionFilter;
 use BlitzPHP\Schild\Middlewares\SessionAuth;
@@ -60,6 +61,7 @@ class Registrar
         return [
             'session'     => SessionAuth::class,
             'tokens'      => TokenAuth::class,
+            'hmac'        => HmacAuth::class,
             'chain'       => ChainAuth::class,
             'auth-rates'  => AuthRates::class,
             'group'       => GroupFilter::class,

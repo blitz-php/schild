@@ -39,6 +39,7 @@ return [
     'password'        => 'Mot de passe',
     'passwordConfirm' => 'Mot de passe (répéter)',
     'haveAccount'     => 'Vous avez déjà un compte ?',
+    'token'           => 'Jeton',
 
     // Buttons
     'confirm' => 'Confirmer',
@@ -60,6 +61,7 @@ return [
     'magicLinkExpired'   => 'Désolé, le lien a expiré.',
     'checkYourEmail'     => 'Vérifier votre email !',
     'magicLinkDetails'   => 'Nous venons de vous envoyer un email contenant un lien de connexion. Il n\'est valable que {0} minutes.',
+    'magicLinkDisabled'  => 'L\'utilisation de MagicLink n\'est actuellement pas autorisée.',
     'successLogout'      => 'Vous avez été déconnecté avec succès.',
     'backToLogin'        => 'Retour à la connexion',
 

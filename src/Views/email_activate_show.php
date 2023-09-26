@@ -11,9 +11,16 @@
         <div class="card-body">
             <h5 class="card-title mb-5"><?= lang('Auth.emailActivateTitle') ?></h5>
 
-            <?php if (session('error')) : ?>
-                <div class="alert alert-danger"><?= session('error') ?></div>
-            <?php endif ?>
+            <?php if($error = $errors->line('default')) : ?>
+				<div class="alert alert-danger" role="alert"><?= $error ?></div>
+			<?php elseif ($errors->count()): ?>
+				<div class="alert alert-danger" role="alert">
+					<?php foreach ($errors->all() as $error) : ?>
+						<?= $error ?>
+						<br>
+					<?php endforeach ?>
+				</div>
+			<?php endif ?>
 
             <p><?= lang('Auth.emailActivateBody') ?></p>
 

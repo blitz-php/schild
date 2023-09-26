@@ -54,6 +54,7 @@ class Setup extends Command
     {
         $this->publishConfigAuth();
         $this->publishConfigAuthGroups();
+        $this->publishConfigAuthToken();
 
         // $this->setupConstants();
         $this->setupRoutes();
@@ -72,6 +73,14 @@ class Setup extends Command
     private function publishConfigAuthGroups(): void
     {
         $file     = 'Config/auth-groups.php';
+        $replaces = [];
+
+        $this->copyAndReplace($file, $replaces);
+    }
+
+    private function publishConfigAuthToken(): void
+    {
+        $file     = 'Config/auth-token.php';
         $replaces = [];
 
         $this->copyAndReplace($file, $replaces);

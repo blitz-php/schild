@@ -59,7 +59,7 @@ class JWT extends BaseAuthenticator implements AuthenticatorInterface
      */
     public function attempt(array $credentials): Result
     {
-        $config = (object) config('auth');
+        $config = (object) config('auth-jwt');
 
         $request = Services::request();
 
@@ -86,7 +86,7 @@ class JWT extends BaseAuthenticator implements AuthenticatorInterface
         $user = $result->extraInfo();
 
         if ($user->isBanned()) {
-            if ($config->recordLoginAttempt >= RECORD_LOGIN_ATTEMPT_FAILURE) {
+            if ($config->record_login_attempt >= RECORD_LOGIN_ATTEMPT_FAILURE) {
                 // Enregistrer une tentative de connexion interdite.
                 $this->tokenLoginModel->recordLoginAttempt(
                     self::ID_TYPE_JWT,
@@ -108,7 +108,7 @@ class JWT extends BaseAuthenticator implements AuthenticatorInterface
 
         $this->login($user);
 
-        if ($config->recordLoginAttempt === RECORD_LOGIN_ATTEMPT_ALL) {
+        if ($config->record_login_attempt === RECORD_LOGIN_ATTEMPT_ALL) {
             // Enregistrez une tentative de connexion réussie.
             $this->tokenLoginModel->recordLoginAttempt(
                 self::ID_TYPE_JWT,

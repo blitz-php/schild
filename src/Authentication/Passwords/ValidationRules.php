@@ -12,7 +12,7 @@
 namespace BlitzPHP\Schild\Authentication\Passwords;
 
 use BlitzPHP\Schild\Authentication\Passwords;
-use BlitzPHP\Schild\Config\Auth;
+use BlitzPHP\Schild\Config\Services;
 use BlitzPHP\Schild\Entities\User;
 
 /**
@@ -26,17 +26,16 @@ use BlitzPHP\Schild\Entities\User;
 class ValidationRules
 {
     /**
-     * A validation helper method to check if the passed in
-     * password will pass all of the validators currently defined.
+     * Une méthode d'aide à la validation pour vérifier si le mot de passe transmis passera tous les validateurs actuellement définis.
      *
-     * Handy for use in validation, but you will get a slightly
-     * better security if this is done manually, since you can
-     * personalize based on a specific user at that point.
+     * Pratique à utiliser lors de la validation, 
+     * mais vous obtiendrez une sécurité légèrement meilleure si cela est fait manuellement, 
+     * puisque vous pouvez personnaliser en fonction d'un utilisateur spécifique à ce stade.
      *
-     * @param string $value  Field value
-     * @param string $error1 Error that will be returned (for call without validation data array)
-     * @param array  $data   Validation data array
-     * @param string $error2 Error that will be returned (for call with validation data array)
+     * @param string $value  Valeur du champ
+     * @param string $error1 Erreur qui sera renvoyée (pour un appel sans tableau de données de validation)
+     * @param array $data Tableau de données de validation
+     * @param string $error2 Erreur qui sera renvoyée (pour un appel avec un tableau de données de validation)
      */
     public function strong_password(string $value, ?string &$error1 = null, array $data = [], ?string &$error2 = null): bool
     {
@@ -63,7 +62,7 @@ class ValidationRules
     }
 
     /**
-     * Returns true if $str is $val or fewer bytes in length.
+     * Renvoie vrai si $str a une longueur de $val ou moins d'octets.
      */
     public function max_byte(?string $str, string $val): bool
     {
@@ -71,22 +70,21 @@ class ValidationRules
     }
 
     /**
-     * Builds a new user instance from the global request.
+     * Construit une nouvelle instance d'utilisateur à partir de la requête globale.
      */
     protected function buildUserFromRequest(): User
     {
         $fields = $this->prepareValidFields();
 
-        /** @var IncomingRequest $request */
-        $request = service('request');
+        $request = Services::request();
 
-        $data = $request->getPost($fields);
+        $data = $request->only($fields);
 
         return new User($data);
     }
 
     /**
-     * Builds a new user instance from assigned data..
+     * Construit une nouvelle instance d'utilisateur à partir des données attribuées.
      *
      * @param array $data Assigned data
      */
@@ -100,12 +98,12 @@ class ValidationRules
     }
 
     /**
-     * Prepare valid user fields
+     * Préparer des champs utilisateur valides
      */
     protected function prepareValidFields(): array
     {
-        $config   = config(Auth::class);
-        $fields   = array_merge($config->validFields, $config->personalFields);
+        $config   = (object) config('auth');
+        $fields   = array_merge($config->valid_fields, $config->personal_fields);
         $fields[] = 'password';
 
         return $fields;

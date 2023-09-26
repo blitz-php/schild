@@ -70,13 +70,13 @@ class Email2FA implements ActionInterface
         }
 
         if (empty($email) || $email !== $user->email) {
-            return redirect()->route('auth-action-show')->with('error', lang('Auth.invalidEmail'));
+            return redirect()->route('auth-action-show')->withErrors(lang('Auth.invalidEmail'));
         }
 
         $identity = $this->getIdentity($user);
 
         if (empty($identity)) {
-            return redirect()->route('auth-action-show')->with('error', lang('Auth.need2FA'));
+            return redirect()->route('auth-action-show')->withErrors(lang('Auth.need2FA'));
         }
 
         $ipAddress = $request->ip();
@@ -120,7 +120,7 @@ class Email2FA implements ActionInterface
 
         // Incompatibilité de jeton ? Qu'ils réessayent...
         if (! $authenticator->checkAction($identity, $postedToken)) {
-            Services::session()->setFlashdata('error', lang('Auth.invalid2FAToken'));
+            Services::session()->flashErrors(lang('Auth.invalid2FAToken'));
 
             return $this->view(config('auth.views.action_email_2fa_verify'));
         }
