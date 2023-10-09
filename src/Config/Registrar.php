@@ -61,16 +61,18 @@ class Registrar
     public static function middlewares(): array
     {
         return [
-            'session'     => SessionAuth::class,
-            'tokens'      => TokenAuth::class,
-            'hmac'        => HmacAuth::class,
-            'chain'       => ChainAuth::class,
-            'auth-rates'  => AuthRates::class,
-            'group'       => GroupFilter::class,
-            'permission'  => PermissionFilter::class,
-            'force-reset' => ForcePasswordResetFilter::class,
-            'jwt'         => JWTAuth::class,
-            'guest'       => Guest::class,
+            'aliases' => [
+                'session'     => SessionAuth::class,
+                'tokens'      => TokenAuth::class,
+                'hmac'        => HmacAuth::class,
+                'chain'       => ChainAuth::class,
+                'auth-rates'  => AuthRates::class,
+                'group'       => GroupFilter::class,
+                'permission'  => PermissionFilter::class,
+                'force-reset' => ForcePasswordResetFilter::class,
+                'jwt'         => JWTAuth::class,
+                'guest'       => Guest::class,
+            ],
         ];
     }
 
@@ -87,7 +89,7 @@ class Registrar
         ];
     }
 
-    public static function Toolbar(): array
+    public static function toolbar(): array
     {
         return [
             'collectors' => [
