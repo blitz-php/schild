@@ -25,6 +25,7 @@ use BlitzPHP\Schild\Models\UserModel;
  * @method Result    attempt(array $credentials)
  * @method Result    check(array $credentials)
  * @method bool      checkAction(string $token, string $type) [Session]
+ * @method void      forget(?User $user = null)
  * @method User|null getUser()
  * @method bool      loggedIn()
  * @method bool      login(User $user)
@@ -40,7 +41,7 @@ class Auth
      */
     public const VERSION = '1.0.0-beta.1';
 
-    protected Authentication $authenticate;
+    protected ?Authentication $authenticate = null;
 
     /**
      * L'alias de l'authentificateur à utiliser pour cette demande.
@@ -49,9 +50,20 @@ class Auth
 
     protected ?UserModel $userProvider = null;
 
-    public function __construct(Authentication $authenticate)
+    public function __construct(protected object $config)
     {
-        $this->authenticate = $authenticate->setProvider($this->getProvider());
+    }
+
+    protected function ensureAuthentication(): void
+    {
+        if ($this->authenticate !== null) {
+            return;
+        }
+
+        $authenticate = new Authentication($this->config);
+        $authenticate->setProvider($this->getProvider());
+
+        $this->authenticate = $authenticate;
     }
 
     /**
@@ -71,6 +83,8 @@ class Auth
      */
     public function getAuthenticator(): AuthenticatorInterface
     {
+        $this->ensureAuthentication();
+
         return $this->authenticate->factory($this->alias);
     }
 
@@ -91,13 +105,15 @@ class Auth
      */
     public function id()
     {
-        return ($user = $this->user())
+        return (null !== $user = $this->user())
             ? $user->id
             : null;
     }
 
     public function authenticate(array $credentials): Result
     {
+        $this->ensureAuthentication();
+
         return $this->authenticate
             ->factory($this->alias)
             ->attempt($credentials);
@@ -137,13 +153,11 @@ class Auth
             return $this->userProvider;
         }
 
-        $config = (object) config('auth');
-
-        if (! property_exists($config, 'user_provider')) {
+        if (! property_exists($this->config, 'user_provider')) {
             throw AuthenticationException::unknownUserProvider();
         }
 
-        $className          = $config->user_provider;
+        $className          = $this->config->user_provider;
         $this->userProvider = new $className();
 
         return $this->userProvider;
@@ -160,6 +174,8 @@ class Auth
      */
     public function __call(string $method, array $args)
     {
+        $this->ensureAuthentication();
+
         $authenticate = $this->authenticate->factory($this->alias);
 
         if (method_exists($authenticate, $method)) {

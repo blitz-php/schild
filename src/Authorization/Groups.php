@@ -60,6 +60,6 @@ class Groups
         ];
 
         // Save it
-        config('auth-groups.groups', $groups);
+        config(['auth-groups.groups' => $groups]);
     }
 }

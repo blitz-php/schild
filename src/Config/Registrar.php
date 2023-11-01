@@ -29,33 +29,6 @@ use BlitzPHP\Schild\Middlewares\TokenAuth;
 class Registrar
 {
     /**
-     * Regles de validation
-     */
-    private static array $validationRules = [
-        /**
-         * Les règles de validation du nom d'utilisateur
-         *
-         * @var string[]
-         */
-        'username' => [
-            'required',
-            'max:30',
-            'min:3',
-            'regex:/\A[a-zA-Z0-9\.]+\z/',
-        ],
-        /**
-         * Les règles de validation des emails
-         *
-         * @var string[]
-         */
-        'email' => [
-            'required',
-            'max:254',
-            'email',
-        ],
-    ];
-
-    /**
      * Enregistre les middlewares Schild.
      */
     public static function middlewares(): array
@@ -76,12 +49,8 @@ class Registrar
         ];
     }
 
-    public static function validation(?string $key = null): array
+    public static function validation(): array
     {
-        if (! empty($key)) {
-            return static::$validationRules[$key] ?? [];
-        }
-
         return [
             'ruleSets' => [
                 PasswordRules::class,
@@ -98,7 +67,7 @@ class Registrar
         ];
     }
 
-    public static function Generators(): array
+    public static function generators(): array
     {
         return [
             'views' => [

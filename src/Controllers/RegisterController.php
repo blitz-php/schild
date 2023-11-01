@@ -15,12 +15,10 @@ namespace BlitzPHP\Schild\Controllers;
 
 use BlitzPHP\Http\Redirection;
 use BlitzPHP\Schild\Authentication\Authenticators\Session;
-use BlitzPHP\Schild\Authentication\Passwords;
-use BlitzPHP\Schild\Config\Registrar;
 use BlitzPHP\Schild\Config\Services;
 use BlitzPHP\Schild\Entities\User;
 use BlitzPHP\Schild\Models\UserModel;
-use BlitzPHP\Validation\Rule;
+use BlitzPHP\Schild\Validation\ValidationRules;
 use BlitzPHP\Validation\Validation;
 use BlitzPHP\Validation\Validator;
 use BlitzPHP\View\View;
@@ -99,7 +97,7 @@ class RegisterController extends BaseController
             // Ajouter au groupe par défaut
             $users->addToDefaultGroup($user);
         } catch (Exception $e) {
-            return redirect()->back()->withInput()->with('errors', $e->getMessage());
+            return redirect()->back()->withInput()->withErrors($e->getMessage());
         }
 
         Services::event()->trigger('register', $user);
@@ -150,26 +148,8 @@ class RegisterController extends BaseController
      */
     protected function processValidate(): Validation
     {
-        $config = config('validation');
-        $rules  = $config['register'] ?? [
-            'username' => array_merge(
-                Registrar::validation('username'),
-                [Rule::unique($this->tables['users'], 'username')]
-            ),
-            'email' => array_merge(
-                Registrar::validation('email'),
-                [Rule::unique($this->tables['identities'], 'secret')]
-            ),
-            'password' => [
-                'required', 'confirmed', Passwords::getMaxLengthRule(), Rule::password()->strong(),
-            ],
-        ];
+        ['rules' => $rules, 'alias' => $alias, 'messages' => $messages] = ValidationRules::register();
 
-        return Validator::make($this->request->post(), $rules)->alias([
-            'username'              => lang('Auth.username'),
-            'email'                 => lang('Auth.email'),
-            'password'              => lang('Auth.password'),
-            'password_confirmation' => lang('Auth.passwordConfirm'),
-        ]);
+        return Validator::make($this->request->post(), $rules)->alias($alias)->messages($messages);
     }
 }

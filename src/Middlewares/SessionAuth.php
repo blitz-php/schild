@@ -69,7 +69,7 @@ class SessionAuth implements MiddlewareInterface
             return redirect()->route('auth-action-show')->withErrors($authenticator->getPendingMessage());
         }
 
-        if (! url_is('login')) {
+        if (uri_string() !== link_to('login')) {
             session()->setTempdata('beforeLoginUrl', current_url(), 300);
         }
 

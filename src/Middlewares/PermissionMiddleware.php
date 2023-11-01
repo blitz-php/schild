@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace BlitzPHP\Schild\Middlewares;
 
+use BlitzPHP\Http\Redirection;
+
 /**
  * Filtre d'autorisation d'autorisation.
  */
@@ -30,5 +32,13 @@ class PermissionMiddleware extends AbstractAuthMiddleware
         }
 
         return false;
+    }
+
+    /**
+     * Si l'utilisateur ne dispose pas de l'autorisation, redirigez vers l'URL configurée avec un message d'erreur.
+     */
+    protected function redirectToDeniedUrl(): Redirection
+    {
+        return redirect()->to(call_user_func(config('auth.permissionDeniedRedirect')))->withErrors(lang('Auth.notEnoughPrivilege'));
     }
 }

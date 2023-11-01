@@ -103,10 +103,12 @@ return [
      * @var array<string, string>
      */
     'redirects' => [
-        'register'    => '/',
-        'login'       => '/',
-        'logout'      => 'login',
-        'force_reset' => '/',
+        'register'          => '/',
+        'login'             => '/',
+        'logout'            => 'login',
+        'force_reset'       => '/',
+        'permission_denied' => '/',
+        'group_denied'      => '/',
     ],
 
     /**
@@ -241,6 +243,42 @@ return [
 
     /**
      * --------------------------------------------------------------------
+     * Les règles de validation du nom d'utilisateur
+     * ------------------------------------------------- -------------------
+     *
+     * N'utilisez pas de règles de chaîne comme `required|email`.
+     *
+     * @var array<string, array<int, string>|string>
+     */
+    'username_validation_rules' => [
+        'label' => lang('Auth.username'),
+        'rules' => [
+            'required',
+            'max:30',
+            'min:3',
+            'regex:/\A[a-zA-Z0-9\.]+\z/',
+        ],
+    ],
+
+    /**
+     * Les règles de validation de l'email
+     * ------------------------------------------------- -------------------
+     *
+     * N'utilisez pas de règles de chaîne comme `required|email`.
+     *
+     * @var array<string, array<int, string>|string>
+     */
+    'email_validation_rules' => [
+        'label' => lang('Auth.email'),
+        'rules' => [
+            'required',
+            'max:254',
+            'email',
+        ],
+    ],
+
+    /**
+     * --------------------------------------------------------------------
      * Longueur minimale du mot de passe
      * ------------------------------------------------- -------------------
      * La longueur minimale que doit avoir un mot de passe pour être accepté.
@@ -370,7 +408,7 @@ return [
      *
      * @var int
      */
-    'hash_cost' => 10,
+    'hash_cost' => 12,
 
     /**
      * Renvoie l'URL vers laquelle un utilisateur doit être redirigé après une connexion réussie.
@@ -405,6 +443,24 @@ return [
      */
     'forcePasswordResetRedirect' => static function (): string {
         $url = config('auth.redirects.force_reset');
+
+        return call_user_func(config('auth.getUrl'), $url);
+    },
+
+    /**
+     * Renvoie l'URL vers laquelle l'utilisateur doit être redirigé si la permission n'est pas autorisée.
+     */
+    'permissionDeniedRedirect' => static function (): string {
+        $url = config('auth.redirects.permission_denied');
+
+        return call_user_func(config('auth.getUrl'), $url);
+    },
+
+    /**
+     * Renvoie l'URL vers laquelle l'utilisateur doit être redirigé si le groupe n'est pas autorisé.
+     */
+    'groupDeniedRedirect' => static function (): string {
+        $url = config('auth.redirects.group_denied');
 
         return call_user_func(config('auth.getUrl'), $url);
     },

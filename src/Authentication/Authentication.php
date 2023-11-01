@@ -16,6 +16,9 @@ namespace BlitzPHP\Schild\Authentication;
 use BlitzPHP\Schild\Exceptions\AuthenticationException;
 use BlitzPHP\Schild\Models\UserModel;
 
+/**
+ * Classe de fabrique pour l'authentication
+ */
 class Authentication
 {
     /**
@@ -33,12 +36,12 @@ class Authentication
     }
 
     /**
-     * Renvoie une instance de l'Authenticator spécifié.
+     * Cree et renvoie une instance de l'Authenticator spécifié.
      *
      * Vous pouvez passer 'default' comme Authenticator et il renverra une instance du premier
      * Authenticator spécifié dans le fichier de configuration Auth.
      *
-     * @param string|null $alias Authenticator alias
+     * @param string|null $alias Authenticator alias. Si `null` est donné, utilise l'autentificateur par défaut
      *
      * @throws AuthenticationException
      */

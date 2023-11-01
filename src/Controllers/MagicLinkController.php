@@ -15,11 +15,11 @@ namespace BlitzPHP\Schild\Controllers;
 
 use BlitzPHP\Http\Redirection;
 use BlitzPHP\Schild\Authentication\Authenticators\Session;
-use BlitzPHP\Schild\Config\Registrar;
 use BlitzPHP\Schild\Config\Services;
 use BlitzPHP\Schild\Models\LoginModel;
 use BlitzPHP\Schild\Models\UserIdentityModel;
 use BlitzPHP\Schild\Models\UserModel;
+use BlitzPHP\Schild\Validation\ValidationRules;
 use BlitzPHP\Utilities\Date;
 use BlitzPHP\Utilities\String\Text;
 use BlitzPHP\Validation\Validation;
@@ -84,7 +84,7 @@ class MagicLinkController extends BaseController
         $user  = $this->provider->findByCredentials(['email' => $email]);
 
         if ($user === null) {
-            return redirect()->route('magic-link')->with('error', lang('Auth.invalidEmail'))->withInput();
+            return redirect()->route('magic-link')->withErrors(lang('Auth.invalidEmail'))->withInput();
         }
 
         /** @var UserIdentityModel $identityModel */
@@ -116,7 +116,7 @@ class MagicLinkController extends BaseController
         if ($email->send() === false) {
             // logger('error', $email->printDebugger(['headers']));
 
-            return redirect()->route('magic-link')->with('error', lang('Auth.unableSendEmailToUser', [$user->email]))->withInput();
+            return redirect()->route('magic-link')->withErrors(lang('Auth.unableSendEmailToUser', [$user->email]))->withInput();
         }
 
         // Effacer l'e-mail
@@ -128,7 +128,7 @@ class MagicLinkController extends BaseController
     /**
      * Affichez le message « Ce qui se passe/suivant » à l'utilisateur.
      */
-    protected function displayMessage(): string
+    protected function displayMessage()
     {
         return $this->view($this->config->views['magic-link-message']);
     }
@@ -158,7 +158,7 @@ class MagicLinkController extends BaseController
             $credentials = ['magicLinkToken' => $token];
             Services::event()->trigger('failedLogin', $credentials);
 
-            return redirect()->route('magic-link')->with('error', lang('Auth.magicTokenNotFound'));
+            return redirect()->route('magic-link')->withErrors(lang('Auth.magicTokenNotFound'));
         }
 
         // Supprimez l'entrée db afin qu'elle ne puisse plus être utilisée.
@@ -171,7 +171,7 @@ class MagicLinkController extends BaseController
             $credentials = ['magicLinkToken' => $token];
             Services::event()->trigger('failedLogin', $credentials);
 
-            return redirect()->route('magic-link')->with('error', lang('Auth.magicLinkExpired'));
+            return redirect()->route('magic-link')->withErrors(lang('Auth.magicLinkExpired'));
         }
 
         /** @var Session $authenticator */
@@ -179,7 +179,7 @@ class MagicLinkController extends BaseController
 
         // Si une action a été définie
         if ($authenticator->hasAction($identity->user_id)) {
-            return redirect()->route('auth-action-show')->with('error', lang('Auth.needActivate'));
+            return redirect()->route('auth-action-show')->withErrors(lang('Auth.needActivate'));
         }
 
         // Connecter l'utilisateur
@@ -224,12 +224,12 @@ class MagicLinkController extends BaseController
      */
     protected function processValidate(): Validation
     {
-        $rules = [
-            'email' => Registrar::validation('email'),
-        ];
+        $validation = config('auth.email_validation_rules');
+        $rules      = ['email' => $validation['rules']];
+        $alias      = ['email' => $validation['label']];
+        $messages   = [];
+        ValidationRules::makeMessage($messages, $validation['messages'], 'email');
 
-        return Validator::make($this->request->post(), $rules)->alias([
-            'email' => lang('Auth.email'),
-        ]);
+        return Validator::make($this->request->post(), $rules)->alias($alias)->messages($messages);
     }
 }

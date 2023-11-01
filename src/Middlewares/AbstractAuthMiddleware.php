@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace BlitzPHP\Schild\Middlewares;
 
+use BlitzPHP\Http\Redirection;
 use BlitzPHP\Middlewares\BaseMiddleware;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -28,7 +29,7 @@ abstract class AbstractAuthMiddleware extends BaseMiddleware implements Middlewa
     {
         if (! auth()->loggedIn()) {
             // Définir l'URL d'entrée pour rediriger un utilisateur après une connexion réussie
-            if (! url_is('login')) {
+            if (uri_string() !== link_to('login')) {
                 session()->setTempdata('beforeLoginUrl', current_url(), 300);
             }
 
@@ -39,12 +40,17 @@ abstract class AbstractAuthMiddleware extends BaseMiddleware implements Middlewa
             return $handler->handle($request);
         }
 
-        // Sinon, nous les enverrons simplement à la page d'accueil.
-        return redirect()->to('/')->withErrors(lang('Auth.notEnoughPrivilege'));
+        // Sinon, nous les enverrons simplement à la page specifier pour le cas echeant.
+        return $this->redirectToDeniedUrl();
     }
 
     /**
      * Garantit que l'utilisateur est connecté et membre d'un ou plusieurs groupes comme spécifié dans le filtre.
      */
     abstract protected function isAuthorized(): bool;
+
+    /**
+     * Renvoie la réponse de redirection lorsque l'utilisateur ne dispose pas d'autorisations d'accès.
+     */
+    abstract protected function redirectToDeniedUrl(): Redirection;
 }

@@ -57,9 +57,13 @@ class Setup extends Command
         $this->publishConfigAuth();
         $this->publishConfigAuthGroups();
         $this->publishConfigAuthToken();
+        $this->publishConfigAuthJwt();
 
         // $this->setupConstants();
         $this->setupRoutes();
+
+        $this->setSecurityCSRF();
+        // $this->setupEmail();
 
         $this->runMigrations();
     }
@@ -83,6 +87,14 @@ class Setup extends Command
     private function publishConfigAuthToken(): void
     {
         $file     = 'Config/auth-token.php';
+        $replaces = [];
+
+        $this->copyAndReplace($file, $replaces);
+    }
+
+    private function publishConfigAuthJwt(): void
+    {
+        $file     = 'Config/auth-jwt.php';
         $replaces = [];
 
         $this->copyAndReplace($file, $replaces);
@@ -116,6 +128,97 @@ class Setup extends Command
         $replace = '$1$2' . "\n" . $check . "\n";
 
         $this->addContent($file, $check, $pattern, $replace);
+    }
+
+    private function setSecurityCSRF(): void
+    {
+        $file     = 'Config/security.php';
+        $replaces = [
+            '\'csrf_protection\' => \'cookie\',' => '\'csrf_protection\' => \'session\',',
+        ];
+
+        $path      = $this->distPath . $file;
+        $cleanPath = clean_path($path);
+
+        if (! is_file($path)) {
+            $this->error("Pas de fichier trouvé '{$cleanPath}'.");
+
+            return;
+        }
+
+        $content = file_get_contents($path);
+        $output  = $this->replacer->replace($content, $replaces);
+
+        // verifions que $csrfProtection = 'session'
+        if ($output === $content) {
+            $this->success('Tout va bien.', true, 'Configuration de la sécurité');
+
+            return;
+        }
+
+        helper('filesystem');
+
+        if (write_file($path, $output)) {
+            $this->success("Nous avons mis à jour le fichier '{$cleanPath}' pour des raisons de sécurité.", true, 'UPDATED');
+        } else {
+            $this->error("Erreur lors de la mise à jour du fichier '{$cleanPath}'.");
+        }
+    }
+
+    private function setupEmail(): void
+    {
+        $file = 'Config/mail.php';
+
+        $path      = $this->distPath . $file;
+        $cleanPath = clean_path($path);
+
+        if (! is_file($path)) {
+            $this->error("Fichier introuvable: '{$cleanPath}'.");
+
+            return;
+        }
+
+        $config    = (object) config('mail');
+        $fromEmail = (string) $config->from['email'] ?? '';
+        $fromName  = (string) $config->from['name'] ?? '';
+
+        if ($fromEmail !== '' && $fromName !== '') {
+            $this->success('Tout va bien.', true, 'Configuration de la messagerie');
+
+            return;
+        }
+
+        $content = file_get_contents($path);
+        $output  = $content;
+
+        if ($fromEmail === '') {
+            if ($this->confirm('La configuration Config\mail::$from.email requise n\'est pas définie. Voulez-vous le faire maintenant ?')) {
+                // Input from email
+                $fromEmail = $this->prompt('  Quel est votre email?', null);
+
+                $pattern = '/^    public .*\$fromEmail\s+= \'\';/mu';
+                $replace = '    public string $fromEmail  = \'' . $fromEmail . '\';';
+                $output  = preg_replace($pattern, $replace, $content);
+            }
+        }
+
+        if ($fromName === '') {
+            if ($this->confirm('La configuration Config\mail::$from.name requise n\'est pas définie. Voulez-vous le faire maintenant ?')) {
+                $fromName = $this->prompt('  Quel est votre nom?', null, 'required');
+
+                $pattern = '/^    public .*\$fromName\s+= \'\';/mu';
+                $replace = '    public string $fromName   = \'' . $fromName . '\';';
+                $output  = preg_replace($pattern, $replace, $output);
+            }
+        }
+
+        helper('filesystem');
+
+        if (write_file($path, $output)) {
+            $this->success("Nous avons mis à jour le fichier '{$cleanPath}' pour des raisons de sécurité.", true, 'UPDATED');
+        } else {
+            $this->error("Erreur lors de la mise à jour du fichier '{$cleanPath}'.");
+        }
     }
 
     private function runMigrations(): void

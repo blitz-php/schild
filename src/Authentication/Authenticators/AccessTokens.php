@@ -47,6 +47,7 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
     public function attempt(array $credentials): Result
     {
         $request = Services::request();
+        $config  = (object) config('auth-token');
 
         $ipAddress = $request->ip();
         $userAgent = (string) $request->userAgent();
@@ -54,7 +55,7 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
         $result = $this->check($credentials);
 
         if (! $result->isOK()) {
-            if (config('auth-token.record_login_attempt') >= RECORD_LOGIN_ATTEMPT_FAILURE) {
+            if ($config->record_login_attempt >= RECORD_LOGIN_ATTEMPT_FAILURE) {
                 // Enregistrez toutes les tentatives de connexion échouées.
                 $this->loginModel->recordLoginAttempt(
                     self::ID_TYPE_ACCESS_TOKEN,
@@ -71,7 +72,7 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
         $user = $result->extraInfo();
 
         if ($user->isBanned()) {
-            if (config('auth-token.record_login_attempt') >= RECORD_LOGIN_ATTEMPT_FAILURE) {
+            if ($config->record_login_attempt >= RECORD_LOGIN_ATTEMPT_FAILURE) {
                 // Enregistrer une tentative de connexion interdite.
                 $this->loginModel->recordLoginAttempt(
                     self::ID_TYPE_ACCESS_TOKEN,
@@ -96,7 +97,7 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
 
         $this->login($user);
 
-        if (config('auth-token.record_login_attempt') >= RECORD_LOGIN_ATTEMPT_ALL) {
+        if ($config->record_login_attempt >= RECORD_LOGIN_ATTEMPT_ALL) {
             // Enregistrez une tentative de connexion réussie.
             $this->loginModel->recordLoginAttempt(
                 self::ID_TYPE_ACCESS_TOKEN,

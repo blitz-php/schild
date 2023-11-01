@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace BlitzPHP\Schild\Middlewares;
 
+use BlitzPHP\Http\Redirection;
+
 /**
  * Intergiciel d'autorisation de groupe.
  */
@@ -24,5 +26,13 @@ class GroupMiddleware extends AbstractAuthMiddleware
     protected function isAuthorized(): bool
     {
         return auth()->user()->inGroup(...$this->arguments);
+    }
+
+    /**
+     * Si l'utilisateur n'appartient pas au groupe, redirigez vers l'URL configurée avec un message d'erreur.
+     */
+    protected function redirectToDeniedUrl(): Redirection
+    {
+        return redirect()->to(call_user_func(config('auth.groupDeniedRedirect')))->withErrors(lang('Auth.notEnoughPrivilege'));
     }
 }

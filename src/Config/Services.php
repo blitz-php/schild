@@ -15,7 +15,6 @@ namespace BlitzPHP\Schild\Config;
 
 use BlitzPHP\Container\Services as BaseServices;
 use BlitzPHP\Schild\Auth;
-use BlitzPHP\Schild\Authentication\Authentication;
 use BlitzPHP\Schild\Authentication\Jwt\JwtManager;
 use BlitzPHP\Schild\Authentication\Passwords;
 
@@ -30,9 +29,7 @@ class Services extends BaseServices
             return static::$instances[Auth::class];
         }
 
-        $config = (object) config('auth');
-
-        return static::$instances[Auth::class] = new Auth(new Authentication($config));
+        return static::$instances[Auth::class] = new Auth((object) config('auth'));
     }
 
     /**

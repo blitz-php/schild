@@ -15,8 +15,7 @@ namespace BlitzPHP\Schild\Controllers;
 
 use BlitzPHP\Http\Redirection;
 use BlitzPHP\Schild\Authentication\Authenticators\Session;
-use BlitzPHP\Schild\Authentication\Passwords;
-use BlitzPHP\Schild\Config\Registrar;
+use BlitzPHP\Schild\Validation\ValidationRules;
 use BlitzPHP\Validation\Validation;
 use BlitzPHP\Validation\Validator;
 
@@ -83,20 +82,9 @@ class LoginController extends BaseController
      */
     protected function processValidate(): Validation
     {
-        $config = config('validation');
-        $rules  = $config['login'] ?? [
-            // 'username' => Registrar::validation('username'),
-            'email'    => Registrar::validation('email'),
-            'password' => ['required', Passwords::getMaxLengthRule()],
-        ];
+        ['rules' => $rules, 'alias' => $alias, 'messages' => $messages] = ValidationRules::login();
 
-        return Validator::make($this->request->post(), $rules)->alias([
-            'username' => lang('Auth.username'),
-            'email'    => lang('Auth.email'),
-            'password' => lang('Auth.password'),
-        ])->messages([
-            'password:required' => lang('Auth.errorPasswordEmpty'),
-        ]);
+        return Validator::make($this->request->post(), $rules)->alias($alias)->messages($messages);
     }
 
     /**
