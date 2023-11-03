@@ -76,7 +76,7 @@ class MagicLinkController extends BaseController
 
         // Valider le format de l'e-mail
         if (($validation = $this->processValidate())->fails()) {
-            return redirect()->route('magic-link')->withErrors($validation->errors()->all());
+            return redirect()->route('magic-link')->withErrors($validation->errors());
         }
 
         // Vérifier si l'utilisateur existe

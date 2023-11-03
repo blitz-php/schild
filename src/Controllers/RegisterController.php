@@ -76,7 +76,7 @@ class RegisterController extends BaseController
         // Validez ici d'abord, car certaines choses,
         // comme le mot de passe, ne peut être validé correctement qu'ici.
         if (($validation = $this->processValidate())->fails()) {
-            return redirect()->back()->withInput()->withErrors($validation->errors()->all());
+            return redirect()->back()->withInput()->withErrors($validation->errors());
         }
 
         // Enregistrer l'utilisateur
