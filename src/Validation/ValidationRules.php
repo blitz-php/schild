@@ -59,11 +59,16 @@ class ValidationRules
     {
         $config = (object) config('auth');
 
-        $validation = config('validation.login', [
-            // 'username' => $config->username_validation_rules,
-            'email'    => $config->email_validation_rules,
-            'password' => static::password(),
-        ]);
+        $fields = ['password' => static::password()];
+
+        if (in_array('email', $config->valid_fields)) {
+            $fields['email'] = $config->email_validation_rules ?? [];
+        }
+        if (in_array('username', $config->valid_fields)) {
+            $fields['username'] = $config->username_validation_rules ?? [];
+        }
+
+        $validation = config('validation.login', $fields);
 
         return static::makeValidationItems($validation);
     }
