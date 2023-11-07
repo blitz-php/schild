@@ -187,42 +187,43 @@ class UserModel extends BaseModel
             );
         }
 
+        $this->select([
+            $this->table . '.*',
+            $this->tables['identities'] . '.secret As email',
+            $this->tables['identities'] . '.secret2 As password_hash',
+        ])
+        ->join($this->tables['identities'], [$this->tables['identities'] . '.user_id' => $this->table . '.id'])
+        ->where($this->tables['identities'] . '.type', Session::ID_TYPE_EMAIL_PASSWORD);
+
         if ($email !== null) {
-            $data = $this->select([
-                $this->table . '.*',
-                $this->tables['identities'] . '.secret As email',
-                $this->tables['identities'] . '.secret2 As password_hash',
-            ])
-                ->join($this->tables['identities'], [$this->tables['identities'] . '.user_id' => $this->table . '.id'])
-                ->where($this->tables['identities'] . '.type', Session::ID_TYPE_EMAIL_PASSWORD)
-                ->where(
-                    'LOWER(' . $this->tables['identities'] . '.secret)',
-                    strtolower($email)
-                )
-                ->first(PDO::FETCH_ASSOC);
-
-            if ($data === null) {
-                return null;
-            }
-
-            $email = $data['email'];
-            unset($data['email']);
-            $password_hash = $data['password_hash'];
-            unset($data['password_hash']);
-            $id = $data['id'];
-            unset($data['id']);
-
-            $className           = $this->returnType;
-            $user                = new $className($data);
-            $user->id            = $id;
-            $user->email         = $email;
-            $user->password_hash = $password_hash;
-            $user->syncOriginal();
-
-            return $user;
+            $this->where(
+                'LOWER(' . $this->tables['identities'] . '.secret)',
+                strtolower($email)
+            );
         }
 
-        return $this->first($this->returnType);
+        $data = $this->first(PDO::FETCH_ASSOC);
+
+        if ($data === null) {
+            return null;
+        }
+
+        $email = $data['email'];
+        unset($data['email']);
+        $password_hash = $data['password_hash'];
+        unset($data['password_hash']);
+        $id = $data['id'];
+        unset($data['id']);
+
+        $className           = $this->returnType;
+        $user                = new $className($data);
+        $user->id            = $id;
+        $user->exists        = true;
+        $user->email         = $email;
+        $user->password_hash = $password_hash;
+        $user->syncOriginal();
+
+        return $user;
     }
 
     /**
