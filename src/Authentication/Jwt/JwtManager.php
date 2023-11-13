@@ -71,14 +71,14 @@ class JwtManager
     ): string {
         $config = (object) config('auth-jwt');
 
-        $payload = array_merge($config->defaultClaims, $claims);
+        $payload = array_merge($config->default_claims, $claims);
 
         if (! array_key_exists('iat', $claims)) {
             $payload['iat'] = $this->clock->now()->getTimestamp();
         }
 
         if (! array_key_exists('exp', $claims)) {
-            $payload['exp'] = $payload['iat'] + $config->timeToLive;
+            $payload['exp'] = $payload['iat'] + $config->time_to_live;
         }
 
         if ($ttl !== null) {
