@@ -193,7 +193,7 @@ class JWT extends BaseAuthenticator implements AuthenticatorInterface
         $request = Services::request();
 
         return $this->attempt([
-            'token' => $request->getHeaderLine(config('auth.authenticator_header')),
+            'token' => $request->getHeaderLine(config('auth-jwt.authenticator_header')),
         ])->isOK();
     }
 
