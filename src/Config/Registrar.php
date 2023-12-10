@@ -17,12 +17,12 @@ use BlitzPHP\Schild\Authentication\Passwords\ValidationRules as PasswordRules;
 use BlitzPHP\Schild\Collectors\Auth;
 use BlitzPHP\Schild\Middlewares\AuthRates;
 use BlitzPHP\Schild\Middlewares\ChainAuth;
-use BlitzPHP\Schild\Middlewares\ForcePasswordResetFilter;
-use BlitzPHP\Schild\Middlewares\GroupFilter;
+use BlitzPHP\Schild\Middlewares\ForcePasswordReset;
+use BlitzPHP\Schild\Middlewares\Group;
 use BlitzPHP\Schild\Middlewares\Guest;
 use BlitzPHP\Schild\Middlewares\HmacAuth;
 use BlitzPHP\Schild\Middlewares\JWTAuth;
-use BlitzPHP\Schild\Middlewares\PermissionFilter;
+use BlitzPHP\Schild\Middlewares\Permission;
 use BlitzPHP\Schild\Middlewares\SessionAuth;
 use BlitzPHP\Schild\Middlewares\TokenAuth;
 
@@ -40,9 +40,9 @@ class Registrar
                 'hmac'        => HmacAuth::class,
                 'chain'       => ChainAuth::class,
                 'auth-rates'  => AuthRates::class,
-                'group'       => GroupFilter::class,
-                'permission'  => PermissionFilter::class,
-                'force-reset' => ForcePasswordResetFilter::class,
+                'group'       => Group::class,
+                'permission'  => Permission::class,
+                'force-reset' => ForcePasswordReset::class,
                 'jwt'         => JWTAuth::class,
                 'guest'       => Guest::class,
             ],

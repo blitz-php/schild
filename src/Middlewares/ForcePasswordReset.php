@@ -20,7 +20,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-class ForcePasswordResetMiddleware implements MiddlewareInterface
+class ForcePasswordReset implements MiddlewareInterface
 {
     /**
      * Vérifie si un utilisateur connecté doit réinitialiser son mot de passe,
