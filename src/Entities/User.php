@@ -94,8 +94,16 @@ class User extends Entity
      */
     protected function getAttributesForInsert(): array
     {
-        $attributes = parent::getAttributesForInsert();
+        return $this->beforeUpdate(parent::getAttributesForInsert());
+    }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @internal
+     */
+    protected function beforeUpdate(array $attributes): array
+    {
         unset($attributes['password'], $attributes['password_hash']);
 
         return $attributes;
