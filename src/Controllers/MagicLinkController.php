@@ -224,11 +224,11 @@ class MagicLinkController extends BaseController
      */
     protected function processValidate(): Validation
     {
-        $validation = config('auth.email_validation_rules');
-        $rules      = ['email' => $validation['rules']];
-        $alias      = ['email' => $validation['label']];
-        $messages   = [];
-        ValidationRules::makeMessage($messages, $validation['messages'], 'email');
+        ['rules' => $rules, 'label' => $label, 'messages' => $messages] = ValidationRules::email();
+
+		$rules = ['email' => $rules];
+		$alias = ['email' => $label];
+        ValidationRules::makeMessage($messages, $messages, 'email');
 
         return Validator::make($this->request->post(), $rules)->alias($alias)->messages($messages);
     }
