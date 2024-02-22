@@ -85,7 +85,7 @@ class CreateAuthTables extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id')->nullable();
             $table->ipAddress();
-            $table->string('user_agent');
+            $table->string('user_agent')->nullable();
             $table->string('id_type');
             $table->string('secret');
             $table->string('identifier');
