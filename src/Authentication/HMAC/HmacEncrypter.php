@@ -54,7 +54,7 @@ class HmacEncrypter
     public function decrypt(string $string): string
     {
         $matches = [];
-        
+
         if (preg_match('/^\$b6\$(\w+?)\$(.+)\z/', $string, $matches) !== 1) {
             throw new EncryptionException('Impossible de décrypter la chaîne');
         }
@@ -66,7 +66,7 @@ class HmacEncrypter
 
     /**
      * Encryptage
-     * 
+     *
      * @throws EncryptionException
      * @throws RuntimeException
      */

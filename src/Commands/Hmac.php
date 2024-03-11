@@ -27,7 +27,7 @@ class Hmac extends Command
      * @var string
      */
     protected $group = 'Schild';
-    
+
     /**
      * @var string
      */
@@ -73,7 +73,7 @@ class Hmac extends Command
     public function execute(array $params)
     {
         $action = $this->argument('action');
-    
+
         $this->encrypter = new HmacEncrypter();
 
         try {

@@ -154,7 +154,7 @@ class HmacSha256 extends BaseAuthenticator implements AuthenticatorInterface
 
         $encrypter = new HmacEncrypter();
         $secretKey = $encrypter->decrypt($token->secret2);
-        
+
         // Vérifier la signature...
         $hash = hash_hmac('sha256', $credentials['body'], $secretKey);
         if ($hash !== $signature) {

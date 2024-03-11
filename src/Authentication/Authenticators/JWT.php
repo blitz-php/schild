@@ -207,7 +207,7 @@ class JWT extends BaseAuthenticator implements AuthenticatorInterface
     {
         $tokenHeader = $request->getHeaderLine(config('auth-jwt.authenticator_header', 'Authorization'));
 
-        if (strpos($tokenHeader, 'Bearer') === 0) {
+        if (str_starts_with($tokenHeader, 'Bearer')) {
             return trim(substr($tokenHeader, 6));
         }
 

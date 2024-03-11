@@ -192,8 +192,8 @@ class UserModel extends BaseModel
             $this->tables['identities'] . '.secret As email',
             $this->tables['identities'] . '.secret2 As password_hash',
         ])
-        ->join($this->tables['identities'], [$this->tables['identities'] . '.user_id' => $this->table . '.id'])
-        ->where($this->tables['identities'] . '.type', Session::ID_TYPE_EMAIL_PASSWORD);
+            ->join($this->tables['identities'], [$this->tables['identities'] . '.user_id' => $this->table . '.id'])
+            ->where($this->tables['identities'] . '.type', Session::ID_TYPE_EMAIL_PASSWORD);
 
         if ($email !== null) {
             $this->where(

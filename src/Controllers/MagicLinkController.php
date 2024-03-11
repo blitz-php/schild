@@ -226,8 +226,8 @@ class MagicLinkController extends BaseController
     {
         ['rules' => $rules, 'label' => $label, 'messages' => $messages] = ValidationRules::email();
 
-		$rules = ['email' => $rules];
-		$alias = ['email' => $label];
+        $rules = ['email' => $rules];
+        $alias = ['email' => $label];
         ValidationRules::makeMessage($messages, $messages, 'email');
 
         return Validator::make($this->request->post(), $rules)->alias($alias)->messages($messages);

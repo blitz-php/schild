@@ -59,7 +59,7 @@ return [
      * Limite de caractères pour le stockage de Secret2
      * --------------------------------------------------------------------
      * Limite de la taille de la base de données pour le champ 'secret2' des identités.
-     * 
+     *
      * @var int
      */
     'secret2_storage_limit' => 255,
@@ -80,13 +80,13 @@ return [
      * --------------------------------------------------------------------
      * Ceci définit la clé à utiliser lors du cryptage de la clé secrète HMAC d'un utilisateur.
      *
-     * 'keys' est un tableau de clés qui facilitera la rotation des clés. 
+     * 'keys' est un tableau de clés qui facilitera la rotation des clés.
      * Les titres de clés valides doivent inclure uniquement [a-zA-Z0-9_] et ne doivent pas dépasser 8 caractères.
      *
-     * Chaque titre de clé est un tableau associatif contenant la valeur "key" requise et les valeurs facultatives "driver" et "digest". 
+     * Chaque titre de clé est un tableau associatif contenant la valeur "key" requise et les valeurs facultatives "driver" et "digest".
      * Si les valeurs "driver" et "digest" ne sont pas spécifiées, les valeurs "driver" et "digest" par défaut seront utilisées.
      *
-     * Les anciennes clés seront utilisées pour décrypter les clés secrètes existantes. 
+     * Les anciennes clés seront utilisées pour décrypter les clés secrètes existantes.
      * Il est recommandé d'exécuter 'php klinge schild:hmac reencrypt' pour mettre à jour les cryptages des clés secrètes existantes.
      *
      * @see https://codeigniter.com/user_guide/libraries/encryption.html
@@ -97,7 +97,6 @@ return [
      *
      * [key_name => ['key' => key_value]]
      * ou [key_name => ['key' => key_value, 'driver' => driver, 'digest' => digest]]
-     * 
      * @var array<string, array<string, mixed>>
      */
     'hmac_encryption_keys' => [
@@ -111,7 +110,7 @@ return [
      * Sélecteur de clé de chiffrement courant HMAC
      * --------------------------------------------------------------------
      * Ceci spécifie laquelle des clés de cryptage doit être utilisée.
-     * 
+     *
      * @var string
      */
     'hmac_encryption_current_key' => 'k1',
@@ -125,7 +124,7 @@ return [
      * Pilotes disponibles :
      *     - OpenSSL
      *     - Sodium
-     * 
+     *
      * @var string
      */
     'hmac_encryption_default_driver' => 'OpenSSL',
@@ -135,7 +134,7 @@ return [
      * Pilote de la clé de chiffrement HMAC
      * --------------------------------------------------------------------
      * Ceci spécifie le type de cryptage à utiliser, par exemple 'SHA512' ou 'SHA256'.
-     * 
+     *
      * @var string
      */
     'hmac_encryption_default_digest' => 'SHA512',

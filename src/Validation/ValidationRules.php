@@ -61,11 +61,11 @@ class ValidationRules
 
         $fields = ['password' => static::password($config->minimum_password_length ?? null)];
 
-        if (in_array('email', $config->valid_fields)) {
+        if (in_array('email', $config->valid_fields, true)) {
             $fields['email'] = static::email($config->email_validation_rules ?? null);
         }
-        if (in_array('username', $config->valid_fields)) {
-			$fields['username'] = static::username($config->username_validation_rules ?? null);
+        if (in_array('username', $config->valid_fields, true)) {
+            $fields['username'] = static::username($config->username_validation_rules ?? null);
         }
 
         $validation = config('validation.login', $fields);
@@ -78,15 +78,15 @@ class ValidationRules
      */
     public static function password(?int $min = null): array
     {
-		$min ??= config('auth.minimum_password_length', 8);
+        $min ??= config('auth.minimum_password_length', 8);
 
         return [
-            'label'    => lang('Auth.password'),
-            'rules'    => [
-				'required',
-				'min:' . $min,
-				 Passwords::getMaxLengthRule(),
-			],
+            'label' => lang('Auth.password'),
+            'rules' => [
+                'required',
+                'min:' . $min,
+                Passwords::getMaxLengthRule(),
+            ],
             'messages' => [
                 'required' => lang('Auth.errorPasswordEmpty'),
             ],
@@ -98,22 +98,22 @@ class ValidationRules
      */
     public static function email(?array $config = null): array
     {
-		$config ??= config('auth.email_validation_rules');
+        $config ??= config('auth.email_validation_rules');
 
-		if (empty($config)) {
-			$config = [
-				'label' => lang('Auth.email'),
-				'rules' => [
-					'required',
-					'max:254',
-					'email',
-				]
-			];
-		}
-		
-		return $config + [
-			'messages' => []
-		];
+        if (empty($config)) {
+            $config = [
+                'label' => lang('Auth.email'),
+                'rules' => [
+                    'required',
+                    'max:254',
+                    'email',
+                ],
+            ];
+        }
+
+        return $config + [
+            'messages' => [],
+        ];
     }
 
     /**
@@ -121,23 +121,23 @@ class ValidationRules
      */
     public static function username(?array $config = null): array
     {
-		$config ??= config('auth.username_validation_rules');
+        $config ??= config('auth.username_validation_rules');
 
-		if (empty($config)) {
-			$config = [
-				'label' => lang('Auth.username'),
-				'rules' => [
-					'required',
-					'max:30',
-					'min:3',
-					'regex:/\A[a-zA-Z0-9\.]+\z/',
-				],
-			];
-		}
-		
-		return $config + [
-			'messages' => []
-		];
+        if (empty($config)) {
+            $config = [
+                'label' => lang('Auth.username'),
+                'rules' => [
+                    'required',
+                    'max:30',
+                    'min:3',
+                    'regex:/\A[a-zA-Z0-9\.]+\z/',
+                ],
+            ];
+        }
+
+        return $config + [
+            'messages' => [],
+        ];
     }
 
     /**
