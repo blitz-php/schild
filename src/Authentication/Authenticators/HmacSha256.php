@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace BlitzPHP\Schild\Authentication\Authenticators;
 
 use BlitzPHP\Schild\Authentication\AuthenticatorInterface;
+use BlitzPHP\Schild\Authentication\HMAC\HmacEncrypter;
 use BlitzPHP\Schild\Config\Services;
 use BlitzPHP\Schild\Exceptions\AuthenticationException;
 use BlitzPHP\Schild\Models\TokenLoginModel;
@@ -70,14 +71,15 @@ class HmacSha256 extends BaseAuthenticator implements AuthenticatorInterface
             return $result;
         }
 
-        $user = $result->extraInfo();
+        $user  = $result->extraInfo();
+        $token = $user->getHmacToken($this->getHmacKeyFromToken());
 
         if ($user->isBanned()) {
             if ($config->record_login_attempt >= RECORD_LOGIN_ATTEMPT_FAILURE) {
                 // Enregistrer une tentative de connexion interdite.
                 $this->loginModel->recordLoginAttempt(
                     self::ID_TYPE_HMAC_TOKEN,
-                    $credentials['token'] ?? '',
+                    $token->nane ?? '',
                     false,
                     $ipAddress,
                     $userAgent,
@@ -93,9 +95,7 @@ class HmacSha256 extends BaseAuthenticator implements AuthenticatorInterface
             ]);
         }
 
-        $user = $user->setHmacToken(
-            $user->getHmacToken($this->getHmacKeyFromToken())
-        );
+        $user = $user->setHmacToken($token);
 
         $this->login($user);
 
@@ -103,7 +103,7 @@ class HmacSha256 extends BaseAuthenticator implements AuthenticatorInterface
             // Enregistrez une tentative de connexion réussie.
             $this->loginModel->recordLoginAttempt(
                 self::ID_TYPE_HMAC_TOKEN,
-                $credentials['token'] ?? '',
+                $token->name ?? '',
                 true,
                 $ipAddress,
                 $userAgent,
@@ -152,8 +152,11 @@ class HmacSha256 extends BaseAuthenticator implements AuthenticatorInterface
             ]);
         }
 
+        $encrypter = new HmacEncrypter();
+        $secretKey = $encrypter->decrypt($token->secret2);
+        
         // Vérifier la signature...
-        $hash = hash_hmac('sha256', $credentials['body'], $token->secret2);
+        $hash = hash_hmac('sha256', $credentials['body'], $secretKey);
         if ($hash !== $signature) {
             return new Result([
                 'success' => false,

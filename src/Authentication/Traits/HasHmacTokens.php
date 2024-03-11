@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace BlitzPHP\Schild\Authentication\Traits;
 
 use BlitzPHP\Schild\Entities\AccessToken;
+use BlitzPHP\Schild\Models\UserIdentityModel;
 use ReflectionException;
 
 /**

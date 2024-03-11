@@ -69,17 +69,19 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
             return $result;
         }
 
-        $user = $result->extraInfo();
+        $user  = $result->extraInfo();
+        $token = $user->getAccessToken($this->getBearerToken());
 
         if ($user->isBanned()) {
             if ($config->record_login_attempt >= RECORD_LOGIN_ATTEMPT_FAILURE) {
                 // Enregistrer une tentative de connexion interdite.
                 $this->loginModel->recordLoginAttempt(
                     self::ID_TYPE_ACCESS_TOKEN,
-                    $credentials['token'] ?? '',
+                    $token->name ?? '',
                     false,
                     $ipAddress,
-                    $userAgent
+                    $userAgent,
+                    $user->id
                 );
             }
 
@@ -91,9 +93,7 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
             ]);
         }
 
-        $user = $user->setAccessToken(
-            $user->getAccessToken($this->getBearerToken())
-        );
+        $user = $user->setAccessToken($token);
 
         $this->login($user);
 
@@ -101,7 +101,7 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
             // Enregistrez une tentative de connexion réussie.
             $this->loginModel->recordLoginAttempt(
                 self::ID_TYPE_ACCESS_TOKEN,
-                $credentials['token'] ?? '',
+                $token->name ?? '',
                 true,
                 $ipAddress,
                 $userAgent,

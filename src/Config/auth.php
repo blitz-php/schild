@@ -25,6 +25,11 @@ use BlitzPHP\Schild\Authentication\Passwords\ValidatorInterface;
 use BlitzPHP\Schild\Models\UserModel;
 
 return [
+    /**
+     * --------------------------------------------------------------------
+     * Fichiers de vues
+     * --------------------------------------------------------------------
+     */
     'views' => [
         'login'                       => '\BlitzPHP\Schild\Views\login',
         'register'                    => '\BlitzPHP\Schild\Views\register',

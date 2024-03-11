@@ -20,6 +20,7 @@ use BlitzPHP\Schild\Exceptions\RuntimeException;
 use BlitzPHP\Schild\Models\TokenLoginModel;
 use BlitzPHP\Schild\Models\UserModel;
 use BlitzPHP\Schild\Result;
+use Psr\Http\Message\ServerRequestInterface;
 use stdClass;
 
 /**
@@ -92,7 +93,7 @@ class JWT extends BaseAuthenticator implements AuthenticatorInterface
                 // Enregistrer une tentative de connexion interdite.
                 $this->tokenLoginModel->recordLoginAttempt(
                     self::ID_TYPE_JWT,
-                    $credentials['token'] ?? '',
+                    'sha256:' . hash('sha256', $credentials['token'] ?? ''),
                     false,
                     $ipAddress,
                     $userAgent,
@@ -114,7 +115,7 @@ class JWT extends BaseAuthenticator implements AuthenticatorInterface
             // Enregistrez une tentative de connexion réussie.
             $this->tokenLoginModel->recordLoginAttempt(
                 self::ID_TYPE_JWT,
-                $credentials['token'] ?? '',
+                'sha256:' . hash('sha256', $credentials['token']),
                 true,
                 $ipAddress,
                 $userAgent,
@@ -192,9 +193,25 @@ class JWT extends BaseAuthenticator implements AuthenticatorInterface
 
         $request = Services::request();
 
+        $token = $this->getTokenFromRequest($request);
+
         return $this->attempt([
-            'token' => $request->getHeaderLine(config('auth-jwt.authenticator_header')),
+            'token' => $token,
         ])->isOK();
+    }
+
+    /**
+     * Gets token from Request.
+     */
+    public function getTokenFromRequest(ServerRequestInterface $request): string
+    {
+        $tokenHeader = $request->getHeaderLine(config('auth-jwt.authenticator_header', 'Authorization'));
+
+        if (strpos($tokenHeader, 'Bearer') === 0) {
+            return trim(substr($tokenHeader, 6));
+        }
+
+        return $tokenHeader;
     }
 
     /**

@@ -299,6 +299,21 @@ class UserIdentityModel extends BaseModel
     }
 
     /**
+     * Supprimez tous les jetons d'accès pour le jeton donné.
+     */
+    public function revokeAccessTokenBySecret(User $user, string $secretToken): void
+    {
+        $this->checkUserId($user);
+
+        $return = $this->where('user_id', $user->id)
+            ->where('type', AccessTokens::ID_TYPE_ACCESS_TOKEN)
+            ->where('secret', $secretToken)
+            ->delete();
+
+        $this->checkQueryReturn($return);
+    }
+
+    /**
      * Révoque tous les jetons d'accès pour cet utilisateur.
      */
     public function revokeAllAccessTokens(User $user): void
