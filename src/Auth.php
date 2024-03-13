@@ -22,6 +22,8 @@ use BlitzPHP\Schild\Exceptions\AuthenticationException;
 use BlitzPHP\Schild\Models\UserModel;
 
 /**
+ * Facade pour l'authentification
+ * 
  * @method Result    attempt(array $credentials)
  * @method Result    check(array $credentials)
  * @method bool      checkAction(string $token, string $type) [Session]
@@ -128,7 +130,9 @@ class Auth
      */
     public function routes(RouteCollection &$routes, array $config = []): void
     {
-        $routes->group('/', ['namespace' => 'BlitzPHP\Schild\Controllers'], static function (RouteCollection $routes) use ($config): void {
+        $namespace = $config['namespace'] ?? 'BlitzPHP\Schild\Controllers';
+
+        $routes->group('/', ['namespace' => $namespace], static function (RouteCollection $routes) use ($config): void {
             foreach (Registrar::routes() as $name => $row) {
                 if (! isset($config['except']) || ! in_array($name, $config['except'], true)) {
                     foreach ($row as $params) {
