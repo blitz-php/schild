@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace BlitzPHP\Schild\Middlewares;
 
 use BlitzPHP\Contracts\Http\StatusCode;
-use BlitzPHP\Http\ServerRequest;
 use BlitzPHP\Middlewares\BaseMiddleware;
 use BlitzPHP\Schild\Authentication\Authenticators\AccessTokens;
 use BlitzPHP\Schild\Config\Services;
@@ -37,10 +36,6 @@ class TokenAuth extends BaseMiddleware implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        if (! $request instanceof ServerRequest) {
-            return $handler->handle($request);
-        }
-
         /** @var AccessTokens $authenticator */
         $authenticator = auth('tokens')->getAuthenticator();
 

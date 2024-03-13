@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace BlitzPHP\Schild\Middlewares;
 
 use BlitzPHP\Contracts\Http\StatusCode;
-use BlitzPHP\Http\ServerRequest;
 use BlitzPHP\Schild\Authentication\Authenticators\JWT;
 use BlitzPHP\Schild\Config\Services;
 use Psr\Http\Message\ResponseInterface;
@@ -32,21 +31,17 @@ class JWTAuth implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        if (! $request instanceof ServerRequest) {
-            return $handler->handle($request);
-        }
-
         /** @var JWT $authenticator */
         $authenticator = auth('jwt')->getAuthenticator();
 
-        $token = $this->getTokenFromHeader($request);
+        $token = $authenticator->getTokenFromRequest($request);
 
         $result = $authenticator->attempt(['token' => $token]);
 
         if (! $result->isOK()) {
             return Services::response()->json([
                 'error' => $result->reason(),
-            ], StatusCode::UNAUTHORIZED);
+            ], StatusCode::INVALID_TOKEN);
         }
 
         if (config('auth.record_active_date')) {
@@ -54,22 +49,5 @@ class JWTAuth implements MiddlewareInterface
         }
 
         return $handler->handle($request);
-    }
-
-    private function getTokenFromHeader(ServerRequestInterface $request): string
-    {
-        assert($request instanceof ServerRequest);
-
-        $config = (object) config('auth-jwt');
-
-        $tokenHeader = $request->getHeaderLine(
-            $config->authenticator_header ?? 'Authorization'
-        );
-
-        if (str_starts_with($tokenHeader, 'Bearer')) {
-            return trim(substr($tokenHeader, 6));
-        }
-
-        return $tokenHeader;
     }
 }

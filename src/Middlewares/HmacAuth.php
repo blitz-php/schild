@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace BlitzPHP\Schild\Middlewares;
 
 use BlitzPHP\Contracts\Http\StatusCode;
-use BlitzPHP\Http\ServerRequest;
 use BlitzPHP\Middlewares\BaseMiddleware;
 use BlitzPHP\Schild\Authentication\Authenticators\HmacSha256;
 use BlitzPHP\Schild\Config\Services;
@@ -37,10 +36,6 @@ class HmacAuth extends BaseMiddleware implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        if (! $request instanceof ServerRequest) {
-            return $handler->handle($request);
-        }
-
         /** @var HmacSha256 $authenticator */
         $authenticator = auth('hmac')->getAuthenticator();
 

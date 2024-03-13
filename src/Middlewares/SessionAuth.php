@@ -34,10 +34,6 @@ class SessionAuth implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        if (! $request instanceof ServerRequest) {
-            return $handler->handle($request);
-        }
-
         /** @var Session $authenticator */
         $authenticator = auth('session')->getAuthenticator();
 

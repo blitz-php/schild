@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace BlitzPHP\Schild\Middlewares;
 
-use BlitzPHP\Http\ServerRequest;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -34,10 +33,6 @@ class ChainAuth implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        if (! $request instanceof ServerRequest) {
-            return $handler->handle($request);
-        }
-
         $chain = config('auth.authentication_chain');
 
         foreach ($chain as $alias) {

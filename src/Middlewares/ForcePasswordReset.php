@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace BlitzPHP\Schild\Middlewares;
 
-use BlitzPHP\Http\ServerRequest;
 use BlitzPHP\Schild\Authentication\Authenticators\Session;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -28,10 +27,6 @@ class ForcePasswordReset implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        if (! $request instanceof ServerRequest) {
-            return $handler->handle($request);
-        }
-
         /** @var Session $authenticator */
         $authenticator = auth('session')->getAuthenticator();
 
