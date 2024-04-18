@@ -27,10 +27,19 @@ use PDO;
  */
 class UserModel extends BaseModel
 {
-    protected string $returnType = User::class;
-    protected array $afterFind   = ['fetchIdentities'];
-    protected array $afterInsert = ['saveEmailIdentity'];
-    protected array $afterUpdate = ['saveEmailIdentity'];
+    protected string $returnType   = User::class;
+    protected bool $useSoftDeletes = true;
+    protected bool $useTimestamps  = true;
+    protected array $afterFind     = ['fetchIdentities'];
+    protected array $afterInsert   = ['saveEmailIdentity'];
+    protected array $afterUpdate   = ['saveEmailIdentity'];
+    protected array $allowedFields = [
+        'username',
+        'status',
+        'status_message',
+        'active',
+        'last_active',
+    ];
 
     /**
      * Whether identity records should be included
@@ -121,10 +130,17 @@ class UserModel extends BaseModel
         foreach ($identities as $identity) {
             $userId = $identity->user_id;
 
-            $newIdentities   = $mappedUsers[$userId]->identities;
-            $newIdentities[] = $identity;
+            if ($mappedUsers[$userId] instanceof User) {
+                $newIdentities   = invade($mappedUsers[$userId])->identities;
+                $newIdentities[] = $identity;
 
-            $mappedUsers[$userId]->identities = $newIdentities;
+                $mappedUsers[$userId]->setIdentities($newIdentities);
+            } else {
+                $newIdentities   = $mappedUsers[$userId]->identities;
+                $newIdentities[] = $identity;
+
+                $mappedUsers[$userId]->identities = $newIdentities;
+            }
         }
 
         return $mappedUsers;
