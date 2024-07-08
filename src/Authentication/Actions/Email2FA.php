@@ -38,7 +38,7 @@ class Email2FA implements ActionInterface
     /**
      * Affiche le message "Hé, nous allons vous envoyer un numéro sur votre adresse e-mail" à l'utilisateur avec une invite à continuer.
      */
-    public function show(): string
+    public function show()
     {
         /** @var Session $authenticator */
         $authenticator = auth('session')->getAuthenticator();

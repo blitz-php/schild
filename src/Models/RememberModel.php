@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace BlitzPHP\Schild\Models;
 
 use BlitzPHP\Schild\Entities\User;
-use DateTime;
+use BlitzPHP\Utilities\Date;
 use stdClass;
 
 class RememberModel extends BaseModel
@@ -33,13 +33,11 @@ class RememberModel extends BaseModel
      */
     public function rememberUser(User $user, string $selector, string $hashedValidator, string $expires): void
     {
-        $expires = new DateTime($expires);
-
         $return = $this->insert([
             'user_id'         => $user->id,
             'selector'        => $selector,
             'hashedValidator' => $hashedValidator,
-            'expires'         => $expires->format('Y-m-d H:i:s'),
+            'expires'         => Date::parse($expires)->format('Y-m-d H:i:s'),
         ]);
 
         $this->checkQueryReturn($return);

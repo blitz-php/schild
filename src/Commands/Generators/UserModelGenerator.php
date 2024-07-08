@@ -93,6 +93,6 @@ class UserModelGenerator extends Command
             $class .= 'Model';
         }
 
-        return strtolower(pascalize($class)) !== 'shieldusermodel';
+        return strtolower(pascalize($class)) !== 'schildusermodel';
     }
 }

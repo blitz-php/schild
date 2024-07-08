@@ -140,7 +140,7 @@ class JWT extends BaseAuthenticator implements AuthenticatorInterface
                 'success' => false,
                 'reason'  => lang(
                     'Auth.noToken',
-                    [config('auth.authenticator_header')]
+                    [config('auth-jwt.authenticator_header')]
                 ),
             ]);
         }

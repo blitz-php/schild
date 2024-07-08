@@ -29,8 +29,9 @@ abstract class AbstractAuthMiddleware extends BaseMiddleware implements Middlewa
     {
         if (! auth()->loggedIn()) {
             // Définir l'URL d'entrée pour rediriger un utilisateur après une connexion réussie
-            if (uri_string() !== link_to('login')) {
-                session()->setTempdata('beforeLoginUrl', current_url(), 300);
+            if (uri_string() !== route('login')) {
+                session()->setTempdata('beforeLoginUrl', $current_url = current_url(), 300);
+                redirect()->setIntendedUrl($current_url);
             }
 
             return redirect()->route('login');

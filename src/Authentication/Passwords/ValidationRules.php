@@ -47,13 +47,13 @@ class ValidationRules
         if (function_exists('auth') && auth()->user()) {
             $user = auth()->user();
         } else {
-            $user = empty($data) ? $this->buildUserFromRequest() : $this->buildUserFromData($data);
+            $user = $data === [] ? $this->buildUserFromRequest() : $this->buildUserFromData($data);
         }
 
         $result = $checker->check($value, $user);
 
         if (! $result->isOk()) {
-            if (empty($data)) {
+            if ($data === []) {
                 $error1 = $result->reason();
             } else {
                 $error2 = $result->reason();

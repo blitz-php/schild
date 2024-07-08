@@ -23,7 +23,7 @@ use BlitzPHP\Schild\Models\UserModel;
 
 /**
  * Facade pour l'authentification
- * 
+ *
  * @method Result    attempt(array $credentials)
  * @method Result    check(array $credentials)
  * @method bool      checkAction(string $token, string $type) [Session]

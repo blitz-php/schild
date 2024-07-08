@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace BlitzPHP\Schild\Middlewares;
 
-use BlitzPHP\Http\ServerRequest;
 use BlitzPHP\Schild\Authentication\Authenticators\Session;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -52,7 +51,13 @@ class SessionAuth implements MiddlewareInterface
                 return redirect()->to(call_user_func(config('auth.logoutRedirect')))->withErrors($error);
             }
 
-            if ($user !== null && ! $user->isActivated()) {
+            if (! $user->isActivated()) {
+                // Si une action est definie pour le register, on l'utilisateur doit la faire.
+                if ($authenticator->startUpAction('register', $user)) {
+                    return redirect()->route('auth-action-show')
+                        ->with('error', lang('Auth.activationBlocked'));
+                }
+
                 $authenticator->logout();
 
                 return redirect()->route('login')->withErrors(lang('Auth.activationBlocked'));
@@ -65,8 +70,9 @@ class SessionAuth implements MiddlewareInterface
             return redirect()->route('auth-action-show')->withErrors($authenticator->getPendingMessage());
         }
 
-        if (uri_string() !== link_to('login')) {
-            session()->setTempdata('beforeLoginUrl', current_url(), 300);
+        if (uri_string() !== route('login')) {
+            session()->setTempdata('beforeLoginUrl', $current_url = current_url(), 300);
+            redirect()->setIntendedUrl($current_url);
         }
 
         return redirect()->route('login');

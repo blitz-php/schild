@@ -195,7 +195,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
     public function getAction(): ?ActionInterface
     {
         /** @var class-string<ActionInterface>|null $actionClass */
-        $actionClass = $this->getSessionKey('auth_action');
+        $actionClass = $this->getSessionUserKey('auth_action');
 
         if ($actionClass === null) {
             return null;
@@ -205,7 +205,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
     }
 
     /**
-     * Vérifier le jeton en action
+     * Vérifier le token dans l'action
      */
     public function checkAction(UserIdentity $identity, string $token): bool
     {
@@ -223,8 +223,8 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
         $this->userIdentityModel->deleteIdentitiesByType($user, $identity->type);
 
         // Nettoyer notre session
-        $this->removeSessionKey('auth_action');
-        $this->removeSessionKey('auth_action_message');
+        $this->removeSessionUserKey('auth_action');
+        $this->removeSessionUserKey('auth_action_message');
 
         $this->user = $user;
 
@@ -254,7 +254,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
         string $userAgent,
         $userId = null
     ): void {
-        // Determine the type of ID we're using.
+        // Determine le type d'identificateur que nous devons utiliser (email ou username).
         // Les champs standard seraient l'e-mail, le nom d'utilisateur, mais n'importe quelle colonne dans config('auth.valid_fields') peut être utilisée.
         $field = array_intersect(config('auth.valid_fields') ?? [], array_keys($credentials));
 
@@ -357,7 +357,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
         }
 
         /** @var int|string|null $userId */
-        $userId = $this->getSessionKey('id');
+        $userId = $this->getSessionUserKey('id');
 
         // A des informations sur l'utilisateur dans la session.
         if ($userId !== null) {
@@ -374,7 +374,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
             }
 
             // Si vous avez `auth_action`, il est en attente.
-            if ($this->getSessionKey('auth_action')) {
+            if ($this->getSessionUserKey('auth_action')) {
                 $this->userState = self::STATE_PENDING;
 
                 return;
@@ -414,7 +414,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
             if ($this->getIdentitiesForAction($user) !== []) {
                 // Rendre l'état de connexion en attente
                 $this->user = $user;
-                $this->setSessionKey('id', $user->id);
+                $this->setSessionUserKey('id', $user->id);
                 $this->setAuthAction();
 
                 return true;
@@ -422,7 +422,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
         }
 
         // Vérifier la session
-        if ($this->getSessionKey('auth_action')) {
+        if ($this->getSessionUserKey('auth_action')) {
             return true;
         }
 
@@ -457,8 +457,8 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
             if ($identity) {
                 $this->userState = self::STATE_PENDING;
 
-                $this->setSessionKey('auth_action', $actionClass);
-                $this->setSessionKey('auth_action_message', $identity->extra);
+                $this->setSessionUserKey('auth_action', $actionClass);
+                $this->setSessionUserKey('auth_action_message', $identity->extra);
 
                 return true;
             }
@@ -530,7 +530,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
     {
         $this->checkUserState();
 
-        return $this->getSessionKey('auth_action_message') ?? '';
+        return $this->getSessionUserKey('auth_action_message') ?? '';
     }
 
     /**
@@ -610,7 +610,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
     public function startLogin(User $user): void
     {
         /** @var int|string|null $userId */
-        $userId = $this->getSessionKey('id');
+        $userId = $this->getSessionUserKey('id');
 
         // Vérifiez si vous êtes déjà connecté.
         if ($userId !== null) {
@@ -633,7 +633,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
         }
 
         // Faire savoir à la session que nous sommes connectés
-        $this->setSessionKey('id', $user->id);
+        $this->setSessionUserKey('id', $user->id);
 
         // Une fois connecté, assurez-vous que les en-têtes de contrôle du cache sont en place
         Services::container()->set(Response::class, Services::response()->noCache());
@@ -642,7 +642,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
     /**
      * Obtient les informations utilisateur en session
      */
-    private function getSessionUserInfo(): array
+    protected function getSessionUserInfo(): array
     {
         return Services::session()->get(config('auth.session.field')) ?? [];
     }
@@ -650,7 +650,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
     /**
      * Supprime les informations utilisateur dans la session
      */
-    private function removeSessionUserInfo(): void
+    protected function removeSessionUserInfo(): void
     {
         Services::session()->remove(config('auth.session.field'));
     }
@@ -660,7 +660,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
      *
      * @return int|string|null
      */
-    private function getSessionKey(string $key)
+    protected function getSessionUserKey(string $key)
     {
         $sessionUserInfo = $this->getSessionUserInfo();
 
@@ -672,7 +672,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
      *
      * @param int|string|null $value
      */
-    private function setSessionKey(string $key, $value): void
+    protected function setSessionUserKey(string $key, $value): void
     {
         $sessionUserInfo       = $this->getSessionUserInfo();
         $sessionUserInfo[$key] = $value;
@@ -683,7 +683,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
     /**
      * Supprimer la valeur de la clé dans les informations sur l'utilisateur de la session
      */
-    private function removeSessionKey(string $key): void
+    protected function removeSessionUserKey(string $key): void
     {
         $sessionUserInfo = $this->getSessionUserInfo();
         unset($sessionUserInfo[$key]);
@@ -708,7 +708,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
             );
         }
         // Vérifiez auth_action dans la session
-        if ($this->getSessionKey('auth_action')) {
+        if ($this->getSessionUserKey('auth_action')) {
             throw new LogicException(
                 'L\'utilisateur a une action d\'authentification dans la session, il ne peut donc pas terminer la connexion.'
                 . ' Si vous souhaitez commencer à vous connecter avec l\'action auth, utilisez plutôt startLogin().'
@@ -746,18 +746,13 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
 
     private function removeRememberCookie(): void
     {
-        /** @var Response $response */
-        $response = service('response');
-
         // Supprimer le cookie remember-me
-        /*
-        Services::response()->deleteCookie(
+        Services::container()->set(Response::class, service('response')->withoutCookie(
             config('auth.session.remember_cookie_name'),
-            config('cookie.domain'),
             config('cookie.path'),
-            config('cookie.prefix')
-        );
-        */
+            config('cookie.domain'),
+            // config('cookie.prefix')
+        ));
     }
 
     /**
@@ -881,7 +876,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
     }
 
     /**
-     * Validateur de hash remember-me
+     * Hash le validateur du remember-me
      */
     private function hashValidator(string $validator): string
     {

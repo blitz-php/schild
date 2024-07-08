@@ -169,14 +169,14 @@ class UserModel extends BaseModel
      */
     public function findById($id, bool $withPassword = false): ?User
     {
-        $fields = [$this->tables['users'] . '.*', $this->tables['identities'] . '.secret As email'];
+        $fields = [$this->table . '.*', $this->tables['identities'] . '.secret As email'];
         if ($withPassword) {
             $fields[] = $this->tables['identities'] . '.secret2 As password_hash';
         }
 
         return $this->select($fields)
-            ->where([$this->tables['users'] . '.id' => $id])
-            ->join($this->tables['identities'], [$this->tables['users'] . '.id' => $this->tables['identities'] . '.user_id'])
+            ->where([$this->table . '.id' => $id])
+            ->join($this->tables['identities'], [$this->table . '.id' => $this->tables['identities'] . '.user_id'])
             ->first($this->returnType);
     }
 
@@ -285,7 +285,7 @@ class UserModel extends BaseModel
      *
      * @throws ValidationException
      */
-    public function update2($id = null, $data = null): bool
+    public function update($id = null, $data = null): bool
     {
         // Clone User object for not changing the passed object.
         $this->tempUser = $data instanceof User ? clone $data : null;

@@ -20,9 +20,9 @@ use Exception;
 use RuntimeException;
 
 /**
- * HMAC Encrypter class
+ * HMAC Encrypter
  *
- * This class handles the setup and configuration of the HMAC Encryption
+ * Cette classe gère l'installation et la configuration du cryptage HMAC
  */
 class HmacEncrypter
 {
@@ -32,7 +32,7 @@ class HmacEncrypter
     private array $encrypter;
 
     /**
-     * Auth Token config
+     * Configuration Auth Token
      */
     private object $config;
 

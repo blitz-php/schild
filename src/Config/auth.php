@@ -45,11 +45,6 @@ return [
     ],
 
     /**
-     * @var ?string
-     */
-    'db_group' => 'default',
-
-    /**
      * ------------------------------------------------- -------------------
      * Fournisseur d'utilisateurs
      * ------------------------------------------------- -------------------
@@ -60,36 +55,6 @@ return [
      * @var class-string<UserModel>
      */
     'user_provider' => UserModel::class,
-
-    /**
-     * --------------------------------------------------------------------
-     * Personnaliser le nom des tables de protection
-     * ------------------------------------------------- -------------------
-     * Ne changez que si vous souhaitez renommer les noms de table Shield par défaut
-     *
-     * Il peut être nécessaire de modifier les noms des tables pour
-     * raisons de sécurité, pour éviter les conflits de noms de tables,
-     * la politique interne des entreprises ou toute autre raison.
-     *
-     * - users Auth Users Table, les informations des utilisateurs sont stockées.
-     * - auth_identities Auth Identities Table, utilisé pour le stockage des mots de passe, des jetons d'accès, des identités de connexion sociale, etc.
-     * - auth_logins Auth Login Tentatives, le tableau enregistre les tentatives de connexion.
-     * - auth_token_logins Tableau des tentatives de connexion au jeton d'authentification, enregistre les tentatives de connexion de type jeton porteur.
-     * - auth_remember_tokens Tableau des jetons de mémorisation d'authentification (se souvenir de moi).
-     * - auth_groups_users Tableau des utilisateurs des groupes.
-     * - auth_permissions_users Tableau des autorisations des utilisateurs .
-     *
-     * @var array<string, string>
-     */
-    'tables' => [
-        'users'             => 'users',
-        'identities'        => 'auth_identities',
-        'logins'            => 'auth_logins',
-        'token_logins'      => 'auth_token_logins',
-        'remember_tokens'   => 'auth_remember_tokens',
-        'groups_users'      => 'auth_groups_users',
-        'permissions_users' => 'auth_permissions_users',
-    ],
 
     /**
      * ------------------------------------------------- -------------------
@@ -416,6 +381,41 @@ return [
     'hash_cost' => 12,
 
     /**
+     * @var ?string
+     */
+    'db_group' => 'default',
+
+    /**
+     * --------------------------------------------------------------------
+     * Personnaliser le nom des tables de protection
+     * ------------------------------------------------- -------------------
+     * Ne changez que si vous souhaitez renommer les noms de table Shield par défaut
+     *
+     * Il peut être nécessaire de modifier les noms des tables pour
+     * raisons de sécurité, pour éviter les conflits de noms de tables,
+     * la politique interne des entreprises ou toute autre raison.
+     *
+     * - users 					Table où les informations des utilisateurs sont stockées.
+     * - auth_identities 		Table utilisée pour le stockage des mots de passe, des jetons d'accès, des identités de connexion sociale, etc.
+     * - auth_logins 			Table enregistrant les tentatives de connexion.
+     * - auth_token_logins 		Table des tentatives de connexion au jeton d'authentification, enregistre les tentatives de connexion de type jeton porteur.
+     * - auth_remember_tokens 	Table des tokens de mémorisation d'authentification (se souvenir de moi).
+     * - auth_groups_users 		Table des groupes d'utilisateurs.
+     * - auth_permissions_users Table des autorisations des utilisateurs .
+     *
+     * @var array<string, string>
+     */
+    'tables' => [
+        'users'             => 'users',
+        'identities'        => 'auth_identities',
+        'logins'            => 'auth_logins',
+        'token_logins'      => 'auth_token_logins',
+        'remember_tokens'   => 'auth_remember_tokens',
+        'groups_users'      => 'auth_groups_users',
+        'permissions_users' => 'auth_permissions_users',
+    ],
+
+    /**
      * Renvoie l'URL vers laquelle un utilisateur doit être redirigé après une connexion réussie.
      */
     'loginRedirect' => static function (): string {
@@ -485,7 +485,7 @@ return [
                 $final_url = $url;
                 break;
 
-            case !empty(link_to($url)): // L'URL est une route nommée
+            case link_to($url) !== '': // L'URL est une route nommée
                 $final_url = rtrim(url_to($url), '/ ');
                 break;
 

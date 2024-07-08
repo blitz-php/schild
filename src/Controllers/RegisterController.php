@@ -108,8 +108,7 @@ class RegisterController extends BaseController
         $authenticator->startLogin($user);
 
         // Si une action a été définie pour l'enregistrement, démarrez-la.
-        $hasAction = $authenticator->startUpAction('register', $user);
-        if ($hasAction) {
+        if ($authenticator->startUpAction('register', $user)) {
             return redirect()->to('auth/a/show');
         }
 

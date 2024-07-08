@@ -45,6 +45,12 @@ class Registrar
                 'force-reset' => ForcePasswordReset::class,
                 'jwt'         => JWTAuth::class,
                 'guest'       => Guest::class,
+
+                'auth.session' => SessionAuth::class,
+                'auth.tokens'  => TokenAuth::class,
+                'auth.hmac'    => HmacAuth::class,
+                'auth.chain'   => ChainAuth::class,
+                'auth.jwt'     => JWTAuth::class,
             ],
         ];
     }

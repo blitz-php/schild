@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace BlitzPHP\Schild\Traits;
 
-use BlitzPHP\Loader\Injector;
 use BlitzPHP\Schild\Authentication\Authenticators\Session;
 use BlitzPHP\Schild\Models\UserIdentityModel;
 
@@ -27,7 +26,7 @@ trait Resettable
      */
     public function requiresPasswordReset(): bool
     {
-        $identityModel = Injector::make(UserIdentityModel::class);
+        $identityModel = model(UserIdentityModel::class);
         $identity      = $identityModel->getIdentityByType($this, Session::ID_TYPE_EMAIL_PASSWORD);
 
         return $identity->force_reset;
@@ -66,7 +65,7 @@ trait Resettable
     {
         $value = (int) $value;
 
-        $identityModel = Injector::make(UserIdentityModel::class);
+        $identityModel = model(UserIdentityModel::class);
         $identityModel->set('force_reset', $value);
         $identityModel->where(['user_id' => $this->id, 'type' => Session::ID_TYPE_EMAIL_PASSWORD]);
         $identityModel->update();

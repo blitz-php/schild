@@ -37,7 +37,7 @@ class EmailActivator implements ActionInterface
      * Montre l'écran initial à l'utilisateur lui indiquant qu'un e-mail
      * vient de lui être envoyé avec un lien pour confirmer son adresse e-mail.
      */
-    public function show(): string
+    public function show()
     {
         /** @var Session $authenticator */
         $authenticator = auth('session')->getAuthenticator();
@@ -99,7 +99,7 @@ class EmailActivator implements ActionInterface
         /** @var Session $authenticator */
         $authenticator = auth('session')->getAuthenticator();
 
-        $postedToken = $request->data('token');
+        $postedToken = $request->post('token');
 
         $user = $authenticator->getPendingUser();
         if ($user === null) {

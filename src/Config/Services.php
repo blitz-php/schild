@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace BlitzPHP\Schild\Config;
 
-use BlitzPHP\Container\Services as BaseServices;
+use BlitzPHP\Database\Config\Services as BaseServices;
 use BlitzPHP\Schild\Auth;
 use BlitzPHP\Schild\Authentication\Jwt\JwtManager;
 use BlitzPHP\Schild\Authentication\Passwords;
