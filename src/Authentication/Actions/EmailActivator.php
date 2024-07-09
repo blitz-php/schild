@@ -69,7 +69,7 @@ class EmailActivator implements ActionInterface
             ->view(config('auth.views.action_email_activate_email'), compact('code', 'ipAddress', 'userAgent', 'date'));
 
         if ($email->send() === false) {
-            throw new RuntimeException('Impossible d\'envoyer un e-mail à l\'utilisateur: ' . $user->email . "\n" . $email->printDebugger(['headers']));
+            throw new RuntimeException('Impossible d\'envoyer un e-mail à l\'utilisateur: ' . $user->email);
         }
 
         // Effacer l'e-mail

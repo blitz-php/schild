@@ -31,7 +31,7 @@ class ForcePasswordReset implements MiddlewareInterface
         $authenticator = auth('session')->getAuthenticator();
 
         if ($authenticator->loggedIn() && $authenticator->getUser()->requiresPasswordReset()) {
-            return redirect()->to(config('auth.force_password_reset_redirect')());
+            return redirect()->to(config('auth.forcePasswordResetRedirect')());
         }
 
         return $handler->handle($request);
