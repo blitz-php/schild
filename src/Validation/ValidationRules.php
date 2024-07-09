@@ -57,7 +57,7 @@ class ValidationRules
      */
     public static function login(): array
     {
-		if (! empty($validation = config('validation.login'))) {
+        if (! empty($validation = config('validation.login'))) {
             return static::makeValidationItems($validation);
         }
 
@@ -174,11 +174,11 @@ class ValidationRules
         $alias    = [];
         $messages = [];
 
-		foreach ($validation as $key => $value) {
-			$rules[$key] = $value['rules'] ?? [];
-			$alias[$key] = $value['label'] ?? $key;
-			static::makeMessage($messages, $value['messages'] ?? [], $key);
-		}
+        foreach ($validation as $key => $value) {
+            $rules[$key] = $value['rules'] ?? [];
+            $alias[$key] = $value['label'] ?? $key;
+            static::makeMessage($messages, $value['messages'] ?? [], $key);
+        }
 
         return compact('rules', 'alias', 'messages');
     }

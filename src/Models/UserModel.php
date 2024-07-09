@@ -163,16 +163,16 @@ class UserModel extends BaseModel
         $user->addGroup($defaultGroup);
     }
 
-	/**
+    /**
      * Renvoie la classe Entity qui doit être utilisée
      */
     public function newUserEntity(array $attributes = []): User
     {
-		if (!is_a($className = $this->returnType, User::class, true)) {
-			$className = User::class;
-		}
-        
-		return new $className($attributes);
+        if (! is_a($className = $this->returnType, User::class, true)) {
+            $className = User::class;
+        }
+
+        return new $className($attributes);
     }
 
     /**
@@ -200,21 +200,21 @@ class UserModel extends BaseModel
      */
     public function findByCredentials(array $credentials): ?User
     {
-		$builder =  $this->builder($this->table)->select([
+        $builder = $this->builder($this->table)->select([
             $this->table . '.*',
             $this->tables['identities'] . '.secret As email',
             $this->tables['identities'] . '.secret2 As password_hash',
         ])
-		->join($this->tables['identities'], [$this->tables['identities'] . '.user_id' => $this->table . '.id'])
-		->where($this->tables['identities'] . '.type', Session::ID_TYPE_EMAIL_PASSWORD);
+            ->join($this->tables['identities'], [$this->tables['identities'] . '.user_id' => $this->table . '.id'])
+            ->where($this->tables['identities'] . '.type', Session::ID_TYPE_EMAIL_PASSWORD);
 
-		if (null === $builder = $this->fetchByCredentials($credentials, $builder)) {
-			return null;
-		}
+        if (null === $builder = $this->fetchByCredentials($credentials, $builder)) {
+            return null;
+        }
 
-       	if (null === $data = $builder->first(PDO::FETCH_ASSOC)) {
-			return null;
-	   	}
+        if (null === $data = $builder->first(PDO::FETCH_ASSOC)) {
+            return null;
+        }
 
         $email = $data['email'];
         unset($data['email']);
@@ -233,16 +233,16 @@ class UserModel extends BaseModel
         return $user;
     }
 
-	/**
-	 * Construit la requête permettant d'obtenir les informations de l'utilisateur en fonction de ses données de connexion
-	 * 
-	 * Cette méthode a vocation à être modifié par le développeur. Un exemple serait la connextion via email ou numéro de téléphone.
-	 * 
-	 * @internal 
-	 */
-	protected function fetchByCredentials(array $credentials, BaseBuilder $builder): ?BaseBuilder
-	{
-		// Le courrier électronique est stocké dans une identité, alors supprimez-le ici
+    /**
+     * Construit la requête permettant d'obtenir les informations de l'utilisateur en fonction de ses données de connexion
+     *
+     * Cette méthode a vocation à être modifié par le développeur. Un exemple serait la connextion via email ou numéro de téléphone.
+     *
+     * @internal
+     */
+    protected function fetchByCredentials(array $credentials, BaseBuilder $builder): ?BaseBuilder
+    {
+        // Le courrier électronique est stocké dans une identité, alors supprimez-le ici
         $email = $credentials['email'] ?? null;
         unset($credentials['email']);
 
@@ -250,7 +250,7 @@ class UserModel extends BaseModel
             return null;
         }
 
-		// toutes les informations d'identification utilisées doivent être insensibles à la casse
+        // toutes les informations d'identification utilisées doivent être insensibles à la casse
         foreach ($credentials as $key => $value) {
             $builder->where(
                 'LOWER(' . $this->table . ".{$key})",
@@ -258,15 +258,15 @@ class UserModel extends BaseModel
             );
         }
 
-		if ($email !== null) {
+        if ($email !== null) {
             $builder->where(
                 'LOWER(' . $this->tables['identities'] . '.secret)',
                 strtolower($email)
             );
         }
 
-		return $builder;
-	}
+        return $builder;
+    }
 
     /**
      * Activer un utilisateur.
