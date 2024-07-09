@@ -81,7 +81,7 @@ class RegisterController extends BaseController
 
         // Enregistrer l'utilisateur
         $user = $this->getUserEntity();
-        $user->fill($this->request->only('username'));
+        $user->fill(collect($validation->valid())->except('email', 'password')->all());
 
         // Solution de contournement pour l'inscription/la connexion par e-mail uniquement
         if ($user->username === null) {
@@ -139,7 +139,7 @@ class RegisterController extends BaseController
      */
     protected function getUserEntity(): User
     {
-        return new User();
+        return $this->getUserProvider()->newUserEntity();
     }
 
     /**

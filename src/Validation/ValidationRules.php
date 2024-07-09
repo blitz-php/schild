@@ -57,6 +57,10 @@ class ValidationRules
      */
     public static function login(): array
     {
+		if (! empty($validation = config('validation.login'))) {
+            return static::makeValidationItems($validation);
+        }
+
         $config = (object) config('auth');
 
         $fields = ['password' => static::password($config->minimum_password_length ?? null)];
@@ -68,9 +72,7 @@ class ValidationRules
             $fields['username'] = static::username($config->username_validation_rules ?? null);
         }
 
-        $validation = config('validation.login', $fields);
-
-        return static::makeValidationItems($validation);
+        return static::makeValidationItems($fields);
     }
 
     /**
@@ -168,35 +170,15 @@ class ValidationRules
      */
     protected static function makeValidationItems(array $validation): array
     {
-        $username              = $validation['username'] ?? [];
-        $email                 = $validation['email'] ?? [];
-        $password              = $validation['password'] ?? [];
-        $password_confirmation = $validation['password_confirmation'] ?? [];
-
         $rules    = [];
         $alias    = [];
         $messages = [];
 
-        if (! empty($username)) {
-            $rules['username'] = $username['rules'];
-            $alias['username'] = $username['label'];
-            static::makeMessage($messages, $username['messages'] ?? [], 'username');
-        }
-        if (! empty($email)) {
-            $rules['email'] = $email['rules'];
-            $alias['email'] = $email['label'];
-            static::makeMessage($messages, $email['messages'] ?? [], 'email');
-        }
-        if (! empty($password)) {
-            $rules['password'] = $password['rules'];
-            $alias['password'] = $password['label'];
-            static::makeMessage($messages, $password['messages'] ?? [], 'password');
-        }
-        if (! empty($password_confirmation)) {
-            $rules['password_confirmation'] = $password_confirmation['rules'];
-            $alias['password_confirmation'] = $password_confirmation['label'];
-            static::makeMessage($messages, $password_confirmation['messages'] ?? [], 'password_confirmation');
-        }
+		foreach ($validation as $key => $value) {
+			$rules[$key] = $value['rules'] ?? [];
+			$alias[$key] = $value['label'] ?? $key;
+			static::makeMessage($messages, $value['messages'] ?? [], $key);
+		}
 
         return compact('rules', 'alias', 'messages');
     }
