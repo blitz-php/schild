@@ -81,6 +81,7 @@ class Email2FA implements ActionInterface
             return redirect()->route('auth-action-show')->withErrors(lang('Auth.need2FA'));
         }
 
+        $code = $identity->secret;
         $ipAddress = $request->ip();
         $userAgent = (string) $request->userAgent();
         $date      = Date::now()->toDateTimeString();
@@ -89,7 +90,7 @@ class Email2FA implements ActionInterface
         $email = Services::mail()->merge(['debug' => false])
             ->to($user->email)
             ->subject(lang('Auth.email2FASubject'))
-            ->view(config('auth.views.action_email_2fa_email'), ['code' => $identity->secret, 'ipAddress' => $ipAddress, 'userAgent' => $userAgent, 'date' => $date]);
+            ->view(config('auth.views.action_email_2fa_email'), compact('code', 'user', 'ipAddress', 'userAgent', 'date'));
 
         if ($email->send() === false) {
             throw new RuntimeException('Impossible d\'envoyer un e-mail à l\'utilisateur: ' . $user->email . "\n" . $email->printDebugger(['headers']));

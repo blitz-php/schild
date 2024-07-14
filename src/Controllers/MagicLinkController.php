@@ -111,7 +111,7 @@ class MagicLinkController extends BaseController
         $email = Services::mail()->merge(['debug' => false])
             ->to($user->email)
             ->subject(lang('Auth.magicLinkSubject'))
-            ->view($this->config->views['magic-link-email'], ['token' => $token, 'ipAddress' => $ipAddress, 'userAgent' => $userAgent, 'date' => $date]);
+            ->view($this->config->views['magic-link-email'], compact('token', 'user', 'ipAddress', 'userAgent', 'date'));
 
         if ($email->send() === false) {
             // logger('error', $email->printDebugger(['headers']));
