@@ -42,7 +42,7 @@ class User extends Entity
     use Resettable;
     use Activatable;
     use Bannable;
-	use SoftDeletes;
+    use SoftDeletes;
 
     /**
      * @var UserIdentity[]|null
@@ -111,10 +111,10 @@ class User extends Entity
         return $attributes;
     }
 
-	public function authIdentities()
-	{
-		return $this->hasOne(UserIdentity::class)->where('type', Session::ID_TYPE_EMAIL_PASSWORD);
-	}
+    public function authIdentities()
+    {
+        return $this->hasOne(UserIdentity::class)->where('type', Session::ID_TYPE_EMAIL_PASSWORD);
+    }
 
     /**
      * Returns the first identity of the given $type for this user.

@@ -81,7 +81,7 @@ class Email2FA implements ActionInterface
             return redirect()->route('auth-action-show')->withErrors(lang('Auth.need2FA'));
         }
 
-        $code = $identity->secret;
+        $code      = $identity->secret;
         $ipAddress = $request->ip();
         $userAgent = (string) $request->userAgent();
         $date      = Date::now()->toDateTimeString();

@@ -118,7 +118,7 @@ class UserModel extends BaseModel
      */
     private function assignIdentities(array $data, array $identities): array
     {
-		$mappedUsers    = [];
+        $mappedUsers    = [];
         $userIdentities = [];
 
         $users = $data['singleton'] ? [$data['data']] : $data['data'];
@@ -136,11 +136,11 @@ class UserModel extends BaseModel
 
         // Maintenant, assignez les identites aux utilisateurs
         foreach ($userIdentities as $userId => $identityArray) {
-			if ($mappedUsers[$userId] instanceof User) {
-				$mappedUsers[$userId]->setIdentities($identityArray);
-			} else {
-				$mappedUsers[$userId]->identities = $identityArray;
-			}
+            if ($mappedUsers[$userId] instanceof User) {
+                $mappedUsers[$userId]->setIdentities($identityArray);
+            } else {
+                $mappedUsers[$userId]->identities = $identityArray;
+            }
         }
         unset($userIdentities);
 
