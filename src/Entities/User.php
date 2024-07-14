@@ -23,6 +23,7 @@ use BlitzPHP\Schild\Models\UserIdentityModel;
 use BlitzPHP\Schild\Traits\Activatable;
 use BlitzPHP\Schild\Traits\Bannable;
 use BlitzPHP\Schild\Traits\Resettable;
+use BlitzPHP\Wolke\SoftDeletes;
 
 /**
  * @property string|null         $email
@@ -41,6 +42,7 @@ class User extends Entity
     use Resettable;
     use Activatable;
     use Bannable;
+	use SoftDeletes;
 
     /**
      * @var UserIdentity[]|null
@@ -108,6 +110,11 @@ class User extends Entity
 
         return $attributes;
     }
+
+	public function authIdentities()
+	{
+		return $this->hasOne(UserIdentity::class)->where('type', Session::ID_TYPE_EMAIL_PASSWORD);
+	}
 
     /**
      * Returns the first identity of the given $type for this user.
