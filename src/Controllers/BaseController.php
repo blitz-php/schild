@@ -34,14 +34,14 @@ class BaseController extends ApplicationController
      */
     protected object $config;
 
-	protected EventManagerInterface $event;
+    protected EventManagerInterface $event;
 
     public function initialize(ServerRequestInterface $request, ResponseInterface $response, LoggerInterface $logger): void
     {
         parent::initialize($request, $response, $logger);
 
-		$this->config = (object) config('auth');
-		$this->tables = $this->config->tables;
-		$this->event  = service('event');
+        $this->config = (object) config('auth');
+        $this->tables = $this->config->tables;
+        $this->event  = service('event');
     }
 }

@@ -74,7 +74,7 @@ class LoginController extends BaseController
             return redirect()->route('auth-action-show');
         }
 
-		$this->event->emit('schild:login');
+        $this->event->emit('schild:login');
 
         return redirect()->to(($this->config->loginRedirect)());
     }
