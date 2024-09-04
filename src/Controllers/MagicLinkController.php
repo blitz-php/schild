@@ -192,7 +192,8 @@ class MagicLinkController extends BaseController
         // Donnez au développeur un moyen de connaître l'utilisateur connecté via un lien magique.
         Services::session()->setTempdata('magicLogin', true);
 
-        Services::event()->trigger('magicLogin');
+        $this->event->emit('magicLogin'); // @deprecated 1.6  Please use schild:magicLogin
+        $this->event->emit('schild:magicLogin');
 
         // Obtenez notre URL de redirection de connexion
         return redirect()->to(call_user_func(config('auth.loginRedirect')));

@@ -74,6 +74,8 @@ class LoginController extends BaseController
             return redirect()->route('auth-action-show');
         }
 
+		$this->event->emit('schild:login');
+
         return redirect()->to(($this->config->loginRedirect)());
     }
 
@@ -94,9 +96,12 @@ class LoginController extends BaseController
     {
         // Capturez l'URL de redirection de déconnexion avant la déconnexion d'authentification,
         // sinon vous ne pouvez pas vérifier l'utilisateur dans `logoutRedirect()`.
-        $url = ($this->config->logoutRedirect)();
+        $url  = ($this->config->logoutRedirect)();
+        $user = auth()->user();
 
         auth()->logout();
+
+        $this->event->emit('schild:logout', $user);
 
         return redirect()->to($url)->with('message', lang('Auth.successLogout'));
     }

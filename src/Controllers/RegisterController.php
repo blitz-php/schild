@@ -100,7 +100,8 @@ class RegisterController extends BaseController
             return redirect()->back()->withInput()->withErrors($e->getMessage());
         }
 
-        Services::event()->trigger('register', $user);
+        $this->event->emit('register', $user); // @deprecated 1.6 use schild:register instead
+        $this->event->emit('schild:register', $user);
 
         /** @var Session $authenticator */
         $authenticator = auth('session')->getAuthenticator();

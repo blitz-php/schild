@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace BlitzPHP\Schild\Controllers;
 
+use BlitzPHP\Contracts\Event\EventManagerInterface;
 use BlitzPHP\Controllers\ApplicationController;
 use BlitzPHP\Schild\Traits\Viewable;
 use Psr\Http\Message\ResponseInterface;
@@ -33,11 +34,14 @@ class BaseController extends ApplicationController
      */
     protected object $config;
 
+	protected EventManagerInterface $event;
+
     public function initialize(ServerRequestInterface $request, ResponseInterface $response, LoggerInterface $logger): void
     {
         parent::initialize($request, $response, $logger);
 
-        $this->config = (object) config('auth');
-        $this->tables = $this->config->tables;
+		$this->config = (object) config('auth');
+		$this->tables = $this->config->tables;
+		$this->event  = service('event');
     }
 }
