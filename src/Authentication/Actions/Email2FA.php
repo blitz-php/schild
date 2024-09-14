@@ -99,7 +99,7 @@ class Email2FA implements ActionInterface
         // Effacer l'e-mail
         $email->clear();
 
-        return $this->view(config('Auth.views.action_email_2fa_verify'));
+        return $this->view(config('auth.views.action_email_2fa_verify'));
     }
 
     /**
