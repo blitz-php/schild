@@ -197,6 +197,10 @@ class User extends Entity
      */
     public function getEmailIdentity(): ?UserIdentity
     {
+        if ($this->authIdentities) {
+			$this->identities[] = $this->authIdentities;
+		}
+        
         return $this->getIdentity(Session::ID_TYPE_EMAIL_PASSWORD);
     }
 
