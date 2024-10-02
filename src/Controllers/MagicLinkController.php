@@ -84,7 +84,7 @@ class MagicLinkController extends BaseController
         $user  = $this->provider->findByCredentials(['email' => $email]);
 
         if ($user === null) {
-            return redirect()->route('magic-link')->withErrors(lang('Auth.invalidEmail'))->withInput();
+            return redirect()->route('magic-link')->withErrors(lang('Auth.invalidEmail', [$email]))->withInput();
         }
 
         /** @var UserIdentityModel $identityModel */
@@ -156,7 +156,8 @@ class MagicLinkController extends BaseController
             $this->recordLoginAttempt($identifier, false);
 
             $credentials = ['magicLinkToken' => $token];
-            Services::event()->trigger('failedLogin', $credentials);
+            $this->event->emit('failedLogin', $credentials); // @deprecated 1.6  Please use schild:magicLink.failedLogin'
+            $this->event->emit('schild:magicLink.failedLogin', $credentials);
 
             return redirect()->route('magic-link')->withErrors(lang('Auth.magicTokenNotFound'));
         }
@@ -169,7 +170,8 @@ class MagicLinkController extends BaseController
             $this->recordLoginAttempt($identifier, false);
 
             $credentials = ['magicLinkToken' => $token];
-            Services::event()->trigger('failedLogin', $credentials);
+            $this->event->emit('failedLogin', $credentials); // @deprecated 1.6  Please use schild:magicLink.failedLogin'
+            $this->event->emit('schild:magicLink.failedLogin', $credentials);
 
             return redirect()->route('magic-link')->withErrors(lang('Auth.magicLinkExpired'));
         }

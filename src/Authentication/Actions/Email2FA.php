@@ -72,7 +72,7 @@ class Email2FA implements ActionInterface
         }
 
         if (empty($email) || $email !== $user->email) {
-            return redirect()->route('auth-action-show')->withErrors(lang('Auth.invalidEmail'));
+            return redirect()->route('auth-action-show')->withErrors(lang('Auth.invalidEmail', [$email]));
         }
 
         $identity = $this->getIdentity($user);

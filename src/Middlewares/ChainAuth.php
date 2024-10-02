@@ -25,20 +25,22 @@ use Psr\Http\Server\RequestHandlerInterface;
 class ChainAuth implements MiddlewareInterface
 {
     /**
-     * Faites le traitement que ce filtre doit faire.
-     * Par défaut, il ne devrait rien retourner lors de l'exécution normale.
-     * Cependant, lorsqu'un état anormal est trouvé, il doit retourner une instance de BlitzPHP\Http\Response.
-     * Si c'est le cas, l'exécution du script se terminera et cette réponse sera renvoyée au client,
-     * permettant des pages d'erreur, des redirectes, etc.
+     * Vérifie les authentificateurs dans l'ordre pour voir si l'utilisateur est connecté via  l'un ou l'autre des authentificateurs.
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $chain = config('auth.authentication_chain');
 
         foreach ($chain as $alias) {
-            if (auth($alias)->loggedIn()) {
+            $auth = auth($alias);
+
+            if ($auth->loggedIn()) {
                 // Assurez-vous que Auth utilise cet authentificateur
                 auth()->setAuthenticator($alias);
+
+                if (config('auth.record_active_date')) {
+                    $auth->getAuthenticator()->recordActiveDate();
+                }
 
                 return $handler->handle($request);
             }

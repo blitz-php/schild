@@ -161,7 +161,7 @@ return [
      * Enregistrer la dernière date d'activité
      * --------------------------------------------------------------------
      * Si vrai, mettra toujours à jour la date et l'heure `last_active` pour l'utilisateur connecté à chaque demande de page.
-     * Cette fonctionnalité ne fonctionne que lorsque le filtre de session/tokens est actif.
+     * Cette fonctionnalité ne fonctionne que lorsque le middleware de session/tokens/hmac/chain/jwt est actif.
      *
      * @var bool
      */

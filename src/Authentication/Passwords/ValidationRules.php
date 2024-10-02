@@ -52,7 +52,7 @@ class ValidationRules
 
         $result = $checker->check($value, $user);
 
-        if (! $result->isOk()) {
+        if (! $result->isOK()) {
             if ($data === []) {
                 $error1 = $result->reason();
             } else {
@@ -60,7 +60,7 @@ class ValidationRules
             }
         }
 
-        return $result->isOk();
+        return $result->isOK();
     }
 
     /**

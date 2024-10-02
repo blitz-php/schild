@@ -153,10 +153,10 @@ class UserModel extends BaseModel
      */
     public function addToDefaultGroup(User $user): void
     {
-        $defaultGroup  = config('auth-groups.default_group');
-        $allowedGroups = array_keys(config('auth-groups.groups'));
+        $defaultGroup = config('auth-groups.default_group');
+        $groupModel   = model(GroupModel::class);
 
-        if (empty($defaultGroup) || ! in_array($defaultGroup, $allowedGroups, true)) {
+        if (empty($defaultGroup) || ! $groupModel->isValidGroup($defaultGroup)) {
             throw new InvalidArgumentException(lang('Auth.unknownGroup', [$defaultGroup ?? '--not found--']));
         }
 

@@ -31,8 +31,6 @@ trait Authorizable
     {
         $this->populateGroups();
 
-        $configGroups = $this->getConfigGroups();
-
         $groupCount = count($this->groupCache);
 
         foreach ($groups as $group) {
@@ -43,8 +41,10 @@ trait Authorizable
                 continue;
             }
 
+            $groupModel = model(GroupModel::class);
+
             // assurez-vous que c'est un groupe valide
-            if (! in_array($group, $configGroups, true)) {
+            if (! $groupModel->isValidGroup($group)) {
                 throw AuthorizationException::unknownGroup($group);
             }
 
@@ -90,10 +90,10 @@ trait Authorizable
     {
         $this->populateGroups();
 
-        $configGroups = $this->getConfigGroups();
+        $groupModel = model(GroupModel::class);
 
         foreach ($groups as $group) {
-            if (! in_array($group, $configGroups, true)) {
+            if (! $groupModel->isValidGroup($group)) {
                 throw AuthorizationException::unknownGroup($group);
             }
         }
@@ -233,6 +233,9 @@ trait Authorizable
         // Vérifiez les groupes auxquels l'utilisateur appartient
         $this->populateGroups();
 
+        // On recupere la matrice des groupes
+        $matrix = config('auth-groups.matrix');
+
         foreach ($permissions as $permission) {
             // L'autorisation doit contenir une portée et une action
             if (! str_contains($permission, '.')) {
@@ -252,8 +255,6 @@ trait Authorizable
             if (! count($this->groupCache)) {
                 return false;
             }
-
-            $matrix = config('auth-groups.matrix');
 
             foreach ($this->groupCache as $group) {
                 // Vérifier correspondance exacte
@@ -379,14 +380,6 @@ trait Authorizable
 
             $model->bulckInsert($inserts);
         }
-    }
-
-    /**
-     * @return string[]
-     */
-    private function getConfigGroups(): array
-    {
-        return array_keys(config('auth-groups.groups'));
     }
 
     /**
