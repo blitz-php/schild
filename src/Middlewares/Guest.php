@@ -30,7 +30,7 @@ class Guest extends BaseMiddleware implements MiddlewareInterface
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $authenticator = auth($this->arguments['authenticator'] ?? config('auth.default_authenticator', 'session'))->getAuthenticator();
+        $authenticator = auth($this->arguments['authenticator'] ?? (parametre('auth.default_authenticator') ?? 'session'))->getAuthenticator();
 
         if (! $authenticator->loggedIn()) {
             return $handler->handle($request);

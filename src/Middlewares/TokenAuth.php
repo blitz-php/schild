@@ -39,14 +39,14 @@ class TokenAuth extends BaseMiddleware implements MiddlewareInterface
         $authenticator = auth('tokens')->getAuthenticator();
 
         $result = $authenticator->attempt([
-            'token' => $request->getHeaderLine(config('auth-token.authenticator_header.tokens', 'Authorization')),
+            'token' => $request->getHeaderLine(parametre('auth-token.authenticator_header.tokens', 'Authorization')),
         ]);
 
         if (! $result->isOK() || (! empty($this->arguments) && $result->extraInfo()->tokenCant($this->arguments[0]))) {
             return service('response')->json(['message' => lang('Auth.badToken')], StatusCode::UNAUTHORIZED);
         }
 
-        if (config('auth.record_active_date')) {
+        if (parametre('auth.record_active_date')) {
             $authenticator->recordActiveDate();
         }
 

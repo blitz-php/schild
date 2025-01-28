@@ -58,6 +58,6 @@ trait Activatable
      */
     private function shouldActivate(): bool
     {
-        return str_contains(config('auth.actions')['register'] ?? '', 'Activator');
+        return str_contains(parametre('auth.actions.register') ?? '', 'Activator');
     }
 }

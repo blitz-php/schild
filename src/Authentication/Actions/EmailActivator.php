@@ -64,9 +64,10 @@ class EmailActivator implements ActionInterface
 
         // Envoyez le courriel
         $email = service('mail')->merge(['debug' => false])
+            ->from(parametre('mail.from.address'), parametre('mail.from.name') ?? '')
             ->to($userEmail)
             ->subject(lang('Auth.emailActivateSubject'))
-            ->view(config('auth.views.action_email_activate_email'), compact('code', 'user', 'ipAddress', 'userAgent', 'date'));
+            ->view(parametre('auth.views.action_email_activate_email'), compact('code', 'user', 'ipAddress', 'userAgent', 'date'));
 
         if ($email->send() === false) {
             throw new RuntimeException('Impossible d\'envoyer un e-mail à l\'utilisateur: ' . $user->email);
@@ -76,7 +77,7 @@ class EmailActivator implements ActionInterface
         $email->clear();
 
         // Afficher la page d'informations
-        return $this->view(config('auth.views.action_email_activate_show'), compact('user'));
+        return $this->view(parametre('auth.views.action_email_activate_show'), compact('user'));
     }
 
     /**
@@ -112,7 +113,7 @@ class EmailActivator implements ActionInterface
         if (! $authenticator->checkAction($identity, $postedToken)) {
             session()->flashErrors(lang('Auth.invalidActivateToken'));
 
-            return $this->view(config('auth.views.action_email_activate_show'));
+            return $this->view(parametre('auth.views.action_email_activate_show'));
         }
 
         $user = $authenticator->getUser();

@@ -39,7 +39,7 @@ class MagicLinkController extends BaseController
     public function __construct()
     {
         /** @var class-string<UserModel> $providerClass */
-        $providerClass = config('auth.user_provider');
+        $providerClass = parametre('auth.user_provider');
 
         $this->provider = new $providerClass();
     }
@@ -56,7 +56,7 @@ class MagicLinkController extends BaseController
         }
 
         if (auth()->loggedIn()) {
-            return redirect()->to(($this->config->loginRedirect)());
+            return redirect()->to(config('auth.loginRedirect')());
         }
 
         return $this->view($this->config->views['magic-link-login']);
@@ -108,6 +108,7 @@ class MagicLinkController extends BaseController
 
         // Envoyer à l'utilisateur un e-mail avec le code
         $email = service('mail')->merge(['debug' => false])
+            ->from(parametre('mail.from.address'), parametre('mail.from.name') ?? '')
             ->to($user->email)
             ->subject(lang('Auth.magicLinkSubject'))
             ->view($this->config->views['magic-link-email'], compact('token', 'user', 'ipAddress', 'userAgent', 'date'));
@@ -194,7 +195,7 @@ class MagicLinkController extends BaseController
         $this->event->emit('schild:magicLogin');
 
         // Obtenez notre URL de redirection de connexion
-        return redirect()->to(call_user_func(config('auth.loginRedirect')));
+        return redirect()->to(config('auth.loginRedirect')());
     }
 
     /**

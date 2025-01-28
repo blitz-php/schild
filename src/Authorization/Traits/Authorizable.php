@@ -234,7 +234,7 @@ trait Authorizable
         $this->populateGroups();
 
         // On recupere la matrice des groupes
-        $matrix = config('auth-groups.matrix');
+        $matrix = parametre('auth-groups.matrix');
 
         foreach ($permissions as $permission) {
             // L'autorisation doit contenir une portée et une action
@@ -387,6 +387,6 @@ trait Authorizable
      */
     private function getConfigPermissions(): array
     {
-        return array_keys(config('auth-groups.permissions'));
+        return array_keys(parametre('auth-groups.permissions'));
     }
 }

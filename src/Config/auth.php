@@ -429,7 +429,7 @@ return [
      * Renvoie l'URL vers laquelle un utilisateur doit être redirigé après sa déconnexion.
      */
     'logoutRedirect' => static function (): string {
-        $url = config('auth.redirects.logout');
+        $url = parametre('auth.redirects.logout');
 
         return call_user_func(config('auth.getUrl'), $url);
     },
@@ -438,7 +438,7 @@ return [
      * Renvoie l'URL vers laquelle l'utilisateur doit être redirigé après une inscription réussie.
      */
     'registerRedirect' => static function (): string {
-        $url = config('auth.redirects.register');
+        $url = parametre('auth.redirects.register');
 
         return call_user_func(config('auth.getUrl'), $url);
     },
@@ -447,7 +447,7 @@ return [
      * Renvoie l'URL vers laquelle l'utilisateur doit être redirigé si force_reset identity est défini sur true.
      */
     'forcePasswordResetRedirect' => static function (): string {
-        $url = config('auth.redirects.force_reset');
+        $url = parametre('auth.redirects.force_reset');
 
         return call_user_func(config('auth.getUrl'), $url);
     },
@@ -456,7 +456,7 @@ return [
      * Renvoie l'URL vers laquelle l'utilisateur doit être redirigé si la permission n'est pas autorisée.
      */
     'permissionDeniedRedirect' => static function (): string {
-        $url = config('auth.redirects.permission_denied');
+        $url = parametre('auth.redirects.permission_denied');
 
         return call_user_func(config('auth.getUrl'), $url);
     },
@@ -465,7 +465,7 @@ return [
      * Renvoie l'URL vers laquelle l'utilisateur doit être redirigé si le groupe n'est pas autorisé.
      */
     'groupDeniedRedirect' => static function (): string {
-        $url = config('auth.redirects.group_denied');
+        $url = parametre('auth.redirects.group_denied');
 
         return call_user_func(config('auth.getUrl'), $url);
     },

@@ -38,7 +38,7 @@ class ChainAuth implements MiddlewareInterface
                 // Assurez-vous que Auth utilise cet authentificateur
                 auth()->setAuthenticator($alias);
 
-                if (config('auth.record_active_date')) {
+                if (parametre('auth.record_active_date')) {
                     $auth->getAuthenticator()->recordActiveDate();
                 }
 

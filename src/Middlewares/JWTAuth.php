@@ -43,7 +43,7 @@ class JWTAuth implements MiddlewareInterface
             ], StatusCode::INVALID_TOKEN);
         }
 
-        if (config('auth.record_active_date')) {
+        if (parametre('auth.record_active_date')) {
             $authenticator->recordActiveDate();
         }
 

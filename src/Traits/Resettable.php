@@ -66,8 +66,7 @@ trait Resettable
         $value = (int) $value;
 
         $identityModel = model(UserIdentityModel::class);
-        $identityModel->set('force_reset', $value);
         $identityModel->where(['user_id' => $this->id, 'type' => Session::ID_TYPE_EMAIL_PASSWORD]);
-        $identityModel->update();
+        $identityModel->update(['force_reset' => $value]);
     }
 }

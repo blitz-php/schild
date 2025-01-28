@@ -26,7 +26,7 @@ class Groups
      */
     public function info(string $group): ?Group
     {
-        $info = config('auth-groups.groups')[strtolower($group)] ?? null;
+        $info = parametre('auth-groups.groups.' . strtolower($group));
 
         if (empty($info)) {
             return null;
@@ -46,7 +46,7 @@ class Groups
             throw new RuntimeException(lang('Auth.missingTitle'));
         }
 
-        $groups = config('auth-groups.groups');
+        $groups = parametre('auth-groups.groups');
 
         $alias = $group->alias;
 
@@ -59,7 +59,7 @@ class Groups
             'description' => $group->description,
         ];
 
-        // Save it
-        config(['auth-groups.groups' => $groups]);
+        // Persister ces groupes
+        parametre('auth-groups.groups', $groups);
     }
 }

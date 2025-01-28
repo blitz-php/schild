@@ -43,6 +43,6 @@ abstract class Entity extends Model
      */
     public function getTable(): string
     {
-        return config('auth.tables')[$this->authTables[static::class] ?? static::class] ?: parent::getTable();
+        return parametre('auth.tables')[$this->authTables[static::class] ?? static::class] ?: parent::getTable();
     }
 }

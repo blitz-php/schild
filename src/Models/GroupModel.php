@@ -67,7 +67,7 @@ class GroupModel extends BaseModel
      */
     public function isValidGroup(string $group): bool
     {
-        $allowedGroups = array_keys(config('auth-groups.groups'));
+        $allowedGroups = array_keys(parametre('auth-groups.groups'));
 
         return in_array($group, $allowedGroups, true);
     }

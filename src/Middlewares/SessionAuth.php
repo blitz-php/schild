@@ -37,7 +37,7 @@ class SessionAuth implements MiddlewareInterface
         $authenticator = auth('session')->getAuthenticator();
 
         if ($authenticator->loggedIn()) {
-            if (config('auth.record_active_date')) {
+            if (parametre('auth.record_active_date')) {
                 $authenticator->recordActiveDate();
             }
 

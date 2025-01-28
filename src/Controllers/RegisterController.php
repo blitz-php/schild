@@ -37,7 +37,7 @@ class RegisterController extends BaseController
     public function registerView()
     {
         if (auth()->loggedIn()) {
-            return redirect()->to(($this->config->registerRedirect)());
+            return redirect()->to(config('auth.registerRedirect')());
         }
 
         // Vérifier si l'inscription est autorisée
@@ -62,7 +62,7 @@ class RegisterController extends BaseController
     public function registerAction(): Redirection
     {
         if (auth()->loggedIn()) {
-            return redirect()->to(($this->config->registerRedirect)());
+            return redirect()->to(config('auth.registerRedirect')());
         }
 
         // Vérifier si l'inscription est autorisée
@@ -117,7 +117,7 @@ class RegisterController extends BaseController
         $authenticator->completeLogin($user);
 
         // Success!
-        return redirect()->to(($this->config->registerRedirect)())
+        return redirect()->to(config('auth.registerRedirect')())
             ->with('message', lang('Auth.registerSuccess'));
     }
 

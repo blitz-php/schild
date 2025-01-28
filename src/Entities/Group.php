@@ -37,11 +37,11 @@ class Group extends Entity
     {
         $this->permissions = $permissions;
 
-        $matrix = config('auth-groups.matrix');
+        $matrix = parametre('auth-groups.matrix');
 
         $matrix[$this->alias] = $permissions;
 
-        config('auth-groups.matrix', $matrix);
+        parametre('auth-groups.matrix', $matrix);
     }
 
     /**
@@ -95,6 +95,6 @@ class Group extends Entity
             return;
         }
 
-        $this->permissions = config('auth-groups.matrix')[$this->alias] ?? [];
+        $this->permissions = parametre('auth-groups.matrix')[$this->alias] ?? [];
     }
 }

@@ -390,7 +390,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
 
         // Aucune information utilisateur dans la session.
         // Vérifie le jeton souvenir de moi.
-        if (config('auth.session.allow_remembering')) {
+        if (parametre('auth.session.allow_remembering')) {
             if ($this->checkRememberMe()) {
                 $this->setAuthAction();
             }
@@ -445,7 +445,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
             return false;
         }
 
-        $authActions = config('auth.actions');
+        $authActions = parametre('auth.actions');
 
         foreach ($authActions as $actionClass) {
             if ($actionClass === null) {
@@ -488,7 +488,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
      */
     private function getActionTypes(): array
     {
-        $actions = config('auth.actions');
+        $actions = parametre('auth.actions');
         $types   = [];
 
         foreach ($actions as $actionClass) {
@@ -580,7 +580,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
 
     private function getRememberMeToken(): ?string
     {
-        $cookieName = config('cookie.prefix') . config('auth.session.remember_cookie_name');
+        $cookieName = parametre('cookie.prefix') . parametre('auth.session.remember_cookie_name');
 
         return service('request')->getCookie($cookieName);
     }
@@ -647,7 +647,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
      */
     protected function getSessionUserInfo(): array
     {
-        return session()->get(config('auth.session.field')) ?? [];
+        return session()->get(parametre('auth.session.field')) ?? [];
     }
 
     /**
@@ -655,7 +655,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
      */
     protected function removeSessionUserInfo(): void
     {
-        session()->remove(config('auth.session.field'));
+        session()->remove(parametre('auth.session.field'));
     }
 
     /**
@@ -680,7 +680,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
         $sessionUserInfo       = $this->getSessionUserInfo();
         $sessionUserInfo[$key] = $value;
 
-        session()->set(config('auth.session.field'), $sessionUserInfo);
+        session()->set(parametre('auth.session.field'), $sessionUserInfo);
     }
 
     /**
@@ -691,7 +691,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
         $sessionUserInfo = $this->getSessionUserInfo();
         unset($sessionUserInfo[$key]);
 
-        session()->set(config('auth.session.field'), $sessionUserInfo);
+        session()->set(parametre('auth.session.field'), $sessionUserInfo);
     }
 
     /**
@@ -729,7 +729,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
 
     private function issueRememberMeToken(): void
     {
-        if ($this->shouldRemember && config('auth.session.allow_remembering')) {
+        if ($this->shouldRemember && parametre('auth.session.allow_remembering')) {
             $this->rememberUser($this->user);
 
             // Réinitialisez pour ne pas gâcher les futurs appels.
@@ -858,7 +858,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
 
     private function calcExpires(): string
     {
-        $timestamp = Date::now()->getTimestamp() + config('auth.session.remember_length');
+        $timestamp = Date::now()->getTimestamp() + parametre('auth.session.remember_length');
 
         return Date::createFromTimestamp($timestamp)->format('Y-m-d H:i:s');
     }
@@ -868,11 +868,11 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
         // Enregistrez-le dans le navigateur de l'utilisateur dans un cookie.
         // Créer le cookie
         service('set', Response::class, service('response')->withCookie(
-            Cookie::create(config('auth.session.remember_cookie_name'), $rawToken, [
-                'expires'  => config('auth.session.remember_length'),
-                'path'     => config('cookie.path'),
-                'domain'   => config('cookie.domain'),
-                'secure'   => config('cookie.secure'),
+            Cookie::create(parametre('auth.session.remember_cookie_name'), $rawToken, [
+                'expires'  => parametre('auth.session.remember_length'),
+                'path'     => parametre('cookie.path'),
+                'domain'   => parametre('cookie.domain'),
+                'secure'   => parametre('cookie.secure'),
                 'httponly' => true,
             ])
         ));

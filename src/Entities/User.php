@@ -85,7 +85,7 @@ class User extends Entity
      */
     public function getTable(): string
     {
-        return config('auth.tables')[$this->authTables[self::class]] ?: parent::getTable();
+        return parametre('auth.tables')[$this->authTables[self::class]] ?: parent::getTable();
     }
 
     /**

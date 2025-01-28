@@ -39,7 +39,7 @@ class HmacAuth extends BaseMiddleware implements MiddlewareInterface
         $authenticator = auth('hmac')->getAuthenticator();
 
         $result = $authenticator->attempt([
-            'token' => $request->getHeaderLine(config('auth-token.authenticator_header.hmac', 'Authorization')),
+            'token' => $request->getHeaderLine(parametre('auth-token.authenticator_header.hmac') ?? 'Authorization'),
             'body'  => $request->getBody()->getContents() ?? '',
         ]);
 
@@ -47,7 +47,7 @@ class HmacAuth extends BaseMiddleware implements MiddlewareInterface
             return service('response')->json(['message' => lang('Auth.badToken')], StatusCode::UNAUTHORIZED);
         }
 
-        if (config('auth.record_active_date')) {
+        if (parametre('auth.record_active_date')) {
             $authenticator->recordActiveDate();
         }
 

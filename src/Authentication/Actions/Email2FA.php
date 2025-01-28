@@ -49,7 +49,7 @@ class Email2FA implements ActionInterface
 
         $this->createIdentity($user);
 
-        return $this->view(config('auth.views.action_email_2fa'), compact('user'));
+        return $this->view(parametre('auth.views.action_email_2fa'), compact('user'));
     }
 
     /**
@@ -87,9 +87,10 @@ class Email2FA implements ActionInterface
 
         // Envoyer à l'utilisateur un e-mail avec le code
         $email = service('mail')->merge(['debug' => false])
+            ->from(parametre('mail.from.address'), parametre('mail.from.name') ?? '')
             ->to($user->email)
             ->subject(lang('Auth.email2FASubject'))
-            ->view(config('auth.views.action_email_2fa_email'), compact('code', 'user', 'ipAddress', 'userAgent', 'date'));
+            ->view(parametre('auth.views.action_email_2fa_email'), compact('code', 'user', 'ipAddress', 'userAgent', 'date'));
 
         if ($email->send() === false) {
             throw new RuntimeException('Impossible d\'envoyer un e-mail à l\'utilisateur: ' . $user->email . "\n" . $email->printDebugger(['headers']));
@@ -98,7 +99,7 @@ class Email2FA implements ActionInterface
         // Effacer l'e-mail
         $email->clear();
 
-        return $this->view(config('auth.views.action_email_2fa_verify'));
+        return $this->view(parametre('auth.views.action_email_2fa_verify'));
     }
 
     /**
@@ -124,7 +125,7 @@ class Email2FA implements ActionInterface
         if (! $authenticator->checkAction($identity, $postedToken)) {
             session()->flashErrors(lang('Auth.invalid2FAToken'));
 
-            return $this->view(config('auth.views.action_email_2fa_verify'));
+            return $this->view(parametre('auth.views.action_email_2fa_verify'));
         }
 
         // Obtenez notre URL de redirection de connexion
