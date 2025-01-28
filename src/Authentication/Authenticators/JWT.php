@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace BlitzPHP\Schild\Authentication\Authenticators;
 
+use BlitzPHP\Http\Request;
 use BlitzPHP\Schild\Authentication\AuthenticatorInterface;
 use BlitzPHP\Schild\Authentication\Jwt\JwtManager;
-use BlitzPHP\Schild\Config\Services;
 use BlitzPHP\Schild\Exceptions\RuntimeException;
 use BlitzPHP\Schild\Models\TokenLoginModel;
 use BlitzPHP\Schild\Models\UserModel;
@@ -50,7 +50,7 @@ class JWT extends BaseAuthenticator implements AuthenticatorInterface
      */
     public function __construct(protected UserModel $provider)
     {
-        $this->jwtManager      = Services::jwtManager();
+        $this->jwtManager      = service('jwtManager');
         $this->tokenLoginModel = model(TokenLoginModel::class);
     }
 
@@ -64,7 +64,8 @@ class JWT extends BaseAuthenticator implements AuthenticatorInterface
     {
         $config = (object) config('auth-jwt');
 
-        $request = Services::request();
+         /** @var Request $request */
+         $request = service('request');
 
         $ipAddress = $request->ip();
         $userAgent = (string) $request->userAgent();
@@ -191,7 +192,8 @@ class JWT extends BaseAuthenticator implements AuthenticatorInterface
             return true;
         }
 
-        $request = Services::request();
+        /** @var Request $request */
+        $request = service('request');
 
         $token = $this->getTokenFromRequest($request);
 

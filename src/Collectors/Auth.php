@@ -15,7 +15,6 @@ namespace BlitzPHP\Schild\Collectors;
 
 use BlitzPHP\Debug\Toolbar\Collectors\BaseCollector;
 use BlitzPHP\Schild\Auth as SchildAuth;
-use BlitzPHP\Schild\Config\Services;
 
 /**
  * Collecteur de la barre d'outils de débogage pour l'authentification
@@ -46,7 +45,7 @@ class Auth extends BaseCollector
 
     public function __construct()
     {
-        $this->auth = Services::auth();
+        $this->auth = service('auth');
     }
 
     /**

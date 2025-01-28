@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace BlitzPHP\Schild\Authentication\Authenticators;
 
+use BlitzPHP\Http\Request;
 use BlitzPHP\Schild\Authentication\AuthenticatorInterface;
 use BlitzPHP\Schild\Authentication\HMAC\HmacEncrypter;
-use BlitzPHP\Schild\Config\Services;
 use BlitzPHP\Schild\Exceptions\AuthenticationException;
 use BlitzPHP\Schild\Models\TokenLoginModel;
 use BlitzPHP\Schild\Models\UserIdentityModel;
@@ -49,7 +49,8 @@ class HmacSha256 extends BaseAuthenticator implements AuthenticatorInterface
     {
         $config = (object) config('auth-token');
 
-        $request = Services::request();
+        /** @var Request $request */
+        $request = service('request');
 
         $ipAddress = $request->ip();
         $userAgent = (string) $request->userAgent();
@@ -206,7 +207,8 @@ class HmacSha256 extends BaseAuthenticator implements AuthenticatorInterface
             return true;
         }
 
-        $request = Services::request();
+        /** @var Request $request */
+        $request = service('request');
 
         return $this->attempt([
             'token' => $request->getHeaderLine(config('auth-token.authenticator_header.hmac')),
@@ -242,7 +244,8 @@ class HmacSha256 extends BaseAuthenticator implements AuthenticatorInterface
      */
     public function getFullHmacToken(): ?string
     {
-        $request = Services::request();
+        /** @var Request $request */
+        $request = service('request');
 
         $header = $request->getHeaderLine(config('auth-token.authenticator_header.hmac'));
 

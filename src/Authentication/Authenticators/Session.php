@@ -13,10 +13,11 @@ declare(strict_types=1);
 
 namespace BlitzPHP\Schild\Authentication\Authenticators;
 
+use BlitzPHP\Http\Request;
 use BlitzPHP\Http\Response;
 use BlitzPHP\Schild\Authentication\Actions\ActionInterface;
 use BlitzPHP\Schild\Authentication\AuthenticatorInterface;
-use BlitzPHP\Schild\Config\Services;
+use BlitzPHP\Schild\Authentication\Passwords;
 use BlitzPHP\Schild\Entities\User;
 use BlitzPHP\Schild\Entities\UserIdentity;
 use BlitzPHP\Schild\Exceptions\InvalidArgumentException;
@@ -108,7 +109,8 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
      */
     public function attempt(array $credentials): Result
     {
-        $request = Services::request();
+        /** @var Request $request */
+        $request = service('request');
 
         $ipAddress = $request->ip();
         $userAgent = (string) $request->userAgent();
@@ -124,7 +126,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
 
             // Déclenchez un événement en cas d'échec afin que les développeurs aient la possibilité de leur faire savoir que quelqu'un a tenté de se connecter à leur compte
             unset($credentials['password']);
-            Services::event()->trigger('failedLogin', $credentials);
+            service('event')->emit('schild:failedLogin', $credentials);
 
             return $result;
         }
@@ -179,7 +181,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
         }
 
         /** @var ActionInterface $action */
-        $action = Services::container()->make($actionClass); // @phpstan-ignore-line
+        $action = service('container')->make($actionClass); // @phpstan-ignore-line
 
         // Créer une identité pour l'action.
         $action->createIdentity($user);
@@ -201,7 +203,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
             return null;
         }
 
-        return Services::container()->make($actionClass); // @phpstan-ignore-line
+        return service('container')->make($actionClass); // @phpstan-ignore-line
     }
 
     /**
@@ -241,7 +243,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
         $this->userState = self::STATE_LOGGED_IN;
 
         // une connexion réussie
-        Services::event()->trigger('login', $user);
+        service('event')->emit('schild:login', $user);
     }
 
     /**
@@ -311,7 +313,8 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
             ]);
         }
 
-        $passwords = Services::passwords();
+        /** @var Passwords $passwords */
+        $passwords = service('passwords');
 
         // Vérifiez si le mot de passe doit être ressassé.
         // Cela serait dû à la modification de l'algorithme de hachage ou du coût de hachage depuis la dernière fois qu'un utilisateur s'est connecté.
@@ -450,7 +453,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
             }
 
             /** @var ActionInterface $action */
-            $action = Services::container()->make($actionClass);  // @phpstan-ignore-line
+            $action = service('container')->make($actionClass);  // @phpstan-ignore-line
 
             $identity = $this->userIdentityModel->getIdentityByType($this->user, $action->getType());
 
@@ -494,7 +497,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
             }
 
             /** @var ActionInterface $action */
-            $action  = Services::container()->make($actionClass);  // @phpstan-ignore-line
+            $action  = service('container')->make($actionClass);  // @phpstan-ignore-line
             $types[] = $action->getType();
         }
 
@@ -579,7 +582,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
     {
         $cookieName = config('cookie.prefix') . config('auth.session.remember_cookie_name');
 
-        return Services::request()->getCookie($cookieName);
+        return service('request')->getCookie($cookieName);
     }
 
     /**
@@ -626,7 +629,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
 
         // L'utilisateur a des informations sur l'utilisateur dans la session, donc déjà connecté ou en attente de connexion.
         if (! on_test()) {
-            Services::session()->regenerate(true);
+            session()->regenerate(true);
 
             // Régénérer le jeton CSRF même si `security.regenerate = false`.
             // Services::security()->generateHash();
@@ -636,7 +639,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
         $this->setSessionUserKey('id', $user->id);
 
         // Une fois connecté, assurez-vous que les en-têtes de contrôle du cache sont en place
-        Services::container()->set(Response::class, Services::response()->noCache());
+        service('set', Response::class, service('response')->noCache());
     }
 
     /**
@@ -644,7 +647,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
      */
     protected function getSessionUserInfo(): array
     {
-        return Services::session()->get(config('auth.session.field')) ?? [];
+        return session()->get(config('auth.session.field')) ?? [];
     }
 
     /**
@@ -652,7 +655,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
      */
     protected function removeSessionUserInfo(): void
     {
-        Services::session()->remove(config('auth.session.field'));
+        session()->remove(config('auth.session.field'));
     }
 
     /**
@@ -677,7 +680,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
         $sessionUserInfo       = $this->getSessionUserInfo();
         $sessionUserInfo[$key] = $value;
 
-        Services::session()->set(config('auth.session.field'), $sessionUserInfo);
+        session()->set(config('auth.session.field'), $sessionUserInfo);
     }
 
     /**
@@ -688,7 +691,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
         $sessionUserInfo = $this->getSessionUserInfo();
         unset($sessionUserInfo[$key]);
 
-        Services::session()->set(config('auth.session.field'), $sessionUserInfo);
+        session()->set(config('auth.session.field'), $sessionUserInfo);
     }
 
     /**
@@ -747,7 +750,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
     private function removeRememberCookie(): void
     {
         // Supprimer le cookie remember-me
-        Services::container()->set(Response::class, service('response')->withoutCookie(
+        service('set', Response::class, service('response')->withoutCookie(
             config('auth.session.remember_cookie_name'),
             config('cookie.path'),
             config('cookie.domain'),
@@ -767,7 +770,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
         }
 
         // Détruisez les données de session - mais assurez-vous qu'une session est toujours disponible pour les messages flash, etc.
-        $session     = Services::session();
+        $session     = session();
         $sessionData = $session->get();
         if (isset($sessionData)) {
             foreach (array_keys($sessionData) as $key) {
@@ -782,7 +785,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
         $this->rememberModel->purgeRememberTokens($this->user);
 
         // Déclencher un événement de déconnexion
-        Services::event()->trigger('logout', $this->user);
+        service('event')->emit('schild:logout', $this->user);
 
         $this->user      = null;
         $this->userState = self::STATE_ANONYMOUS;
@@ -864,7 +867,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
     {
         // Enregistrez-le dans le navigateur de l'utilisateur dans un cookie.
         // Créer le cookie
-        Services::container()->set(Response::class, Services::response()->withCookie(
+        service('set', Response::class, service('response')->withCookie(
             Cookie::create(config('auth.session.remember_cookie_name'), $rawToken, [
                 'expires'  => config('auth.session.remember_length'),
                 'path'     => config('cookie.path'),

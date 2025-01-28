@@ -15,7 +15,6 @@ namespace BlitzPHP\Schild\Models;
 
 use BlitzPHP\Schild\Authentication\Authenticators\AccessTokens;
 use BlitzPHP\Schild\Authentication\Authenticators\Session;
-use BlitzPHP\Schild\Config\Services;
 use BlitzPHP\Schild\Entities\AccessToken;
 use BlitzPHP\Schild\Entities\User;
 use BlitzPHP\Schild\Entities\UserIdentity;
@@ -68,7 +67,7 @@ class UserIdentityModel extends BaseModel
             'user_id' => $user->id,
             'type'    => Session::ID_TYPE_EMAIL_PASSWORD,
             'secret'  => $credentials['email'],
-            'secret2' => Services::passwords()->hash($credentials['password']),
+            'secret2' => service('passwords')->hash($credentials['password']),
         ])->save();
     }
 

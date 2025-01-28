@@ -15,7 +15,6 @@ namespace BlitzPHP\Schild\Authentication\HMAC;
 
 use BlitzPHP\Contracts\Security\EncrypterInterface;
 use BlitzPHP\Exceptions\EncryptionException;
-use BlitzPHP\Schild\Config\Services;
 use Exception;
 use RuntimeException;
 
@@ -131,7 +130,7 @@ class HmacEncrypter
             $config['driver'] = $this->config->hmac_encryption_keys[$key]['driver'] ?? $this->config->hmac_encryption_default_driver;
             $config['digest'] = $this->config->hmac_encryption_keys[$key]['digest'] ?? $this->config->hmac_encryption_default_digest;
 
-            $this->encrypter[$key] = Services::encrypter($config, false);
+            $this->encrypter[$key] = single_service('encrypter', $config);
         }
 
         return $this->encrypter[$key];

@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace BlitzPHP\Schild\Middlewares;
 
 use BlitzPHP\Http\ServerRequest;
-use BlitzPHP\Schild\Config\Services;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -42,7 +41,7 @@ class AuthRates implements MiddlewareInterface
         // Restreignez une adresse IP à pas plus de 10 demandes par minute
         // sur les pages de forme d'automne (connexion, enregistrement, oublié, etc.).
         if ($throttler->check(md5($request->clientIp()), 10, MINUTE, 1) === false) {
-            return Services::response()->withStatus(
+            return service('response')->withStatus(
                 429,
                 lang('Auth.throttled', [$throttler->getTokenTime()]) // message
             );

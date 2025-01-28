@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace BlitzPHP\Schild\Authentication\Passwords;
 
 use BlitzPHP\Exceptions\HttpException;
-use BlitzPHP\Schild\Config\Services;
 use BlitzPHP\Schild\Entities\User;
 use BlitzPHP\Schild\Exceptions\AuthenticationException;
 use BlitzPHP\Schild\Result;
@@ -45,7 +44,7 @@ class PwnedValidator extends BaseValidator implements ValidatorInterface
         $searchHash  = substr($hashedPword, 5);
 
         try {
-            $client = Services::httpclient('https://api.pwnedpasswords.com/');
+            $client = service('httpclient', 'https://api.pwnedpasswords.com/');
 
             $response = $client->accept('text/plain')->get('range/' . $rangeHash);
         } catch (HttpException $e) {

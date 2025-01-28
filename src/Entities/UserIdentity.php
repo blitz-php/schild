@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace BlitzPHP\Schild\Entities;
 
-use BlitzPHP\Schild\Config\Services;
 use BlitzPHP\Utilities\Date;
 
 /**
@@ -64,7 +63,7 @@ class UserIdentity extends Entity
      */
     public function hashSecret(string $value): UserIdentity
     {
-        $this->attributes['secret'] = Services::passwords()->hash($value);
+        $this->attributes['secret'] = service('passwords')->hash($value);
 
         return $this;
     }

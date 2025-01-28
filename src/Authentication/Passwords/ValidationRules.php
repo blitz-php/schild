@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace BlitzPHP\Schild\Authentication\Passwords;
 
 use BlitzPHP\Schild\Authentication\Passwords;
-use BlitzPHP\Schild\Config\Services;
 use BlitzPHP\Schild\Entities\User;
 
 /**
@@ -75,9 +74,7 @@ class ValidationRules
     {
         $fields = $this->prepareValidFields();
 
-        $request = Services::request();
-
-        $data = $request->only($fields);
+        $data = service('request')->only($fields);
 
         return new User($data);
     }

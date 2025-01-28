@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace BlitzPHP\Schild\Authentication\Authenticators;
 
+use BlitzPHP\Http\Request;
 use BlitzPHP\Schild\Authentication\AuthenticatorInterface;
-use BlitzPHP\Schild\Config\Services;
 use BlitzPHP\Schild\Exceptions\AuthenticationException;
 use BlitzPHP\Schild\Models\TokenLoginModel;
 use BlitzPHP\Schild\Models\UserIdentityModel;
@@ -46,7 +46,8 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
      */
     public function attempt(array $credentials): Result
     {
-        $request = Services::request();
+        /** @var Request $request */
+        $request = service('request');
         $config  = (object) config('auth-token');
 
         $ipAddress = $request->ip();
@@ -182,7 +183,7 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
             return true;
         }
 
-        $request = Services::request();
+        $request = service('request');
 
         return $this->attempt([
             'token' => $request->getHeaderLine(config('auth-token.authenticator_header.tokens')),
@@ -216,7 +217,7 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
      */
     public function getBearerToken(): ?string
     {
-        $request = Services::request();
+        $request = service('request');
 
         $header = $request->getHeaderLine(config('auth-token.authenticator_header.tokens'));
 

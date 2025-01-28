@@ -12,7 +12,6 @@ declare(strict_types=1);
  */
 
 use BlitzPHP\Schild\Auth;
-use BlitzPHP\Schild\Config\Services;
 
 if (! function_exists('auth')) {
     /**
@@ -22,7 +21,7 @@ if (! function_exists('auth')) {
      */
     function auth(?string $alias = null): Auth
     {
-        return Services::auth()->setAuthenticator($alias);
+        return service('auth')->setAuthenticator($alias);
     }
 }
 
@@ -35,6 +34,6 @@ if (! function_exists('user_id')) {
      */
     function user_id()
     {
-        return Services::auth()->id();
+        return service('auth')->id();
     }
 }

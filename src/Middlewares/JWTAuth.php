@@ -15,7 +15,6 @@ namespace BlitzPHP\Schild\Middlewares;
 
 use BlitzPHP\Contracts\Http\StatusCode;
 use BlitzPHP\Schild\Authentication\Authenticators\JWT;
-use BlitzPHP\Schild\Config\Services;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -39,7 +38,7 @@ class JWTAuth implements MiddlewareInterface
         $result = $authenticator->attempt(['token' => $token]);
 
         if (! $result->isOK()) {
-            return Services::response()->json([
+            return service('response')->json([
                 'error' => $result->reason(),
             ], StatusCode::INVALID_TOKEN);
         }

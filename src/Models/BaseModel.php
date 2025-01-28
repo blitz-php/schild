@@ -15,7 +15,6 @@ namespace BlitzPHP\Schild\Models;
 
 use BlitzPHP\Contracts\Database\ConnectionResolverInterface;
 use BlitzPHP\Database\Model;
-use BlitzPHP\Schild\Config\Services;
 
 abstract class BaseModel extends Model
 {
@@ -38,6 +37,6 @@ abstract class BaseModel extends Model
 
         $this->tables = $this->authConfig->tables;
 
-        parent::__construct($resolver ?: Services::singleton(ConnectionResolverInterface::class));
+        parent::__construct($resolver ?: service('singleton', ConnectionResolverInterface::class));
     }
 }

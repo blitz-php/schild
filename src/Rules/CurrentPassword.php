@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace BlitzPHP\Schild\Rules;
 
 use BlitzPHP\Schild\Authentication\Authenticators\Session;
-use BlitzPHP\Schild\Config\Services;
 use BlitzPHP\Schild\Models\UserModel;
 use BlitzPHP\Validation\Rules\AbstractRule;
 
@@ -35,7 +34,7 @@ class CurrentPassword extends AbstractRule
 
         $user = model(UserModel::class)->findById($id, true);
 
-        $passwords = Services::passwords();
+        $passwords = service('passwords');
 
         // Vérifiez si le mot de passe doit être ressassé.
         // Cela serait dû à la modification de l'algorithme de hachage ou du coût de hachage depuis la dernière fois qu'un utilisateur s'est connecté.

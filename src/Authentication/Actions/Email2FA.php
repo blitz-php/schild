@@ -17,7 +17,6 @@ use BlitzPHP\Http\Redirection;
 use BlitzPHP\Http\Request;
 use BlitzPHP\Http\ServerRequest;
 use BlitzPHP\Schild\Authentication\Authenticators\Session;
-use BlitzPHP\Schild\Config\Services;
 use BlitzPHP\Schild\Entities\User;
 use BlitzPHP\Schild\Entities\UserIdentity;
 use BlitzPHP\Schild\Exceptions\RuntimeException;
@@ -87,7 +86,7 @@ class Email2FA implements ActionInterface
         $date      = Date::now()->toDateTimeString();
 
         // Envoyer à l'utilisateur un e-mail avec le code
-        $email = Services::mail()->merge(['debug' => false])
+        $email = service('mail')->merge(['debug' => false])
             ->to($user->email)
             ->subject(lang('Auth.email2FASubject'))
             ->view(config('auth.views.action_email_2fa_email'), compact('code', 'user', 'ipAddress', 'userAgent', 'date'));
@@ -123,7 +122,7 @@ class Email2FA implements ActionInterface
 
         // Incompatibilité de jeton ? Qu'ils réessayent...
         if (! $authenticator->checkAction($identity, $postedToken)) {
-            Services::session()->flashErrors(lang('Auth.invalid2FAToken'));
+            session()->flashErrors(lang('Auth.invalid2FAToken'));
 
             return $this->view(config('auth.views.action_email_2fa_verify'));
         }

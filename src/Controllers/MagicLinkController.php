@@ -15,7 +15,6 @@ namespace BlitzPHP\Schild\Controllers;
 
 use BlitzPHP\Http\Redirection;
 use BlitzPHP\Schild\Authentication\Authenticators\Session;
-use BlitzPHP\Schild\Config\Services;
 use BlitzPHP\Schild\Models\LoginModel;
 use BlitzPHP\Schild\Models\UserIdentityModel;
 use BlitzPHP\Schild\Models\UserModel;
@@ -108,7 +107,7 @@ class MagicLinkController extends BaseController
         $date      = Date::now()->toDateTimeString();
 
         // Envoyer à l'utilisateur un e-mail avec le code
-        $email = Services::mail()->merge(['debug' => false])
+        $email = service('mail')->merge(['debug' => false])
             ->to($user->email)
             ->subject(lang('Auth.magicLinkSubject'))
             ->view($this->config->views['magic-link-email'], compact('token', 'user', 'ipAddress', 'userAgent', 'date'));
@@ -156,7 +155,6 @@ class MagicLinkController extends BaseController
             $this->recordLoginAttempt($identifier, false);
 
             $credentials = ['magicLinkToken' => $token];
-            $this->event->emit('failedLogin', $credentials); // @deprecated 1.6  Please use schild:magicLink.failedLogin'
             $this->event->emit('schild:magicLink.failedLogin', $credentials);
 
             return redirect()->route('magic-link')->withErrors(lang('Auth.magicTokenNotFound'));
@@ -170,7 +168,6 @@ class MagicLinkController extends BaseController
             $this->recordLoginAttempt($identifier, false);
 
             $credentials = ['magicLinkToken' => $token];
-            $this->event->emit('failedLogin', $credentials); // @deprecated 1.6  Please use schild:magicLink.failedLogin'
             $this->event->emit('schild:magicLink.failedLogin', $credentials);
 
             return redirect()->route('magic-link')->withErrors(lang('Auth.magicLinkExpired'));
@@ -192,9 +189,8 @@ class MagicLinkController extends BaseController
         $this->recordLoginAttempt($identifier, true, $user->id);
 
         // Donnez au développeur un moyen de connaître l'utilisateur connecté via un lien magique.
-        Services::session()->setTempdata('magicLogin', true);
+        session()->setTempdata('magicLogin', true);
 
-        $this->event->emit('magicLogin'); // @deprecated 1.6  Please use schild:magicLogin
         $this->event->emit('schild:magicLogin');
 
         // Obtenez notre URL de redirection de connexion

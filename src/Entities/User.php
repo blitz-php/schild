@@ -17,7 +17,6 @@ use BlitzPHP\Schild\Authentication\Authenticators\Session;
 use BlitzPHP\Schild\Authentication\Traits\HasAccessTokens;
 use BlitzPHP\Schild\Authentication\Traits\HasHmacTokens;
 use BlitzPHP\Schild\Authorization\Traits\Authorizable;
-use BlitzPHP\Schild\Config\Services;
 use BlitzPHP\Schild\Models\LoginModel;
 use BlitzPHP\Schild\Models\UserIdentityModel;
 use BlitzPHP\Schild\Traits\Activatable;
@@ -230,7 +229,7 @@ class User extends Entity
         }
 
         if (! empty($this->password)) {
-            $identity->secret2 = Services::passwords()->hash($this->password);
+            $identity->secret2 = service('passwords')->hash($this->password);
         }
 
         if (! empty($this->password_hash) && empty($this->password)) {

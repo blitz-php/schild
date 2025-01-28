@@ -16,7 +16,6 @@ namespace BlitzPHP\Schild\Middlewares;
 use BlitzPHP\Contracts\Http\StatusCode;
 use BlitzPHP\Middlewares\BaseMiddleware;
 use BlitzPHP\Schild\Authentication\Authenticators\AccessTokens;
-use BlitzPHP\Schild\Config\Services;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -44,7 +43,7 @@ class TokenAuth extends BaseMiddleware implements MiddlewareInterface
         ]);
 
         if (! $result->isOK() || (! empty($this->arguments) && $result->extraInfo()->tokenCant($this->arguments[0]))) {
-            return Services::response()->json(['message' => lang('Auth.badToken')], StatusCode::UNAUTHORIZED);
+            return service('response')->json(['message' => lang('Auth.badToken')], StatusCode::UNAUTHORIZED);
         }
 
         if (config('auth.record_active_date')) {
@@ -56,7 +55,7 @@ class TokenAuth extends BaseMiddleware implements MiddlewareInterface
         if ($user !== null && ! $user->isActivated()) {
             $authenticator->logout();
 
-            return Services::response()->json(['message' => lang('Auth.activationBlocked')], StatusCode::FORBIDDEN);
+            return service('response')->json(['message' => lang('Auth.activationBlocked')], StatusCode::FORBIDDEN);
         }
 
         return $handler->handle($request);

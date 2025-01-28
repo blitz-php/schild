@@ -17,7 +17,6 @@ use BlitzPHP\Exceptions\PageNotFoundException;
 use BlitzPHP\Http\Redirection;
 use BlitzPHP\Http\Request;
 use BlitzPHP\Schild\Authentication\Authenticators\Session;
-use BlitzPHP\Schild\Config\Services;
 use BlitzPHP\Schild\Entities\User;
 use BlitzPHP\Schild\Entities\UserIdentity;
 use BlitzPHP\Schild\Exceptions\LogicException;
@@ -56,14 +55,15 @@ class EmailActivator implements ActionInterface
 
         $code = $this->createIdentity($user);
 
-        $request = Services::request();
+        /** @var Request $request */
+        $request = service('request');
 
         $ipAddress = $request->ip();
         $userAgent = (string) $request->userAgent();
         $date      = Date::now()->toDateTimeString();
 
         // Envoyez le courriel
-        $email = Services::mail()->merge(['debug' => false])
+        $email = service('mail')->merge(['debug' => false])
             ->to($userEmail)
             ->subject(lang('Auth.emailActivateSubject'))
             ->view(config('auth.views.action_email_activate_email'), compact('code', 'user', 'ipAddress', 'userAgent', 'date'));
@@ -110,7 +110,7 @@ class EmailActivator implements ActionInterface
 
         // Pas de match - laissez-les essayer à nouveau.
         if (! $authenticator->checkAction($identity, $postedToken)) {
-            Services::session()->flashErrors(lang('Auth.invalidActivateToken'));
+            session()->flashErrors(lang('Auth.invalidActivateToken'));
 
             return $this->view(config('auth.views.action_email_activate_show'));
         }
