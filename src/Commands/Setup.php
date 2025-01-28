@@ -39,7 +39,7 @@ class Setup extends Command
      * @var array
      */
     protected $options = [
-        '-f' => 'Forcer le remplacement de TOUS les fichiers existants dans la destination.',
+        '-f|--force' => 'Forcer le remplacement de TOUS les fichiers existants dans la destination.',
     ];
 
     /**
@@ -59,7 +59,6 @@ class Setup extends Command
         $this->publishConfigAuthToken();
         $this->publishConfigAuthJwt();
 
-        // $this->setupConstants();
         $this->setupRoutes();
 
         $this->setSecurityCSRF();
@@ -72,6 +71,10 @@ class Setup extends Command
     {
         $file     = 'Config/auth.php';
         $replaces = [];
+
+        if (class_exists('\App\Models\UserModel')) {
+            $replaces['BlitzPHP\Schild\Models\UserModel'] = 'App\Models\UserModel';
+        }
 
         $this->copyAndReplace($file, $replaces);
     }

@@ -11,6 +11,6 @@ declare(strict_types=1);
  * the LICENSE file that was distributed with this source code.
  */
 
-defined('RECORD_LOGIN_ATTEMPT_NONE')    || define('RECORD_LOGIN_ATTEMPT_NONE', 0); // Do not record at all
-defined('RECORD_LOGIN_ATTEMPT_FAILURE') || define('RECORD_LOGIN_ATTEMPT_FAILURE', 1); // Record only failures
-defined('RECORD_LOGIN_ATTEMPT_ALL')     || define('RECORD_LOGIN_ATTEMPT_ALL', 2); // Record all login attempts
+defined('RECORD_LOGIN_ATTEMPT_NONE')    || define('RECORD_LOGIN_ATTEMPT_NONE', 0); // Ne pas enregistrer du tout
+defined('RECORD_LOGIN_ATTEMPT_FAILURE') || define('RECORD_LOGIN_ATTEMPT_FAILURE', 1); // Enregistrer uniquement les échecs
+defined('RECORD_LOGIN_ATTEMPT_ALL')     || define('RECORD_LOGIN_ATTEMPT_ALL', 2); // Enregistrer toutes les tentatives de connexion

@@ -32,7 +32,7 @@ interface AuthenticatorInterface
     public function check(array $credentials): Result;
 
     /**
-     * Checks if the user is currently logged in.
+     * Vérifie si l'utilisateur est actuellement connecté.
      */
     public function loggedIn(): bool;
 

@@ -178,7 +178,7 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
      */
     public function loggedIn(): bool
     {
-        if (! empty($this->user)) {
+        if ($this->user !== null) {
             return true;
         }
 
@@ -200,7 +200,7 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
     {
         $user = $this->provider->findById($userId);
 
-        if (empty($user)) {
+        if ($user === null) {
             throw AuthenticationException::invalidUser();
         }
 

@@ -43,13 +43,12 @@ class UserModel extends BaseModel
     ];
 
     /**
-     * Whether identity records should be included
-     * when user records are fetched from the database.
+     * Indique si les enregistrements d'identité doivent être inclus lorsque les enregistrements d'utilisateur sont extraits de la base de données.
      */
     protected bool $fetchIdentities = false;
 
     /**
-     * Save the User for afterInsert and afterUpdate
+     * Sauvegarder l'utilisateur pour afterInsert et afterUpdate
      */
     protected ?User $tempUser = null;
 
@@ -61,7 +60,7 @@ class UserModel extends BaseModel
     }
 
     /**
-     * Mark the next find* query to include identities
+     * Marquer la prochaine requête de recherche* pour inclure les identités
      */
     public function withIdentities(): self
     {
@@ -71,10 +70,10 @@ class UserModel extends BaseModel
     }
 
     /**
-     * Populates identities for all records returned from a find* method.
-     * Called automatically when $this->fetchIdentities == true
+     * Remplit les identités pour tous les enregistrements renvoyés par une méthode de recherche*.
+     * Appelé automatiquement lorsque $this->fetchIdentities == true
      *
-     * Model event callback called by `afterFind`.
+     * Callback appelé par `afterFind`.
      */
     protected function fetchIdentities(array $data): array
     {
@@ -93,7 +92,7 @@ class UserModel extends BaseModel
         /** @var UserIdentityModel $identityModel */
         $identityModel = model(UserIdentityModel::class);
 
-        // Get our identities for all users
+        // Recuperons les identités de tous les utilisateurs
         $identities = $identityModel->getIdentitiesByUserIds($userIds);
 
         if (empty($identities)) {
@@ -108,7 +107,7 @@ class UserModel extends BaseModel
     }
 
     /**
-     * Map our users by ID to make assigning simpler
+     * Cartographie nos utilisateurs par ID pour simplifier l'attribution des identites
      *
      * @param array          $data       Event $data
      * @param UserIdentity[] $identities
@@ -148,8 +147,8 @@ class UserModel extends BaseModel
     }
 
     /**
-     * Adds a user to the default group.
-     * Used during registration.
+     * Ajoute un utilisateur au groupe par défaut.
+     * Utilisé lors de l'enregistrement.
      */
     public function addToDefaultGroup(User $user): void
     {
@@ -176,7 +175,7 @@ class UserModel extends BaseModel
     }
 
     /**
-     * Localise un objet Utilisateur par ID.
+     * Trouve un Utilisateur par son ID.
      *
      * @param int|string $id
      */
@@ -194,7 +193,7 @@ class UserModel extends BaseModel
     }
 
     /**
-     * Localisez un objet Utilisateur par les informations d'identification données.
+     * Trouve un Utilisateur a partir des informations d'identification données.
      *
      * @param array<string, string> $credentials
      */
@@ -302,26 +301,26 @@ class UserModel extends BaseModel
     }
 
     /**
-     * Override the BaseModel's `update()` method.
-     * If you pass User object, also updates Email Identity.
+     * Surcharge la méthode `update()` du BaseModel.
+     * Si vous passez l'objet User, l'identité Email est également mise à jour.
      *
      * @param array|int|string|null $id
      * @param array|User            $data
      *
-     * @return true if the update is successful
+     * @return true Si la modification a reussie
      *
      * @throws ValidationException
      */
     public function update($id = null, $data = null): bool
     {
-        // Clone User object for not changing the passed object.
+        // Clone l'objet Utilisateur pour ne pas modifier l'objet transmis.
         $this->tempUser = $data instanceof User ? clone $data : null;
 
         try {
             /** @throws DataException */
             $result = parent::where(['id' => $id])->update($data);
         } catch (DataException $e) {
-            // When $data is an array.
+            // Lorsque $data est un tableau.
             if ($this->tempUser === null) {
                 throw $e;
             }
@@ -345,12 +344,12 @@ class UserModel extends BaseModel
     }
 
     /**
-     * Override the BaseModel's `save()` method.
-     * If you pass User object, also updates Email Identity.
+     * Surcharge la méthode `save()` du BaseModel.
+     * Si vous passez l'objet User, l'identité Email est également mise à jour.
      *
      * @param array|User $data
      *
-     * @return true if the save is successful
+     * @return true Si la sauvegarde a reussie
      *
      * @throws ValidationException
      */
@@ -364,23 +363,23 @@ class UserModel extends BaseModel
     }
 
     /**
-     * Save Email Identity
+     * Sauvegarder l'identité de l'email
      *
-     * Model event callback called by `afterInsert` and `afterUpdate`.
+     * Callback d'événement de modèle appelé par `afterInsert` et `afterUpdate`.
      */
     protected function saveEmailIdentity(array $data): array
     {
-        // If insert()/update() gets an array data, do nothing.
+        // Si insert()/update() obtient un tableau de données, ne rien faire.
         if ($this->tempUser === null) {
             return $data;
         }
 
-        // Insert
+        // Insertion
         if ($this->tempUser->id === null) {
             /** @var User $user */
             $user = $this->find($this->db->insertID());
 
-            // If you get identity (email/password), the User object must have the id.
+            // Si vous obtenez l'identité (email/mot de passe), l'objet User doit avoir l'id.
             $this->tempUser->id = $user->id;
 
             $user->email         = $this->tempUser->email ?? '';
@@ -393,7 +392,7 @@ class UserModel extends BaseModel
             return $data;
         }
 
-        // Update
+        // Modification
         $this->tempUser->saveEmailIdentity();
         $this->tempUser = null;
 

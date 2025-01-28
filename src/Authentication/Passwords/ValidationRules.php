@@ -18,12 +18,9 @@ use BlitzPHP\Schild\Config\Services;
 use BlitzPHP\Schild\Entities\User;
 
 /**
- * Class ValidationRules
+ * Fournit des règles de validation liées à l'authentification pour BlitzPHP.
  *
- * Provides auth-related validation rules for CodeIgniter 4.
- *
- * To use, add this class to Config/Validation.php, in the
- * $rulesets array.
+ * Pour l'utiliser, ajoutez cette classe dans le tableau $rulesets du fichier app/Config/validation.php, .
  */
 class ValidationRules
 {
@@ -87,8 +84,6 @@ class ValidationRules
 
     /**
      * Construit une nouvelle instance d'utilisateur à partir des données attribuées.
-     *
-     * @param array $data Assigned data
      */
     protected function buildUserFromData(array $data = []): User
     {

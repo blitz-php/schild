@@ -27,7 +27,7 @@ class ActionController extends ApplicationController
     protected ?ActionInterface $action = null;
 
     /**
-     * Perform an initial check if we have a valid action or not.
+     * Effectuer une première vérification pour savoir si l'action est valide ou non.
      *
      * @param string[] $params
      *

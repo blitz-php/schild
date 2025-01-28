@@ -73,7 +73,7 @@ class Auth
      */
     public function setAuthenticator(?string $alias = null): self
     {
-        if (! empty($alias)) {
+        if (null !== $alias) {
             $this->alias = $alias;
         }
 

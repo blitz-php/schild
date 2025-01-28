@@ -77,7 +77,7 @@ class UserModelGenerator extends Command
 
         $params[0] = $class;
 
-        $this->runGeneration($params);
+        $this->generateClass($params);
 
         return 0;
     }

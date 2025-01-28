@@ -62,7 +62,7 @@ class Authentication
 
         $className = $this->config->authenticators[$alias];
 
-        assert($this->userProvider !== null, 'You must set $this->userProvider.');
+        assert($this->userProvider !== null, 'Vous devez definir $this->userProvider.');
 
         $this->instances[$alias] = new $className($this->userProvider);
 

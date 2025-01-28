@@ -17,7 +17,7 @@ use BlitzPHP\Schild\Entities\User;
 use BlitzPHP\Schild\Result;
 
 /**
- * Checks password does not contain any personal information
+ * Vérifie que le mot de passe ne contient pas d'informations personnelles
  */
 class NothingPersonalValidator extends BaseValidator implements ValidatorInterface
 {
@@ -85,7 +85,7 @@ class NothingPersonalValidator extends BaseValidator implements ValidatorInterfa
             if (! empty($domain)) {
                 $emailParts[] = $domain;
             }
-            $needles = array_merge($needles, $emailParts);
+            $needles = [...$needles, ...$emailParts];
 
             // Obtenir tous les autres champs "personnels" définis dans la configuration
             $personalFields = $this->config->personal_fields;

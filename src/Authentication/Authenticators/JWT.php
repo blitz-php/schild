@@ -160,7 +160,7 @@ class JWT extends BaseAuthenticator implements AuthenticatorInterface
         if ($userId === null) {
             return new Result([
                 'success' => false,
-                'reason'  => 'Invalid JWT: no user_id',
+                'reason'  => 'JWT Invalide: Pas de user_id',
             ]);
         }
 
@@ -201,7 +201,7 @@ class JWT extends BaseAuthenticator implements AuthenticatorInterface
     }
 
     /**
-     * Gets token from Request.
+     * Récupère le token a partir de la requête.
      */
     public function getTokenFromRequest(ServerRequestInterface $request): string
     {

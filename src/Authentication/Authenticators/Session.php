@@ -215,7 +215,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
             throw new LogicException('Impossible d\'obtenir l\'utilisateur.');
         }
 
-        if (empty($token) || $token !== $identity->secret) {
+        if ($token === '' || $token !== $identity->secret) {
             return false;
         }
 

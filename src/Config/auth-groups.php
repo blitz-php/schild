@@ -38,23 +38,23 @@ return [
     'groups' => [
         'superadmin' => [
             'title'       => 'Super Admin',
-            'description' => 'Complete control of the site.',
+            'description' => 'Contrôle total du site.',
         ],
         'admin' => [
             'title'       => 'Admin',
-            'description' => 'Day to day administrators of the site.',
+            'description' => 'Administrateurs quotidiens du site.',
         ],
         'developer' => [
-            'title'       => 'Developer',
-            'description' => 'Site programmers.',
+            'title'       => 'Développeur',
+            'description' => 'Programmeurs du site.',
         ],
         'user' => [
-            'title'       => 'User',
-            'description' => 'General users of the site. Often customers.',
+            'title'       => 'Utilisateur',
+            'description' => 'Utilisateurs généraux du site. Souvent des clients.',
         ],
         'beta' => [
-            'title'       => 'Beta User',
-            'description' => 'Has access to beta-level features.',
+            'title'       => 'Utilisateur bêta',
+            'description' => 'A accès aux fonctionnalités de niveau bêta.',
         ],
     ],
 
@@ -67,13 +67,13 @@ return [
      * Si une autorisation n'est pas répertoriée ici, elle ne peut pas être utilisée.
      */
     'permissions' => [
-        'admin.access'        => 'Can access the sites admin area',
-        'admin.settings'      => 'Can access the main site settings',
-        'users.manage-admins' => 'Can manage other admins',
-        'users.create'        => 'Can create new non-admin users',
-        'users.edit'          => 'Can edit existing non-admin users',
-        'users.delete'        => 'Can delete existing non-admin users',
-        'beta.access'         => 'Can access beta-level features',
+        'admin.access'        => "Peut accéder à la zone d'administration du site",
+        'admin.settings'      => 'Peut accéder aux paramètres principaux du site',
+        'users.manage-admins' => "Peut gérer d'autres administrateurs",
+        'users.create'        => 'Peut créer de nouveaux utilisateurs non-administrateurs',
+        'users.edit'          => 'Peut modifier les utilisateurs non-administrateurs existants',
+        'users.delete'        => 'Peut supprimer des utilisateurs non-administrateurs existants',
+        'beta.access'         => 'Peut accéder aux fonctionnalités de niveau beta',
     ],
 
     /**

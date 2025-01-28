@@ -29,7 +29,7 @@ class RememberModel extends BaseModel
     }
 
     /**
-     * Stores a remember-me token for the user.
+     * Stocke un jeton de rappel pour l'utilisateur.
      */
     public function rememberUser(User $user, string $selector, string $hashedValidator, string $expires): void
     {
@@ -44,7 +44,7 @@ class RememberModel extends BaseModel
     }
 
     /**
-     * Returns the remember-me token info for a given selector.
+     * Renvoie les informations sur le jeton « remember-me » pour un sélecteur donné.
      */
     public function getRememberToken(string $selector): ?stdClass
     {
@@ -52,7 +52,7 @@ class RememberModel extends BaseModel
     }
 
     /**
-     * Updates the validator for a given selector.
+     * Met à jour le validateur pour un sélecteur donné.
      */
     public function updateRememberValidator(stdClass $token): void
     {
@@ -62,8 +62,8 @@ class RememberModel extends BaseModel
     }
 
     /**
-     * Removes all persistent login tokens (remember-me) for a single user
-     * across all devices they may have logged in with.
+     * Supprime tous les jetons de connexion persistants (remember-me) pour un seul utilisateur 
+     * sur tous les appareils avec lesquels il s'est connecté.
      */
     public function purgeRememberTokens(User $user): void
     {
@@ -73,8 +73,7 @@ class RememberModel extends BaseModel
     }
 
     /**
-     * Purges the 'auth_remember_tokens' table of any records that are past
-     * their expiration date already.
+     * Purge la table 'auth_remember_tokens' de tous les enregistrements dont la date d'expiration est déjà dépassée.
      */
     public function purgeOldRememberTokens(): void
     {

@@ -117,9 +117,9 @@ class User extends Entity
     }
 
     /**
-     * Returns the first identity of the given $type for this user.
+     * Renvoie la première identité du $type donné pour cet utilisateur.
      *
-     * @param string $type See const ID_TYPE_* in Authenticator.
+     * @param string $type See const ID_TYPE_* dans l'Authenticator.
      *                     'email_2fa'|'email_activate'|'email_password'|'magic-link'|'access_token'
      */
     public function getIdentity(string $type): ?UserIdentity
@@ -130,8 +130,7 @@ class User extends Entity
     }
 
     /**
-     * ensures that all of the user's identities are loaded
-     * into the instance for faster access later.
+     * Garantit que toutes les identités de l'utilisateur sont chargées dans l'instance pour un accès ultérieur plus rapide.
      */
     private function populateIdentities(): void
     {
@@ -144,10 +143,10 @@ class User extends Entity
     }
 
     /**
-     * Accessor method for this user's UserIdentity objects.
-     * Will populate if they don't exist.
+     * Méthode d'accès aux objets UserIdentity de cet utilisateur.
+     * Les objets sont remplis s'ils n'existent pas.
      *
-     * @param string $type 'all' returns all identities.
+     * @param string $type 'all' renvoie toutes les identités.
      *
      * @return UserIdentity[]
      */
@@ -176,8 +175,7 @@ class User extends Entity
     }
 
     /**
-     * Creates a new identity for this user with an email/password
-     * combination.
+     * Crée une nouvelle identité pour cet utilisateur avec une combinaison email/mot de passe.
      *
      * @phpstan-param array{email: string, password: string} $credentials
      */
@@ -188,12 +186,12 @@ class User extends Entity
 
         $identityModel->createEmailIdentity($this, $credentials);
 
-        // Ensure we will reload all identities
+        // Veiller à ce que toutes les identités soient rechargées
         $this->identities = null;
     }
 
     /**
-     * Returns the user's Email/Password identity.
+     * Renvoie l'identité e-mail/mot de passe de l'utilisateur.
      */
     public function getEmailIdentity(): ?UserIdentity
     {
@@ -205,9 +203,8 @@ class User extends Entity
     }
 
     /**
-     * If $email, $password, or $password_hash have been updated,
-     * will update the user's email identity record with the
-     * correct values.
+     * Si $email, $password, ou $password_hash ont été mis à jour, 
+     * l'enregistrement de l'identité électronique de l'utilisateur sera mis à jour avec les valeurs correctes.
      */
     public function saveEmailIdentity(): bool
     {
@@ -217,7 +214,7 @@ class User extends Entity
 
         $identity = $this->getEmailIdentity();
         if ($identity === null) {
-            // Ensure we reload all identities
+            // Veiller à ce que toutes les identités soient rechargées
             $this->identities = null;
 
             $this->createEmailIdentity([
@@ -244,7 +241,7 @@ class User extends Entity
     }
 
     /**
-     * Update the last used at date for an identity record.
+     * Mettre à jour la date de dernière utilisation d'un enregistrement d'identité.
      */
     public function touchIdentity(UserIdentity $identity): void
     {
@@ -255,9 +252,8 @@ class User extends Entity
     }
 
     /**
-     * Accessor method to grab the user's email address.
-     * Will cache it in $this->email, since it has
-     * to hit the database the first time to get it, most likely.
+     * Méthode d'accès pour récupérer l'adresse email de l'utilisateur.
+     * Elle sera mise en cache dans $this->email, puisqu'il est probable qu'elle doive se rendre dans la base de données la première fois pour l'obtenir.
      */
     public function getEmail(): ?string
     {
@@ -293,9 +289,8 @@ class User extends Entity
     }
 
     /**
-     * Accessor method to grab the user's password hash.
-     * Will cache it in $this->attributes, since it has
-     * to hit the database the first time to get it, most likely.
+     * Méthode d'accès pour récupérer le hash du mot de passe de l'utilisateur.
+     * Il sera mis en cache dans $this->attributes, puisqu'il doit accéder à la base de données la première fois pour l'obtenir, très probablement.
      */
     public function getPasswordHash(): ?string
     {
@@ -307,7 +302,7 @@ class User extends Entity
     }
 
     /**
-     * Returns the previous login information for this user
+     * Renvoie les informations de connexion précédentes pour cet utilisateur
      */
     public function previousLogin(): ?Login
     {
@@ -318,7 +313,7 @@ class User extends Entity
     }
 
     /**
-     * Returns the last login information for this user as
+     * Renvoie les dernières informations de connexion de cet utilisateur
      */
     public function lastLogin(): ?Login
     {

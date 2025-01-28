@@ -32,7 +32,7 @@ return [
      * @var array<string, string>
      */
     'default_claims' => [
-        'iss' => '<Issuer of the JWT>',
+        'iss' => '<Émetteur du JWT>',
     ],
 
     /**
@@ -53,7 +53,7 @@ return [
                 'alg' => 'HS256', // algorithme.
                 // Définit une chaîne aléatoire secrète. Nécessite au moins 256 bits pour l'algorithme HS256.
                 // Par exemple, $ php -r 'echo base64_encode(random_bytes(32));'
-                'secret' => '<Set secret random string>',
+                'secret' => '<Définir une chaîne aléatoire secrète>',
             ],
             // Cle Asymmetrique
             // [

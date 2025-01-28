@@ -70,25 +70,25 @@ class Auth extends BaseCollector
             $groupsForUser      = implode(', ', $groups);
             $permissionsForUser = implode(', ', $permissions);
 
-            $html = '<h3>Current User</h3>';
+            $html = '<h3>Utilisateur actuel</h3>';
             $html .= '<table><tbody>';
             $html .= "<tr><td style='width:150px;'>User ID</td><td>#{$user->id}</td></tr>";
-            $html .= "<tr><td>Username</td><td>{$user->username}</td></tr>";
+            $html .= "<tr><td>Nom d'utilisateur</td><td>{$user->username}</td></tr>";
             $html .= "<tr><td>Email</td><td>{$user->email}</td></tr>";
-            $html .= "<tr><td>Groups</td><td>{$groupsForUser}</td></tr>";
+            $html .= "<tr><td>Groupes</td><td>{$groupsForUser}</td></tr>";
             $html .= "<tr><td>Permissions</td><td>{$permissionsForUser}</td></tr>";
             $html .= '</tbody></table>';
         } else {
-            $html = '<p>Not logged in.</p>';
+            $html = '<p>Non connecté.</p>';
         }
 
         return $html;
     }
 
     /**
-     * Gets the "badge" value for the button.
+     * Obtient la valeur du "badge" pour le bouton.
      *
-     * @return int|string|null ID of the current User, or null when not logged in
+     * @return int|string|null ID de l'utilisateur actuel, ou null s'il n'est pas connecté
      */
     public function getBadgeValue()
     {
@@ -96,7 +96,7 @@ class Auth extends BaseCollector
     }
 
     /**
-     * Display the icon.
+     * Icone a afficher dans la toolbar
      *
      * Icon from https://icons8.com - 1em package
      */
