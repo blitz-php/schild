@@ -188,6 +188,7 @@ class UserModel extends BaseModel
 
         return $this->select($fields)
             ->where([$this->table . '.id' => $id])
+            ->whereNull($this->table . '.deleted_at')
             ->join($this->tables['identities'], [$this->table . '.id' => $this->tables['identities'] . '.user_id'])
             ->first($this->returnType);
     }
