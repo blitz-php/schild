@@ -51,15 +51,15 @@ class MagicLinkController extends BaseController
      */
     public function loginView()
     {
-        if (! $this->config->allow_magic_link_logins) {
+        if (! parametre('auth.allow_magic_link_logins')) {
             return redirect()->route('login')->withErrors(lang('Auth.magicLinkDisabled'));
         }
 
         if (auth()->loggedIn()) {
-            return redirect()->to(config('auth.loginRedirect')());
+            return redirect()->to(($this->config->loginRedirect)());
         }
 
-        return $this->view($this->config->views['magic-link-login']);
+        return $this->view(parametre('auth.views.magic-link-login'));
     }
 
     /**
@@ -69,7 +69,7 @@ class MagicLinkController extends BaseController
      */
     public function loginAction()
     {
-        if (! $this->config->allow_magic_link_logins) {
+        if (! parametre('auth.allow_magic_link_logins')) {
             return redirect()->route('login')->withErrors(lang('Auth.magicLinkDisabled'));
         }
 
@@ -99,7 +99,7 @@ class MagicLinkController extends BaseController
             'user_id' => $user->id,
             'type'    => Session::ID_TYPE_MAGIC_LINK,
             'secret'  => $token,
-            'expires' => Date::now()->addSeconds($this->config->magic_link_lifetime)->format('Y-m-d H:i:s'),
+            'expires' => Date::now()->addSeconds(parametre('auth.magic_link_lifetime'))->format('Y-m-d H:i:s'),
         ]);
 
         $ipAddress = $this->request->ip();
@@ -111,7 +111,7 @@ class MagicLinkController extends BaseController
             ->from(parametre('mail.from.address'), parametre('mail.from.name') ?? '')
             ->to($user->email)
             ->subject(lang('Auth.magicLinkSubject'))
-            ->view($this->config->views['magic-link-email'], compact('token', 'user', 'ipAddress', 'userAgent', 'date'));
+            ->view(parametre('auth.views.magic-link-email'), compact('token', 'user', 'ipAddress', 'userAgent', 'date'));
 
         if ($email->send() === false) {
             // logger('error', $email->printDebugger(['headers']));
@@ -130,7 +130,7 @@ class MagicLinkController extends BaseController
      */
     protected function displayMessage()
     {
-        return $this->view($this->config->views['magic-link-message']);
+        return $this->view(parametre('auth.views.magic-link-message'));
     }
 
     /**
@@ -138,7 +138,7 @@ class MagicLinkController extends BaseController
      */
     public function verify(): Redirection
     {
-        if (! $this->config->allow_magic_link_logins) {
+        if (! parametre('auth.allow_magic_link_logins')) {
             return redirect()->route('login')->withErrors(lang('Auth.magicLinkDisabled'));
         }
 
@@ -195,7 +195,7 @@ class MagicLinkController extends BaseController
         $this->event->emit('schild:magicLogin');
 
         // Obtenez notre URL de redirection de connexion
-        return redirect()->to(config('auth.loginRedirect')());
+        return redirect()->to(($this->config->loginRedirect)());
     }
 
     /**

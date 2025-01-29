@@ -37,11 +37,11 @@ class RegisterController extends BaseController
     public function registerView()
     {
         if (auth()->loggedIn()) {
-            return redirect()->to(config('auth.registerRedirect')());
+            return redirect()->to(($this->config->registerRedirect)());
         }
 
         // Vérifier si l'inscription est autorisée
-        if (! $this->config->allow_registration) {
+        if (! parametre('auth.allow_registration')) {
             return redirect()->back()->withInput()->withErrors(lang('Auth.registerDisabled'));
         }
 
@@ -53,7 +53,7 @@ class RegisterController extends BaseController
             return redirect()->route('auth-action-show');
         }
 
-        return $this->view($this->config->views['register']);
+        return $this->view(parametre('auth.views.register'));
     }
 
     /**
@@ -62,11 +62,11 @@ class RegisterController extends BaseController
     public function registerAction(): Redirection
     {
         if (auth()->loggedIn()) {
-            return redirect()->to(config('auth.registerRedirect')());
+            return redirect()->to(($this->config->registerRedirect)());
         }
 
         // Vérifier si l'inscription est autorisée
-        if (! $this->config->allow_registration) {
+        if (! parametre('auth.allow_registration')) {
             return redirect()->back()->withInput()->withErrors(lang('Auth.registerDisabled'));
         }
 
@@ -117,7 +117,7 @@ class RegisterController extends BaseController
         $authenticator->completeLogin($user);
 
         // Success!
-        return redirect()->to(config('auth.registerRedirect')())
+        return redirect()->to(($this->config->registerRedirect)())
             ->with('message', lang('Auth.registerSuccess'));
     }
 

@@ -40,7 +40,7 @@ class BaseController extends ApplicationController
     {
         parent::initialize($request, $response, $logger);
 
-        $this->config = (object) parametre('auth');
+        $this->config = (object) config('auth');
         $this->tables = $this->config->tables;
         $this->event  = service('event');
     }

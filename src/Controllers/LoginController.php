@@ -29,7 +29,7 @@ class LoginController extends BaseController
     public function loginView()
     {
         if (auth()->loggedIn()) {
-            return redirect()->to(config('auth.loginRedirect')());
+            return redirect()->to(($this->config->loginRedirect)());
         }
 
         /** @var Session $authenticator */
@@ -40,7 +40,7 @@ class LoginController extends BaseController
             return redirect()->route('auth-action-show');
         }
 
-        return $this->view($this->config->views['login']);
+        return $this->view(parametre('auth.views.login'));
     }
 
     /**
@@ -55,7 +55,7 @@ class LoginController extends BaseController
         }
 
         /** @var array $credentials */
-        $credentials             = $this->request->only($this->config->valid_fields);
+        $credentials             = $this->request->only(parametre('auth.valid_fields'));
         $credentials             = array_filter($credentials);
         $credentials['password'] = $this->request->post('password');
         $remember                = $this->request->boolean('remember');
@@ -76,7 +76,7 @@ class LoginController extends BaseController
 
         $this->event->emit('schild:login');
 
-        return redirect()->to(config('auth.loginRedirect')());
+        return redirect()->to(($this->config->loginRedirect)());
     }
 
     /**
@@ -96,7 +96,7 @@ class LoginController extends BaseController
     {
         // Capturez l'URL de redirection de déconnexion avant la déconnexion d'authentification,
         // sinon vous ne pouvez pas vérifier l'utilisateur dans `logoutRedirect()`.
-        $url  = config('auth.logoutRedirect')();
+        $url  = ($this->config->logoutRedirect)();
         $user = auth()->user();
 
         auth()->logout();
