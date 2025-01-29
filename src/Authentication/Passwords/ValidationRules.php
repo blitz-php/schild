@@ -96,10 +96,9 @@ class ValidationRules
      */
     protected function prepareValidFields(): array
     {
-        $config   = (object) config('auth');
-        $fields   = array_merge($config->valid_fields, $config->personal_fields);
-        $fields[] = 'password';
+        $config = (object) config('auth');
+        $fields = array_merge($config->valid_fields, $config->personal_fields, ['email', 'password']);
 
-        return $fields;
+        return array_unique($fields);
     }
 }
