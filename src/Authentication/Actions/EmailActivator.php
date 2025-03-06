@@ -106,7 +106,13 @@ class EmailActivator implements ActionInterface
             throw new RuntimeException('Impossible d\'obtenir l\'utilisateur en cours de connexion.');
         }
 
-        $identity = $this->getIdentity($user);
+        if (null === $identity = $this->getIdentity($user)) {
+            if ($user->isActivated()) {
+                return redirect()->to(config('auth.registerRedirect')())->with('message', lang('Auth.registerSuccess'));
+            }
+
+            throw new RuntimeException('Impossible de récupérer l\'identité pour l\'utilisateur.');
+        }
 
         // Pas de match - laissez-les essayer à nouveau.
         if (! $authenticator->checkAction($identity, $postedToken)) {
