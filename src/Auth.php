@@ -41,7 +41,7 @@ class Auth
     /**
      * Version actuelle de BlitzPHP Schild
      */
-    public const VERSION = '1.0.0-beta.1';
+    public const VERSION = '1.0.0-rc';
 
     protected ?Authentication $authenticate = null;
 

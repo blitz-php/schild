@@ -29,7 +29,7 @@ use BlitzPHP\Schild\Models\UserIdentityModel;
 use BlitzPHP\Schild\Models\UserModel;
 use BlitzPHP\Schild\Result;
 use BlitzPHP\Session\Cookie\Cookie;
-use BlitzPHP\Utilities\Date;
+use BlitzPHP\Utilities\DateTime\Date;
 use stdClass;
 
 class Session extends BaseAuthenticator implements AuthenticatorInterface
@@ -639,7 +639,8 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
         $this->setSessionUserKey('id', $user->id);
 
         // Une fois connecté, assurez-vous que les en-têtes de contrôle du cache sont en place
-        service('set', Response::class, service('response')->noCache());
+
+        service('override', Response::class, service('response')->noCache());
     }
 
     /**
@@ -750,7 +751,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
     private function removeRememberCookie(): void
     {
         // Supprimer le cookie remember-me
-        service('set', Response::class, service('response')->withoutCookie(
+        service('override', Response::class, service('response')->withoutCookie(
             config('auth.session.remember_cookie_name'),
             config('cookie.path'),
             config('cookie.domain'),
@@ -772,10 +773,9 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
         // Détruisez les données de session - mais assurez-vous qu'une session est toujours disponible pour les messages flash, etc.
         $session     = session();
         $sessionData = $session->get();
-        if (isset($sessionData)) {
+       
             foreach (array_keys($sessionData) as $key) {
                 $session->remove($key);
-            }
         }
 
         // Régénérez l'ID de session pour une touche de sécurité supplémentaire.
@@ -867,7 +867,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
     {
         // Enregistrez-le dans le navigateur de l'utilisateur dans un cookie.
         // Créer le cookie
-        service('set', Response::class, service('response')->withCookie(
+        service('override', Response::class, service('response')->withCookie(
             Cookie::create(parametre('auth.session.remember_cookie_name'), $rawToken, [
                 'expires'  => parametre('auth.session.remember_length'),
                 'path'     => parametre('cookie.path'),

@@ -24,8 +24,7 @@ abstract class Entity extends Model
     /**
      * Custom convert handlers
      *
-     * @var array<string, string>
-     * @phpstan-var array<string, class-string>
+     * @var array<string, class-string>
      */
     protected $castHandlers = [
         'int_bool' => AsIntBool::class,
@@ -40,6 +39,8 @@ abstract class Entity extends Model
 
     /**
      * {@inheritDoc}
+     * 
+     * @internal
      */
     public function getTable(): string
     {

@@ -20,13 +20,35 @@ use BlitzPHP\Schild\Entities\User;
 use BlitzPHP\Schild\Entities\UserIdentity;
 use BlitzPHP\Schild\Exceptions\DatabaseException;
 use BlitzPHP\Schild\Exceptions\LogicException;
-use BlitzPHP\Utilities\Date;
+use BlitzPHP\Utilities\DateTime\Date;
 use BlitzPHP\Utilities\String\Text;
-use InvalidArgumentException;
 
 class UserIdentityModel extends BaseModel
 {
+    /**
+     * {@inheritDoc}
+     */
     protected string $returnType = UserIdentity::class;
+    
+    /**
+     * {@inheritDoc}
+     */
+    protected bool $useTimestamps = true;
+
+    /**
+     * {@inheritDoc}
+     */
+    protected array $fillable = [
+        'user_id',
+        'type',
+        'name',
+        'secret',
+        'secret2',
+        'expires',
+        'extra',
+        'force_reset',
+        'last_used_at',
+    ];
 
     public function __construct()
     {
@@ -40,14 +62,11 @@ class UserIdentityModel extends BaseModel
      *
      * @throws DatabaseException
      */
-    public function create(null|array|object $data = null, bool $returnID = true): void
+    public function create(array|object $data, bool $returnId = true): void
     {
-        if (null === $data) {
-            throw new InvalidArgumentException('$data doit etre un objet ou un tableau');
-        }
         $this->disableDBDebug();
 
-        $return = parent::create($data, $returnID);
+        $return = parent::create($data, $returnId);
 
         $this->checkQueryReturn($return);
     }
@@ -55,20 +74,20 @@ class UserIdentityModel extends BaseModel
     /**
      * Crée une nouvelle identité pour cet utilisateur avec une combinaison email/mot de passe.
      *
-     * @phpstan-param array{email: string, password: string} $credentials
+     * @param array{email: string, password: string} $credentials
      */
     public function createEmailIdentity(User $user, array $credentials): void
     {
         $this->checkUserId($user);
 
-        $className = $this->returnType;
-        $identity  = new $className();
-        $identity->forceFill([
+        $return = parent::create([
             'user_id' => $user->id,
             'type'    => Session::ID_TYPE_EMAIL_PASSWORD,
             'secret'  => $credentials['email'],
             'secret2' => service('passwords')->hash($credentials['password']),
-        ])->save();
+        ]);
+
+        $this->checkQueryReturn($return);
     }
 
     private function checkUserId(User $user): void
@@ -83,7 +102,7 @@ class UserIdentityModel extends BaseModel
     /**
      * Créer une identité avec un code à 6 chiffres pour l'action d'authentification
      *
-     * @phpstan-param array{type: string, name: string, extra: string} $data
+     * @param array{type: string, name: string, extra: string} $data
      * @param callable $codeGenerator générer un code secret
      *
      * @return string secret
@@ -125,7 +144,7 @@ class UserIdentityModel extends BaseModel
     {
         $this->checkUserId($user);
 
-        $return = $this->insert([
+        $return = parent::create([
             'type'    => AccessTokens::ID_TYPE_ACCESS_TOKEN,
             'user_id' => $user->id,
             'name'    => $name,
@@ -136,7 +155,7 @@ class UserIdentityModel extends BaseModel
         $this->checkQueryReturn($return);
 
         /** @var AccessToken $token */
-        $token = $this->where(['id' => $this->lastID()])->first(AccessToken::class);
+        $token = $this->where($this->primaryKey, $this->lastInsertId)->first(AccessToken::class);
 
         $token->raw_token = $rawToken;
 

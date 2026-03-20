@@ -56,7 +56,7 @@ class Email2FA implements ActionInterface
      * Génère le nombre aléatoire, l'enregistre en tant qu'identité temporaire avec l'utilisateur
      * et envoie un e-mail à l'utilisateur avec le code, puis affiche le formulaire pour accepter les 6 chiffres
      *
-     * @return RedirectResponse|string
+     * @return Redirection|string
      */
     public function handle(Request $request)
     {

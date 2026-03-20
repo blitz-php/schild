@@ -15,6 +15,7 @@ namespace BlitzPHP\Schild\Authentication\Traits;
 
 use BlitzPHP\Schild\Entities\AccessToken;
 use BlitzPHP\Schild\Models\UserIdentityModel;
+use BlitzPHP\Utilities\DateTime\Date;
 
 /**
  * Fournit les fonctionnalités nécessaires pour générer, révoquer et récupérer des jetons d'accès personnels.

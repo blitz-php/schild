@@ -17,7 +17,7 @@ use BlitzPHP\Schild\Exceptions\AuthorizationException;
 use BlitzPHP\Schild\Exceptions\LogicException;
 use BlitzPHP\Schild\Models\GroupModel;
 use BlitzPHP\Schild\Models\PermissionModel;
-use BlitzPHP\Utilities\Date;
+use BlitzPHP\Utilities\DateTime\Date;
 
 trait Authorizable
 {
@@ -102,6 +102,22 @@ trait Authorizable
         $this->saveGroups();
 
         return $this;
+    }
+
+    /**
+     * Set groups cache manually
+     */
+    public function setGroupsCache(array $groups): void
+    {
+        $this->groupCache = $groups;
+    }
+
+    /**
+     * Set permissions cache manually
+     */
+    public function setPermissionsCache(array $permissions): void
+    {
+        $this->permissionsCache = $permissions;
     }
 
     /**
@@ -378,7 +394,7 @@ trait Authorizable
                 ];
             }
 
-            $model->bulckInsert($inserts);
+            $model->bulkInsert($inserts);
         }
     }
 

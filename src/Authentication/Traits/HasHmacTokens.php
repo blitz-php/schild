@@ -15,6 +15,7 @@ namespace BlitzPHP\Schild\Authentication\Traits;
 
 use BlitzPHP\Schild\Entities\AccessToken;
 use BlitzPHP\Schild\Models\UserIdentityModel;
+use BlitzPHP\Utilities\DateTime\Date;
 use ReflectionException;
 
 /**

@@ -21,7 +21,7 @@ use BlitzPHP\Schild\Models\TokenLoginModel;
 use BlitzPHP\Schild\Models\UserIdentityModel;
 use BlitzPHP\Schild\Models\UserModel;
 use BlitzPHP\Schild\Result;
-use BlitzPHP\Utilities\Date;
+use BlitzPHP\Utilities\DateTime\Date;
 
 class HmacSha256 extends BaseAuthenticator implements AuthenticatorInterface
 {

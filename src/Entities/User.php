@@ -22,6 +22,7 @@ use BlitzPHP\Schild\Models\UserIdentityModel;
 use BlitzPHP\Schild\Traits\Activatable;
 use BlitzPHP\Schild\Traits\Bannable;
 use BlitzPHP\Schild\Traits\Resettable;
+use BlitzPHP\Utilities\DateTime\Date;
 use BlitzPHP\Wolke\SoftDeletes;
 
 /**
@@ -51,18 +52,6 @@ class User extends Entity
     public ?string $email = null;
 
     /**
-     * @var string[]
-     * @phpstan-var list<string>
-     * @psalm-var list<string>
-     */
-    protected $dates = [
-        'created_at',
-        'updated_at',
-        'deleted_at',
-        'last_active',
-    ];
-
-    /**
      * {@inheritDoc}
      *
      * @var array<string, string>
@@ -72,21 +61,12 @@ class User extends Entity
         'active'      => 'boolean',
         'permissions' => 'array',
         'groups'      => 'array',
+        'last_active' => 'datetime',
     ];
 
     protected array $fillable = [
         'username',
     ];
-
-    /**
-     * {@inheritDoc}
-     *
-     * @internal
-     */
-    public function getTable(): string
-    {
-        return parametre('auth.tables')[$this->authTables[self::class]] ?: parent::getTable();
-    }
 
     /**
      * {@inheritDoc}

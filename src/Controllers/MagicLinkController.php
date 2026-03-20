@@ -19,7 +19,7 @@ use BlitzPHP\Schild\Models\LoginModel;
 use BlitzPHP\Schild\Models\UserIdentityModel;
 use BlitzPHP\Schild\Models\UserModel;
 use BlitzPHP\Schild\Validation\ValidationRules;
-use BlitzPHP\Utilities\Date;
+use BlitzPHP\Utilities\DateTime\Date;
 use BlitzPHP\Utilities\String\Text;
 use BlitzPHP\Validation\Validation;
 use BlitzPHP\Validation\Validator;
@@ -47,7 +47,7 @@ class MagicLinkController extends BaseController
     /**
      * Affiche la vue permettant de saisir leur adresse e-mail afin qu'un e-mail puisse leur être envoyé.
      *
-     * @return RedirectResponse|string
+     * @return Redirection|string
      */
     public function loginView()
     {
@@ -65,7 +65,7 @@ class MagicLinkController extends BaseController
     /**
      * Reçoit l'e-mail de l'utilisateur, crée le hachage vers une identité d'utilisateur et envoie un e-mail à l'adresse e-mail indiquée.
      *
-     * @return RedirectResponse|string
+     * @return Redirection|string
      */
     public function loginAction()
     {

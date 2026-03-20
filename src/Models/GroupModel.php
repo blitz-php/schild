@@ -17,7 +17,16 @@ use BlitzPHP\Schild\Entities\User;
 
 class GroupModel extends BaseModel
 {
+    /**
+     * {@inheritDoc}
+     */
     protected string $returnType = 'array';
+
+    /**
+     * {@inheritDoc}
+     */
+    protected $fillable = ['user_id', 'group', 'created_at'];
+
 
     public function __construct()
     {
@@ -31,7 +40,7 @@ class GroupModel extends BaseModel
         $rows = $this->builder()
             ->select('group')
             ->where('user_id', $user->id)
-            ->result($this->returnType);
+            ->result('array');
 
         return array_column($rows, 'group');
     }

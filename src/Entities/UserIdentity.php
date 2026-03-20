@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace BlitzPHP\Schild\Entities;
 
-use BlitzPHP\Utilities\Date;
+use BlitzPHP\Utilities\DateTime\Date;
 
 /**
  * Représente un ensemble unique d'informations d'identification d'identité d'utilisateur.
@@ -44,18 +44,10 @@ class UserIdentity extends Entity
      * @var array<string, string>
      */
     protected array $casts = [
-        'id'          => '?integer',
-        'force_reset' => 'boolean',
-    ];
-
-    /**
-     * @var string[]
-     * @phpstan-var list<string>
-     * @psalm-var list<string>
-     */
-    protected $dates = [
-        'expires',
-        'last_used_at',
+        'id'           => '?integer',
+        'force_reset'  => 'boolean',
+        'expires'      => 'datetime',
+        'last_used_at' => 'datetime',
     ];
 
     /**

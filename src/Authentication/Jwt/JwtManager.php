@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace BlitzPHP\Schild\Authentication\Jwt;
 
 use BlitzPHP\Schild\Entities\User;
-use BlitzPHP\Utilities\Date;
+use BlitzPHP\Utilities\DateTime\Date;
 use stdClass;
 
 /**

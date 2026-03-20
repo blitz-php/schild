@@ -16,7 +16,7 @@ namespace BlitzPHP\Schild\Authentication\Authenticators;
 use BlitzPHP\Schild\Entities\User;
 use BlitzPHP\Schild\Exceptions\AuthenticationException;
 use BlitzPHP\Schild\Models\UserModel;
-use BlitzPHP\Utilities\Date;
+use BlitzPHP\Utilities\DateTime\Date;
 use InvalidArgumentException;
 
 abstract class BaseAuthenticator
