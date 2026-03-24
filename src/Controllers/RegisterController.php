@@ -15,7 +15,6 @@ namespace BlitzPHP\Schild\Controllers;
 
 use BlitzPHP\Http\Redirection;
 use BlitzPHP\Schild\Authentication\Authenticators\Session;
-use BlitzPHP\Schild\Entities\User;
 use BlitzPHP\Schild\Models\UserModel;
 use BlitzPHP\Schild\Validation\ValidationRules;
 use BlitzPHP\Validation\Validation;

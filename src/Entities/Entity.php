@@ -39,7 +39,7 @@ abstract class Entity extends Model
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @internal
      */
     public function getTable(): string

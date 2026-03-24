@@ -132,7 +132,7 @@ class Hmac extends Command
                 } catch (RuntimeException $e) {
                     $that->error('id: ' . $identity->id . ', ' . $e->getMessage());
                 }
-            }
+            },
         );
     }
 
@@ -162,7 +162,7 @@ class Hmac extends Command
                 $uIdModelSub->save($identity);
 
                 $that->write('id: ' . $identity->id . ', decrypté.');
-            }
+            },
         );
     }
 
@@ -193,7 +193,7 @@ class Hmac extends Command
                 $uIdModelSub->save($identity);
 
                 $that->write('id: ' . $identity->id . ', Ré-encrypté.');
-            }
+            },
         );
     }
 }

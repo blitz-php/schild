@@ -66,7 +66,7 @@ abstract class BaseAuthenticator
     {
         if (! $this->user instanceof User) {
             throw new InvalidArgumentException(
-                __METHOD__ . '() nécessite un utilisateur connecté avant d\'etre appeler.'
+                __METHOD__ . '() nécessite un utilisateur connecté avant d\'etre appeler.',
             );
         }
 

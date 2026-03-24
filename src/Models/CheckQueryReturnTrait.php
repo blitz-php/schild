@@ -65,8 +65,8 @@ trait CheckQueryReturnTrait
 
     protected function getPropertyDBDebug(): ReflectionProperty
     {
-        $refClass    = new ReflectionObject($this->db);
-       
+        $refClass = new ReflectionObject($this->db);
+
         return $refClass->getProperty('debug');
     }
 }

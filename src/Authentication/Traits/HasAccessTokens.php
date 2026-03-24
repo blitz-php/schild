@@ -32,7 +32,7 @@ trait HasAccessTokens
     /**
      * Génère un nouveau jeton d'accès personnel pour cet utilisateur.
      *
-     * @param string[] $scopes Autorisations accordées par le jeton
+     * @param list<string> $scopes Autorisations accordées par le jeton
      */
     public function generateAccessToken(string $name, array $scopes = ['*'], ?Date $expiresAt = null): AccessToken
     {
@@ -78,7 +78,7 @@ trait HasAccessTokens
     /**
      * Récupère tous les jetons d'accès personnels pour cet utilisateur.
      *
-     * @return AccessToken[]
+     * @return list<AccessToken>
      */
     public function accessTokens(): array
     {

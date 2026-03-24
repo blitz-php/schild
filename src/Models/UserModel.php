@@ -34,7 +34,7 @@ class UserModel extends BaseModel
     protected array $afterFind     = ['fetchIdentities', 'fetchGroups', 'fetchPermissions'];
     protected array $afterInsert   = ['saveEmailIdentity'];
     protected array $afterUpdate   = ['saveEmailIdentity'];
-    protected array $fillable = [
+    protected array $fillable      = [
         'username',
         'status',
         'status_message',
@@ -136,7 +136,7 @@ class UserModel extends BaseModel
         if ($data['singleton'] && ! isset($data['id'])) {
             $data['id'] = $data['data']->id;
         }
-        
+
         $data['data'] = $data['singleton'] ? $mappedUsers[$data['id']] : $mappedUsers;
 
         return $data;
@@ -145,10 +145,10 @@ class UserModel extends BaseModel
     /**
      * Cartographie nos utilisateurs par ID pour simplifier l'attribution des identites
      *
-     * @param array          $data       Event $data
-     * @param UserIdentity[] $identities
+     * @param array              $data       Event $data
+     * @param list<UserIdentity> $identities
      *
-     * @return User[] UserId => User object
+     * @return list<User> UserId => User object
      */
     private function assignIdentities(array $data, array $identities): array
     {
@@ -259,7 +259,7 @@ class UserModel extends BaseModel
     /**
      * Répertorier nos utilisateurs par identifiant pour faciliter leur attribution
      *
-     * @param list<array> $properties
+     * @param list<array>            $properties
      * @param 'groups'|'permissions' $type
      *
      * @return list<User> UserId => Objet User
@@ -397,14 +397,14 @@ class UserModel extends BaseModel
         foreach ($credentials as $key => $value) {
             $builder->where(
                 'LOWER(' . $this->table . ".{$key})",
-                strtolower($value)
+                strtolower($value),
             );
         }
 
         if ($email !== null) {
             $builder->where(
                 'LOWER(' . $this->tables['identities'] . '.secret)',
-                strtolower($email)
+                strtolower($email),
             );
         }
 

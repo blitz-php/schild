@@ -33,8 +33,8 @@ trait HasHmacTokens
     /**
      * Génère un nouveau jeton HMAC personnel pour cet utilisateur.
      *
-     * @param string   $name   Nom du jeton
-     * @param string[] $scopes Autorisations accordées par le jeton
+     * @param string       $name   Nom du jeton
+     * @param list<string> $scopes Autorisations accordées par le jeton
      *
      * @throws ReflectionException
      */
@@ -71,7 +71,7 @@ trait HasHmacTokens
     /**
      * Récupère tous les jetons HMAC personnels pour cet utilisateur.
      *
-     * @return AccessToken[]
+     * @return list<AccessToken>
      */
     public function hmacTokens(): array
     {

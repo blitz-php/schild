@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace BlitzPHP\Schild\Controllers;
 
+use BlitzPHP\Exceptions\PageNotFoundException;
 use BlitzPHP\Http\Redirection;
 use BlitzPHP\Schild\Authentication\Authenticators\Session;
 use BlitzPHP\Schild\Models\LoginModel;
@@ -142,6 +143,10 @@ class MagicLinkController extends BaseController
             return redirect()->route('login')->withErrors(lang('Auth.magicLinkDisabled'));
         }
 
+        /* if ($this->request->userAgent()->isRobot()) {
+            throw PageNotFoundException::pageNotFound();
+        } */
+
         $token = $this->request->query('token');
 
         /** @var UserIdentityModel $identityModel */
@@ -204,7 +209,7 @@ class MagicLinkController extends BaseController
     private function recordLoginAttempt(
         string $identifier,
         bool $success,
-        $userId = null
+        $userId = null,
     ): void {
         /** @var LoginModel $loginModel */
         $loginModel = model(LoginModel::class);
@@ -215,7 +220,7 @@ class MagicLinkController extends BaseController
             $success,
             $this->request->ip(),
             (string) $this->request->userAgent(),
-            $userId
+            $userId,
         );
     }
 

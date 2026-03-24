@@ -259,12 +259,12 @@ class User extends Command
         $password = $this->prompt(
             'Password',
             null,
-            $this->validationRules['password']['rules']
+            $this->validationRules['password']['rules'],
         );
         $passwordConfirm = $this->prompt(
             'Password confirmation',
             null,
-            $this->validationRules['password']['rules']
+            $this->validationRules['password']['rules'],
         );
 
         if ($password !== $passwordConfirm) {
@@ -350,7 +350,7 @@ class User extends Command
     private function changename(
         ?string $username = null,
         ?string $email = null,
-        ?string $newUsername = null
+        ?string $newUsername = null,
     ): void {
         $user = $this->findUser('Change username', $username, $email);
 
@@ -391,7 +391,7 @@ class User extends Command
     private function changeemail(
         ?string $username = null,
         ?string $email = null,
-        ?string $newEmail = null
+        ?string $newEmail = null,
     ): void {
         $user = $this->findUser('Change email', $username, $email);
 
@@ -442,7 +442,7 @@ class User extends Command
 
         $confirm = $this->prompt(
             'Delete the user "' . $user->username . '" (' . $user->email . ') ?',
-            ['y', 'n']
+            ['y', 'n'],
         );
 
         if ($confirm === 'y') {
@@ -480,12 +480,12 @@ class User extends Command
             $password = $this->prompt(
                 'Password',
                 null,
-                $this->validationRules['password']['rules']
+                $this->validationRules['password']['rules'],
             );
             $passwordConfirm = $this->prompt(
                 'Password confirmation',
                 null,
-                $this->validationRules['password']['rules']
+                $this->validationRules['password']['rules'],
             );
 
             if ($password !== $passwordConfirm) {
@@ -517,7 +517,7 @@ class User extends Command
             ->join(
                 $this->tables['identities'],
                 $this->tables['users'] . '.id = ' . $this->tables['identities'] . '.user_id',
-                'LEFT'
+                'LEFT',
             )
             ->groupStart()
             ->where($this->tables['identities'] . '.type', Session::ID_TYPE_EMAIL_PASSWORD)
@@ -558,7 +558,7 @@ class User extends Command
 
         $confirm = $this->prompt(
             'Add the user "' . $user->username . '" to the group "' . $group . '" ?',
-            ['y', 'n']
+            ['y', 'n'],
         );
 
         if ($confirm === 'y') {
@@ -568,7 +568,7 @@ class User extends Command
         } else {
             $this->write(
                 'Addition of the user "' . $user->username . '" to the group "' . $group . '" cancelled',
-                'yellow'
+                'yellow',
             );
         }
     }
@@ -590,7 +590,7 @@ class User extends Command
 
         $confirm = $this->prompt(
             'Remove the user "' . $user->username . '" from the group "' . $group . '" ?',
-            ['y', 'n']
+            ['y', 'n'],
         );
 
         if ($confirm === 'y') {

@@ -141,7 +141,7 @@ return [
      * Chaque authentificateur répertorié sera vérifié.
      * Si aucune correspondance n'est trouvée, le suivant dans la chaîne sera vérifié.
      *
-     * @var string[]
+     * @var list<string>
      */
     'authentication_chain' => [
         'session',
@@ -271,7 +271,7 @@ return [
      * Vous pouvez ajouter des classes personnalisées tant qu'elles adhèrent à
      * BlitzPHP\Schild\Authentication\Passwords\ValidatorInterface.
      *
-     * @var class-string<ValidatorInterface>[]
+     * @var list<class-string<ValidatorInterface>>
      */
     'password_validators' => [
         CompositionValidator::class,
@@ -484,12 +484,12 @@ return [
         return match (true) {
             // L'URL est un chemin absolu
             str_starts_with($url, 'http://') || str_starts_with($url, 'https://') => $url,
-            
+
             // L'URL est une route nommée
             link_to($url) !== '' => rtrim(url_to($url), '/ '),
 
             // L'URL est un chemin URI
-            default => rtrim(site_url($url), '/ ')
+            default => rtrim(site_url($url), '/ '),
         };
     },
 ];

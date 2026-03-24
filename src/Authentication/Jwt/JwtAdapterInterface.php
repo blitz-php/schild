@@ -20,7 +20,7 @@ interface JwtAdapterInterface
     /**
      * Problèmes signés JWT (JWS)
      *
-     * @param array<mixed>               $payload La charge utile.
+     * @param list<mixed>                $payload La charge utile.
      * @param string                     $keyset  Le groupe de clés. La clé de tableau de config/auth-jwt ::$keys.
      * @param array<string, string>|null $headers Un tableau avec les éléments d'en-tête à attacher.
      *

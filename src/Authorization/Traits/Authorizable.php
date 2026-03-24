@@ -257,7 +257,7 @@ trait Authorizable
             if (! str_contains($permission, '.')) {
                 throw new LogicException(
                     'Une autorisation doit être une chaîne composée d\'une portée et d\'une action, comme `users.create`.'
-                    . ' Autorisation non valide: ' . $permission
+                    . ' Autorisation non valide: ' . $permission,
                 );
             }
 
@@ -364,8 +364,8 @@ trait Authorizable
     }
 
     /**
-     * @phpstan-param 'group'|'permission' $type
-     * @param GroupModel|PermissionModel $model
+     * @param         GroupModel|PermissionModel $model
+     * @phpstan-param 'group'|'permission'       $type
      */
     private function saveGroupsOrPermissions(string $type, $model, array $cache): void
     {
@@ -399,7 +399,7 @@ trait Authorizable
     }
 
     /**
-     * @return string[]
+     * @return list<string>
      */
     private function getConfigPermissions(): array
     {

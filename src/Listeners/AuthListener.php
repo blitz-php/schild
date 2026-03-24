@@ -21,13 +21,13 @@ class AuthListener implements EventListenerInterface
 {
     public function listen(EventManagerInterface $event): void
     {
-        $event->on('schild:login', fn($e) => $this->onLogin($e));
-	}
+        $event->on('schild:login', fn ($e) => $this->onLogin($e));
+    }
 
-	private function onLogin(EventInterface $event) 
-	{
-		// Apres la connexion, on supprime les erreurs potentiellement survenues (mot de passe invalide)
-		// pour eviter les problemes avec des vues d'autres pages qui peuvent les capturer et croire que c'est une erreur de la requete courante
-		session()->remove(['errors']);
-	}
+    private function onLogin(EventInterface $event): void
+    {
+        // Apres la connexion, on supprime les erreurs potentiellement survenues (mot de passe invalide)
+        // pour eviter les problemes avec des vues d'autres pages qui peuvent les capturer et croire que c'est une erreur de la requete courante
+        session()->remove(['errors']);
+    }
 }

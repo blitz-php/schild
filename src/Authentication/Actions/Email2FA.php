@@ -152,7 +152,7 @@ class Email2FA implements ActionInterface
                 'name'  => 'login',
                 'extra' => lang('Auth.need2FA'),
             ],
-            $generator
+            $generator,
         );
     }
 
@@ -166,7 +166,7 @@ class Email2FA implements ActionInterface
 
         return $identityModel->getIdentityByType(
             $user,
-            $this->type
+            $this->type,
         );
     }
 

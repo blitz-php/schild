@@ -172,7 +172,7 @@ class Auth
      * de répéter le code ici et pour leur permettre d'avoir leurs propres fonctionnalités
      * supplémentaires en plus de celles requises, comme la fonctionnalité "se souvenir de moi".
      *
-     * @param string[] $args
+     * @param list<string> $args
      *
      * @throws AuthenticationException
      */

@@ -49,7 +49,7 @@ class EmailActivator implements ActionInterface
         $userEmail = $user->email;
         if ($userEmail === null) {
             throw new LogicException(
-                'L\'activation par e-mail nécessite l\'adresse e-mail de l\'utilisateur. user_id: ' . $user->id
+                'L\'activation par e-mail nécessite l\'adresse e-mail de l\'utilisateur. user_id: ' . $user->id,
             );
         }
 
@@ -151,7 +151,7 @@ class EmailActivator implements ActionInterface
                 'name'  => 'register',
                 'extra' => lang('Auth.needVerification'),
             ],
-            $generator
+            $generator,
         );
     }
 
@@ -165,7 +165,7 @@ class EmailActivator implements ActionInterface
 
         return $identityModel->getIdentityByType(
             $user,
-            $this->type
+            $this->type,
         );
     }
 

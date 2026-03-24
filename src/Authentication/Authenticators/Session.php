@@ -86,7 +86,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
             throw new SecurityException(
                 'Config\Security::$csrfProtection is set to \'cookie\'.'
                 . ' Same-site attackers may bypass the CSRF protection.'
-                . ' Please set it to \'session\'.'
+                . ' Please set it to \'session\'.',
             );
         }
     }
@@ -254,7 +254,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
         bool $success,
         string $ipAddress,
         string $userAgent,
-        $userId = null
+        $userId = null,
     ): void {
         // Determine le type d'identificateur que nous devons utiliser (email ou username).
         // Les champs standard seraient l'e-mail, le nom d'utilisateur, mais n'importe quelle colonne dans config('auth.valid_fields') peut être utilisée.
@@ -280,7 +280,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
             $success,
             $ipAddress,
             $userAgent,
-            $userId
+            $userId,
         );
     }
 
@@ -473,18 +473,18 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
     /**
      * Obtient des identités pour l'action
      *
-     * @return UserIdentity[]
+     * @return list<UserIdentity>
      */
     private function getIdentitiesForAction(User $user): array
     {
         return $this->userIdentityModel->getIdentitiesByTypes(
             $user,
-            $this->getActionTypes()
+            $this->getActionTypes(),
         );
     }
 
     /**
-     * @return string[]
+     * @return list<string>
      */
     private function getActionTypes(): array
     {
@@ -621,7 +621,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
                 'L\'utilisateur a des informations sur l\'utilisateur dans la session, donc déjà connecté ou en attente de connexion.'
                 . ' Si un utilisateur connecté se reconnecte avec un autre compte, les données de session de l\'utilisateur précédent seront utilisées comme nouvel utilisateur.'
                 . ' Corrigez votre code pour empêcher les utilisateurs de se connecter sans se déconnecter ou supprimer les données de session.'
-                . ' user_id: ' . $userId
+                . ' user_id: ' . $userId,
             );
         }
 
@@ -708,7 +708,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
                 'L\'utilisateur a des identités pour l\'action, il ne peut donc pas terminer la connexion.'
                 . ' Si vous souhaitez commencer à vous connecter avec l\'action auth, utilisez plutôt startLogin().'
                 . ' Ou supprimez les identités pour action dans la base de données.'
-                . ' user_id: ' . $user->id
+                . ' user_id: ' . $user->id,
             );
         }
         // Vérifiez auth_action dans la session
@@ -717,7 +717,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
                 'L\'utilisateur a une action d\'authentification dans la session, il ne peut donc pas terminer la connexion.'
                 . ' Si vous souhaitez commencer à vous connecter avec l\'action auth, utilisez plutôt startLogin().'
                 . ' Ou supprimez `auth_action` et `auth_action_message` dans les données de session.'
-                . ' user_id: ' . $user->id
+                . ' user_id: ' . $user->id,
             );
         }
 
@@ -773,7 +773,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
         // Détruisez les données de session - mais assurez-vous qu'une session est toujours disponible pour les messages flash, etc.
         $session     = session();
         $sessionData = $session->get();
-       
+
         foreach (array_keys($sessionData) as $key) {
             $session->remove($key);
         }
@@ -850,7 +850,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
             $user,
             $selector,
             $this->hashValidator($validator),
-            $expires
+            $expires,
         );
 
         $this->setRememberMeCookie($rawToken);
@@ -874,7 +874,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
                 'domain'   => parametre('cookie.domain'),
                 'secure'   => parametre('cookie.secure'),
                 'httponly' => true,
-            ])
+            ]),
         ));
     }
 

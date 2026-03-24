@@ -27,7 +27,6 @@ class GroupModel extends BaseModel
      */
     protected $fillable = ['user_id', 'group', 'created_at'];
 
-
     public function __construct()
     {
         parent::__construct();

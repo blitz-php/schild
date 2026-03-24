@@ -23,7 +23,7 @@ class RememberModel extends BaseModel
      * {@inheritDoc}
      */
     protected string $returnType = 'object';
-    
+
     /**
      * {@inheritDoc}
      */
@@ -75,7 +75,7 @@ class RememberModel extends BaseModel
     }
 
     /**
-     * Supprime tous les jetons de connexion persistants (remember-me) pour un seul utilisateur 
+     * Supprime tous les jetons de connexion persistants (remember-me) pour un seul utilisateur
      * sur tous les appareils avec lesquels il s'est connecté.
      */
     public function purgeRememberTokens(User $user): void

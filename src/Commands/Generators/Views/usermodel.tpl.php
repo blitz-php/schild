@@ -14,14 +14,14 @@ class {class} extends ShieldUserModel
 <?php endif; ?>
     /**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * @override
 	 */
 	protected function fetchByCredentials(array $credentials, BaseBuilder $builder): ?BaseBuilder
 	{
         // Implémentez votre logique personnalisée pour récupérer l'utilisateur en fonction des informations d'identification fournies.
         // Vous pouvez utiliser les informations d'identification $credentials et $builder pour interroger la base de données.
-       
+
 		return parent::fetchByCredentials($credentials, $builder);
 	}
 }

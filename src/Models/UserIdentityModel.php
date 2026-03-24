@@ -31,7 +31,7 @@ class UserIdentityModel extends BaseModel
      * {@inheritDoc}
      */
     protected string $returnType = UserIdentity::class;
-    
+
     /**
      * {@inheritDoc}
      */
@@ -96,7 +96,7 @@ class UserIdentityModel extends BaseModel
     {
         if ($user->id === null) {
             throw new LogicException(
-                '"$user->id" est nul. Vous ne devez pas utiliser l\'objet utilisateur incomplet.'
+                '"$user->id" est nul. Vous ne devez pas utiliser l\'objet utilisateur incomplet.',
             );
         }
     }
@@ -105,7 +105,7 @@ class UserIdentityModel extends BaseModel
      * Créer une identité avec un code à 6 chiffres pour l'action d'authentification
      *
      * @param array{type: string, name: string, extra: string} $data
-     * @param callable $codeGenerator générer un code secret
+     * @param callable                                         $codeGenerator générer un code secret
      *
      * @return string secret
      */
@@ -139,8 +139,8 @@ class UserIdentityModel extends BaseModel
     /**
      * Génère un nouveau token d'accès personnel pour l'utilisateur.
      *
-     * @param string   $name   Nom du token
-     * @param string[] $scopes Autorisations accordées par le token
+     * @param string       $name   Nom du token
+     * @param list<string> $scopes Autorisations accordées par le token
      */
     public function generateAccessToken(User $user, string $name, array $scopes = ['*'], ?Date $expiresAt = null): AccessToken
     {
@@ -199,7 +199,7 @@ class UserIdentityModel extends BaseModel
     }
 
     /**
-     * @return AccessToken[]
+     * @return list<AccessToken>
      */
     public function getAllAccessTokens(User $user): array
     {
@@ -214,6 +214,8 @@ class UserIdentityModel extends BaseModel
 
     /**
      * Met à jour ou définit la date d'expiration de l'AccessToken ou du HMAC Token d'un utilisateur en fonction de son ID.
+     *
+     * @param mixed $id
      *
      * @return bool Renvoie true si la date d'expiration a été définie ou mise à jour.
      */
@@ -243,9 +245,9 @@ class UserIdentityModel extends BaseModel
     /**
      * Génère un nouveau jeton d'accès personnel pour l'utilisateur.
      *
-     * @param string       $name      Nom du jeton
-     * @param list<string> $scopes    Autorisations accordées par le jeton
-    */
+     * @param string       $name   Nom du jeton
+     * @param list<string> $scopes Autorisations accordées par le jeton
+     */
     public function generateHmacToken(User $user, string $name, array $scopes = ['*'], ?Date $expiresAt = null): AccessToken
     {
         $this->checkUserId($user);
@@ -278,7 +280,7 @@ class UserIdentityModel extends BaseModel
      * Récupère l'objet Token correspondant au jeton HMAC sélectionné.
      * Remarque : ces jetons ne sont pas hachés, car ils sont considérés comme des secrets partagés.
      *
-     * @param string $key  Chaîne de la clé HMAC
+     * @param string $key Chaîne de la clé HMAC
      *
      * @return ?AccessToken Jeton d'accès HMAC complet
      */
@@ -371,7 +373,7 @@ class UserIdentityModel extends BaseModel
     /**
      * Renvoie toutes les identités.
      *
-     * @return UserIdentity[]
+     * @return list<UserIdentity>
      */
     public function getIdentities(User $user): array
     {
@@ -382,9 +384,9 @@ class UserIdentityModel extends BaseModel
     }
 
     /**
-     * @param int[]|string[] $userIds
+     * @param list<int>|list<string> $userIds
      *
-     * @return UserIdentity[]
+     * @return list<UserIdentity>
      */
     public function getIdentitiesByUserIds(array $userIds): array
     {
@@ -407,9 +409,9 @@ class UserIdentityModel extends BaseModel
     /**
      * Renvoie toutes les identités pour les types spécifiques.
      *
-     * @param string[] $types
+     * @param list<string> $types
      *
-     * @return UserIdentity[]
+     * @return list<UserIdentity>
      */
     public function getIdentitiesByTypes(User $user, array $types): array
     {
@@ -493,7 +495,7 @@ class UserIdentityModel extends BaseModel
     /**
      * Forcer la réinitialisation du mot de passe pour plusieurs utilisateurs.
      *
-     * @param int[]|string[] $userIds
+     * @param list<int>|list<string> $userIds
      */
     public function forceMultiplePasswordReset(array $userIds): void
     {

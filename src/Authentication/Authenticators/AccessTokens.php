@@ -63,7 +63,7 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
                     $credentials['token'] ?? '',
                     false,
                     $ipAddress,
-                    $userAgent
+                    $userAgent,
                 );
             }
 
@@ -82,7 +82,7 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
                     false,
                     $ipAddress,
                     $userAgent,
-                    $user->id
+                    $user->id,
                 );
             }
 
@@ -106,7 +106,7 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
                 true,
                 $ipAddress,
                 $userAgent,
-                $this->user->id
+                $this->user->id,
             );
         }
 
@@ -155,7 +155,7 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
                 'reason'  => lang('Auth.oldToken'),
             ]);
         }
-        
+
         // N'a pas été utilisé depuis longtemps
         if (
             $token->last_used_at
@@ -217,7 +217,7 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
         }
 
         $user->setAccessToken(
-            $user->getAccessToken($this->getBearerToken())
+            $user->getAccessToken($this->getBearerToken()),
         );
 
         $this->login($user);

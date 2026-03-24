@@ -27,7 +27,7 @@ class JwtManager
 
     public function __construct(
         ?Date $clock = null,
-        ?JwtAdapterInterface $jwtAdapter = null
+        ?JwtAdapterInterface $jwtAdapter = null,
     ) {
         $this->clock      = $clock ?? new Date();
         $this->jwtAdapter = $jwtAdapter ?? new FirebaseAdapter();
@@ -46,7 +46,7 @@ class JwtManager
         array $claims = [],
         ?int $ttl = null,
         $keyset = 'default',
-        ?array $headers = null
+        ?array $headers = null,
     ): string {
         $payload = array_merge($claims, [
             'sub' => (string) $user->id, // subject
@@ -67,7 +67,7 @@ class JwtManager
         array $claims,
         ?int $ttl = null,
         $keyset = 'default',
-        ?array $headers = null
+        ?array $headers = null,
     ): string {
         $config = (object) config('auth-jwt');
 
@@ -88,7 +88,7 @@ class JwtManager
         return $this->jwtAdapter->encode(
             $payload,
             $keyset,
-            $headers
+            $headers,
         );
     }
 

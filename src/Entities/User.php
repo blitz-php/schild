@@ -26,13 +26,13 @@ use BlitzPHP\Utilities\DateTime\Date;
 use BlitzPHP\Wolke\SoftDeletes;
 
 /**
- * @property string|null         $email
- * @property int|string|null     $id
- * @property UserIdentity[]|null $identities
- * @property Date|null           $last_active
- * @property string|null         $password
- * @property string|null         $password_hash
- * @property string|null         $username
+ * @property string|null             $email
+ * @property int|string|null         $id
+ * @property list<UserIdentity>|null $identities
+ * @property Date|null               $last_active
+ * @property string|null             $password
+ * @property string|null             $password_hash
+ * @property string|null             $username
  */
 class User extends Entity
 {
@@ -45,7 +45,7 @@ class User extends Entity
     use SoftDeletes;
 
     /**
-     * @var UserIdentity[]|null
+     * @var list<UserIdentity>|null
      */
     private ?array $identities = null;
 
@@ -127,7 +127,7 @@ class User extends Entity
      *
      * @param string $type 'all' renvoie toutes les identités.
      *
-     * @return UserIdentity[]
+     * @return list<UserIdentity>
      */
     public function getIdentities(string $type = 'all'): array
     {
@@ -182,7 +182,7 @@ class User extends Entity
     }
 
     /**
-     * Si $email, $password, ou $password_hash ont été mis à jour, 
+     * Si $email, $password, ou $password_hash ont été mis à jour,
      * l'enregistrement de l'identité électronique de l'utilisateur sera mis à jour avec les valeurs correctes.
      */
     public function saveEmailIdentity(): bool
