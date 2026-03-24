@@ -32,7 +32,7 @@ return [
      * @var array<string, string>
      */
     'default_claims' => [
-        'iss' => '<Émetteur du JWT>',
+        'iss' => config('app.name', '<Émetteur du JWT>'),
     ],
 
     /**
@@ -43,7 +43,6 @@ return [
      * La première clé du groupe est utilisée pour la signature.
      *
      * @var array<string, array<int, array<string, string>>>
-     * @phpstan-var array<string, list<array<string, string>>>
      */
     'keys' => [
         'default' => [
@@ -51,7 +50,7 @@ return [
             [
                 'kid' => '', // ID de clé. Facultatif si vous n'avez qu'une seule clé.
                 'alg' => 'HS256', // algorithme.
-                // Définit une chaîne aléatoire secrète. Nécessite au moins 256 bits pour l'algorithme HS256.
+                // Définit une chaîne aléatoire secrète. Nécessite au moins 256/384/512 bits pour les algorithmes HS256/HS384/HS512.
                 // Par exemple, $ php -r 'echo base64_encode(random_bytes(32));'
                 'secret' => '<Définir une chaîne aléatoire secrète>',
             ],
