@@ -145,6 +145,17 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
 
         assert($token->last_used_at instanceof Date || $token->last_used_at === null);
 
+        // Est expiré ?
+        if (
+            $token->last_used_at
+            && $token->last_used_at->isBefore(Date::now())
+        ) {
+            return new Result([
+                'success' => false,
+                'reason'  => lang('Auth.oldToken'),
+            ]);
+        }
+        
         // N'a pas été utilisé depuis longtemps
         if (
             $token->last_used_at

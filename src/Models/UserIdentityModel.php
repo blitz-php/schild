@@ -14,7 +14,9 @@ declare(strict_types=1);
 namespace BlitzPHP\Schild\Models;
 
 use BlitzPHP\Schild\Authentication\Authenticators\AccessTokens;
+use BlitzPHP\Schild\Authentication\Authenticators\HmacSha256;
 use BlitzPHP\Schild\Authentication\Authenticators\Session;
+use BlitzPHP\Schild\Authentication\HMAC\HmacEncrypter;
 use BlitzPHP\Schild\Entities\AccessToken;
 use BlitzPHP\Schild\Entities\User;
 use BlitzPHP\Schild\Entities\UserIdentity;
@@ -140,7 +142,7 @@ class UserIdentityModel extends BaseModel
      * @param string   $name   Nom du token
      * @param string[] $scopes Autorisations accordées par le token
      */
-    public function generateAccessToken(User $user, string $name, array $scopes = ['*']): AccessToken
+    public function generateAccessToken(User $user, string $name, array $scopes = ['*'], ?Date $expiresAt = null): AccessToken
     {
         $this->checkUserId($user);
 
@@ -149,6 +151,7 @@ class UserIdentityModel extends BaseModel
             'user_id' => $user->id,
             'name'    => $name,
             'secret'  => hash('sha256', $rawToken = Text::random(64)),
+            'expires' => $expiresAt,
             'extra'   => serialize($scopes),
         ]);
 
@@ -207,6 +210,148 @@ class UserIdentityModel extends BaseModel
             ->where('type', AccessTokens::ID_TYPE_ACCESS_TOKEN)
             ->orderBy($this->primaryKey)
             ->all(AccessToken::class);
+    }
+
+    /**
+     * Met à jour ou définit la date d'expiration de l'AccessToken ou du HMAC Token d'un utilisateur en fonction de son ID.
+     *
+     * @return bool Renvoie true si la date d'expiration a été définie ou mise à jour.
+     */
+    public function setIdentityExpirationById($id, User $user, ?Date $expiresAt = null): bool
+    {
+        $this->checkUserId($user);
+
+        return $this->where('user_id', $user->id)
+            ->where('id', $id)
+            ->update(['expires' => $expiresAt]);
+    }
+
+    // HMAC
+    /**
+     * Recherche et récupération du jeton d'accès HMAC à partir du jeton seul
+     *
+     * @return ?AccessToken Objet AccessToken HMAC complet
+     */
+    public function getHmacTokenByKey(string $key): ?AccessToken
+    {
+        return $this
+            ->where('type', HmacSha256::ID_TYPE_HMAC_TOKEN)
+            ->where('secret', $key)
+            ->first(AccessToken::class);
+    }
+
+    /**
+     * Génère un nouveau jeton d'accès personnel pour l'utilisateur.
+     *
+     * @param string       $name      Nom du jeton
+     * @param list<string> $scopes    Autorisations accordées par le jeton
+    */
+    public function generateHmacToken(User $user, string $name, array $scopes = ['*'], ?Date $expiresAt = null): AccessToken
+    {
+        $this->checkUserId($user);
+
+        $encrypter    = new HmacEncrypter();
+        $rawSecretKey = $encrypter->generateSecretKey();
+        $secretKey    = $encrypter->encrypt($rawSecretKey);
+
+        $return = parent::create([
+            'type'    => HmacSha256::ID_TYPE_HMAC_TOKEN,
+            'user_id' => $user->id,
+            'name'    => $name,
+            'secret'  => bin2hex(random_bytes(16)), // Key
+            'secret2' => $secretKey,
+            'expires' => $expiresAt,
+            'extra'   => serialize($scopes),
+        ]);
+
+        $this->checkQueryReturn($return);
+
+        /** @var AccessToken $token */
+        $token = $this->where($this->primaryKey, $this->lastInsertId)->first(AccessToken::class);
+
+        $token->raw_secret_key = $rawSecretKey;
+
+        return $token;
+    }
+
+    /**
+     * Récupère l'objet Token correspondant au jeton HMAC sélectionné.
+     * Remarque : ces jetons ne sont pas hachés, car ils sont considérés comme des secrets partagés.
+     *
+     * @param string $key  Chaîne de la clé HMAC
+     *
+     * @return ?AccessToken Jeton d'accès HMAC complet
+     */
+    public function getHmacToken(User $user, string $key): ?AccessToken
+    {
+        $this->checkUserId($user);
+
+        return $this->where('user_id', $user->id)
+            ->where('type', HmacSha256::ID_TYPE_HMAC_TOKEN)
+            ->where('secret', $key)
+            ->first(AccessToken::class);
+    }
+
+    /**
+     * Compte tenu de l'ID, renvoie le jeton d'accès donné.
+     *
+     * @param int|string $id
+     *
+     * @return ?AccessToken Jeton d'accès HMAC complet
+     */
+    public function getHmacTokenById($id, User $user): ?AccessToken
+    {
+        $this->checkUserId($user);
+
+        return $this->where('user_id', $user->id)
+            ->where('type', HmacSha256::ID_TYPE_HMAC_TOKEN)
+            ->where('id', $id)
+            ->first(AccessToken::class);
+    }
+
+    /**
+     * Récupère tous les jetons HMAC des utilisateurs
+     *
+     * @return list<AccessToken>
+     */
+    public function getAllHmacTokens(User $user): array
+    {
+        $this->checkUserId($user);
+
+        return $this
+            ->where('user_id', $user->id)
+            ->where('type', HmacSha256::ID_TYPE_HMAC_TOKEN)
+            ->sortAsc($this->primaryKey)
+            ->all(AccessToken::class);
+    }
+
+    /**
+     * Supprime tous les jetons HMAC pour la clé donnée.
+     */
+    public function revokeHmacToken(User $user, string $key): void
+    {
+        $this->checkUserId($user);
+
+        $return = $this->where('user_id', $user->id)
+            ->where('type', HmacSha256::ID_TYPE_HMAC_TOKEN)
+            ->where('secret', $key)
+            ->delete();
+
+        $this->checkQueryReturn($return);
+    }
+
+    /**
+     * Révoque tous les jetons d'accès pour cet utilisateur.
+     */
+    public function revokeAllHmacTokens(User $user): void
+    {
+        $this->checkUserId($user);
+
+        $return = $this->where('user_id', $user->id)
+            ->where('type', HmacSha256::ID_TYPE_HMAC_TOKEN)
+            ->delete();
+
+        $this->checkQueryReturn($return);
     }
 
     /**
