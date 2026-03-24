@@ -774,8 +774,8 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
         $session     = session();
         $sessionData = $session->get();
        
-            foreach (array_keys($sessionData) as $key) {
-                $session->remove($key);
+        foreach (array_keys($sessionData) as $key) {
+            $session->remove($key);
         }
 
         // Régénérez l'ID de session pour une touche de sécurité supplémentaire.
@@ -858,9 +858,9 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
 
     private function calcExpires(): string
     {
-        $timestamp = Date::now()->getTimestamp() + parametre('auth.session.remember_length');
+        $rememberLength = (int) parametre('auth.session.remember_length');
 
-        return Date::createFromTimestamp($timestamp)->format('Y-m-d H:i:s');
+        return Date::now()->addSeconds($rememberLength)->format('Y-m-d H:i:s');
     }
 
     private function setRememberMeCookie(string $rawToken): void
