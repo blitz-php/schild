@@ -105,7 +105,7 @@ trait Authorizable
     }
 
     /**
-     * Set groups cache manually
+     * Définir manuellement le cache des groupes
      */
     public function setGroupsCache(array $groups): void
     {
@@ -113,7 +113,7 @@ trait Authorizable
     }
 
     /**
-     * Set permissions cache manually
+     * Définir manuellement le cache des permissions
      */
     public function setPermissionsCache(array $permissions): void
     {

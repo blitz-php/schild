@@ -31,7 +31,7 @@ class UserModel extends BaseModel
     protected string $returnType   = User::class;
     protected bool $useSoftDeletes = true;
     protected bool $useTimestamps  = true;
-    protected array $afterFind     = ['fetchIdentities'];
+    protected array $afterFind     = ['fetchIdentities', 'fetchGroups', 'fetchPermissions'];
     protected array $afterInsert   = ['saveEmailIdentity'];
     protected array $afterUpdate   = ['saveEmailIdentity'];
     protected array $fillable = [
@@ -46,6 +46,18 @@ class UserModel extends BaseModel
      * Indique si les enregistrements d'identité doivent être inclus lorsque les enregistrements d'utilisateur sont extraits de la base de données.
      */
     protected bool $fetchIdentities = false;
+
+    /**
+     * Faut-il inclure les groupes
+     * lors de la récupération des enregistrements utilisateur depuis la base de données ?
+     */
+    protected bool $fetchGroups = false;
+
+    /**
+     * Faut-il inclure les autorisations
+     * lorsque les enregistrements utilisateur sont récupérés depuis la base de données ?
+     */
+    protected bool $fetchPermissions = false;
 
     /**
      * Sauvegarder l'utilisateur pour afterInsert et afterUpdate
@@ -65,6 +77,26 @@ class UserModel extends BaseModel
     public function withIdentities(): self
     {
         $this->fetchIdentities = true;
+
+        return $this;
+    }
+
+    /**
+     * Cochez la case find* pour inclure les groupes
+     */
+    public function withGroups(): self
+    {
+        $this->fetchGroups = true;
+
+        return $this;
+    }
+
+    /**
+     * Cochez la case find* pour inclure les permissions
+     */
+    public function withPermissions(): self
+    {
+        $this->fetchPermissions = true;
 
         return $this;
     }
@@ -101,6 +133,10 @@ class UserModel extends BaseModel
 
         $mappedUsers = $this->assignIdentities($data, $identities);
 
+        if ($data['singleton'] && ! isset($data['id'])) {
+            $data['id'] = $data['data']->id;
+        }
+        
         $data['data'] = $data['singleton'] ? $mappedUsers[$data['id']] : $mappedUsers;
 
         return $data;
@@ -141,6 +177,113 @@ class UserModel extends BaseModel
             }
         }
         unset($userIdentities);
+
+        return $mappedUsers;
+    }
+
+    /**
+     * Remplit les groupes pour tous les enregistrements
+     * renvoyés par une méthode find*. Appelé
+     * automatiquement lorsque $this->fetchGroups == true
+     *
+     * Callback d'événement du modèle appelé par `afterFind`.
+     */
+    protected function fetchGroups(array $data): array
+    {
+        if (! $this->fetchGroups) {
+            return $data;
+        }
+
+        $userIds = $data['singleton']
+            ? array_column($data, 'id')
+            : array_column($data['data'], 'id');
+
+        if ($userIds === []) {
+            return $data;
+        }
+
+        /** @var GroupModel $groupModel */
+        $groupModel = model(GroupModel::class);
+
+        // Recuperer les groupes pour tous les utilisateurs
+        $groups = $groupModel->getGroupsByUserIds($userIds);
+
+        $mappedUsers = $this->assignProperties($data, $groups, 'groups');
+
+        if ($data['singleton'] && ! isset($data['id'])) {
+            $data['id'] = $data['data']->id;
+        }
+
+        $data['data'] = $data['singleton'] ? $mappedUsers[$data['id']] : $mappedUsers;
+
+        return $data;
+    }
+
+    /**
+     * Remplit les permissions pour tous les enregistrements
+     * renvoyés par une méthode find*. Appelé
+     * automatiquement lorsque $this->fetchPermissions == true
+     *
+     * Callback d'événement du modèle appelé par `afterFind`.
+     */
+    protected function fetchPermissions(array $data): array
+    {
+        if (! $this->fetchPermissions) {
+            return $data;
+        }
+
+        $userIds = $data['singleton']
+            ? array_column($data, 'id')
+            : array_column($data['data'], 'id');
+
+        if ($userIds === []) {
+            return $data;
+        }
+
+        /** @var PermissionModel $permissionModel */
+        $permissionModel = model(PermissionModel::class);
+
+        $permissions = $permissionModel->getPermissionsByUserIds($userIds);
+
+        $mappedUsers = $this->assignProperties($data, $permissions, 'permissions');
+
+        if ($data['singleton'] && ! isset($data['id'])) {
+            $data['id'] = $data['data']->id;
+        }
+
+        $data['data'] = $data['singleton'] ? $mappedUsers[$data['id']] : $mappedUsers;
+
+        return $data;
+    }
+
+    /**
+     * Répertorier nos utilisateurs par identifiant pour faciliter leur attribution
+     *
+     * @param list<array> $properties
+     * @param 'groups'|'permissions' $type
+     *
+     * @return list<User> UserId => Objet User
+     */
+    private function assignProperties(array $data, array $properties, string $type): array
+    {
+        $mappedUsers = [];
+
+        $users = $data['singleton'] ? [$data['data']] : $data['data'];
+
+        foreach ($users as $user) {
+            $mappedUsers[$user->id] = $user;
+        }
+        unset($users);
+
+        // Construction du nom de la methode
+        $method = 'set' . ucfirst($type) . 'Cache';
+
+        // Attribuer des propriétés à tous les utilisateurs (tableau vide si aucune propriété n'est trouvée)
+        foreach ($mappedUsers as $userId => $user) {
+            $propertyArray = $properties[$userId] ?? [];
+            $user->{$method}($propertyArray);
+        }
+        unset($properties);
 
         return $mappedUsers;
     }
