@@ -73,6 +73,16 @@ class User extends Entity
      *
      * @internal
      */
+    public function getTable(): string
+    {
+        return parametre('auth.tables')[$this->authTables[self::class]] ?: parent::getTable();
+    }
+    
+    /**
+     * {@inheritDoc}
+     *
+     * @internal
+     */
     protected function getAttributesForInsert(): array
     {
         return $this->beforeUpdate(parent::getAttributesForInsert());
