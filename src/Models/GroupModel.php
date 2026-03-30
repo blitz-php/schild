@@ -25,7 +25,7 @@ class GroupModel extends BaseModel
     /**
      * {@inheritDoc}
      */
-    protected $fillable = ['user_id', 'group', 'created_at'];
+    protected array $fillable = ['user_id', 'group', 'created_at'];
 
     public function __construct()
     {

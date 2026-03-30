@@ -68,6 +68,21 @@ class User extends Entity
         'username',
     ];
 
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+
+        if (isset($attributes['email'])) {
+            $this->setEmail($attributes['email']);
+        }
+        if (isset($attributes['password'])) {
+            $this->setPassword($attributes['password']);
+        }
+        if (isset($attributes['password_hash'])) {
+            $this->setPasswordHash($attributes['password_hash']);
+        }
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -184,10 +199,6 @@ class User extends Entity
      */
     public function getEmailIdentity(): ?UserIdentity
     {
-        if ($this->authIdentities) {
-            $this->identities[] = $this->authIdentities;
-        }
-
         return $this->getIdentity(Session::ID_TYPE_EMAIL_PASSWORD);
     }
 
@@ -226,7 +237,9 @@ class User extends Entity
             $identity->secret2 = $this->password_hash;
         }
 
-        return $identity->save();
+        $identityModel = model(UserIdentityModel::class);
+
+        return $identityModel->save($identity);
     }
 
     /**

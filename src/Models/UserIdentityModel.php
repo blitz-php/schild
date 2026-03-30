@@ -378,9 +378,8 @@ class UserIdentityModel extends BaseModel
     public function getIdentities(User $user): array
     {
         $this->checkUserId($user);
-        $className = $this->returnType;
 
-        return $className::where('user_id', $user->id)->orderBy($this->primaryKey)->all();
+        return $this->where('user_id', $user->id)->orderBy($this->primaryKey)->findAll()->all();
     }
 
     /**
@@ -390,7 +389,7 @@ class UserIdentityModel extends BaseModel
      */
     public function getIdentitiesByUserIds(array $userIds): array
     {
-        return $this->whereIn('user_id', $userIds)->orderBy($this->primaryKey)->all($this->returnType);
+        return $this->whereIn('user_id', $userIds)->orderBy($this->primaryKey)->findAll()->all();
     }
 
     /**

@@ -520,7 +520,7 @@ class UserModel extends BaseModel
         // Insertion
         if ($this->tempUser->id === null) {
             /** @var User $user */
-            $user = $this->find($this->db->lastId());
+            $user = $this->find($this->lastInsertId());
 
             // Si vous obtenez l'identité (email/mot de passe), l'objet User doit avoir l'id.
             $this->tempUser->id = $user->id;
