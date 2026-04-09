@@ -16,6 +16,7 @@ namespace BlitzPHP\Schild\Commands;
 use BlitzPHP\Cli\Console\Command;
 use BlitzPHP\Schild\Authentication\HMAC\HmacEncrypter;
 use BlitzPHP\Schild\Models\UserIdentityModel;
+use BlitzPHP\Utilities\DateTime\Date;
 use Exception;
 use InvalidArgumentException;
 use ReflectionException;
@@ -23,42 +24,30 @@ use RuntimeException;
 
 class Hmac extends Command
 {
-    /**
-     * @var string
-     */
-    protected $group = 'Schild';
+    protected string $group = 'Schild';
 
-    /**
-     * @var string
-     */
-    protected $name = 'schild:hmac';
+    protected string $name = 'schild:hmac';
 
-    /**
-     * @var string
-     */
-    protected $description = 'Encrypte/Decrypte secretKey pour les tokens HMAC.';
+    protected string $description = 'Encrypte/Decrypte secretKey pour les tokens HMAC.';
 
-    /**
-     * @var string
-     */
-    protected $usage = <<<'EOL'
+    protected string $usage = <<<'EOL'
         schild:hmac <action>
             schild:hmac reencrypt
             schild:hmac encrypt
             schild:hmac decrypt
+            schild:hmac invalidateAll
 
             La commande reencrypt doit être utilisée lors de la rotation des clés de chiffrement.
             La commande encrypt ne doit être exécutée que sur des clés secrètes brutes existantes (extrêmement rare).
+            La commande invalidateAll ne doit être exécutée que si vous devez invalider TOUS les jetons HMAC (pour tout le monde).
         EOL;
 
-    /**     *
-     * @var array
-     */
-    protected $arguments = [
+    protected array $arguments = [
         'action' => <<<'EOL'
                 reencrypt : réencrypte toutes les clés secrètes HMAC lors de la rotation de la clé de chiffrement
                 encrypt : Crypte toutes les clés secrètes HMAC brutes
                 decrypt : déchiffrer toutes les clés secrètes HMAC chiffrées
+                invalidateAll : Annule toutes les clés/jetons HMAC (pour tous les utilisateurs)
             EOL,
     ];
 
@@ -70,29 +59,21 @@ class Hmac extends Command
     /**
      * {@inheritDoc}
      */
-    public function execute(array $params)
+    public function handle()
     {
         $action = $this->argument('action');
 
         $this->encrypter = new HmacEncrypter();
 
         try {
-            switch ($action) {
-                case 'encrypt':
-                    $this->encrypt();
-                    break;
+            match ($action) {
+                'encrypt'       => $this->encrypt(),
+                'decrypt'       => $this->decrypt(),
+                'reencrypt'     => $this->reEncrypt(),
+                'invalidateAll' => $this->invalidateAll(),
 
-                case 'decrypt':
-                    $this->decrypt();
-                    break;
-
-                case 'reencrypt':
-                    $this->reEncrypt();
-                    break;
-
-                default:
-                    throw new InvalidArgumentException('Commande non reconnue');
-            }
+                default => throw new InvalidArgumentException('Commande non reconnue'),
+            };
         } catch (Exception $e) {
             $this->fail($e->getMessage());
 
@@ -117,20 +98,22 @@ class Hmac extends Command
 
         $uIdModel->where('type', 'hmac_sha256')->orderBy('id')->chunk(
             100,
-            static function ($identity) use ($uIdModelSub, $encrypter, $that): void {
-                if ($encrypter->isEncrypted($identity->secret2)) {
-                    $that->write('id: ' . $identity->id . ', déjà crypté, il est ignoré.');
+            static function ($identities) use ($uIdModelSub, $encrypter, $that): void {
+                foreach ($identities as $identity) {
+                    if ($encrypter->isEncrypted($identity->secret2)) {
+                        $that->write('id: ' . $identity->id . ', déjà crypté, il est ignoré.');
 
-                    return;
-                }
+                        return;
+                    }
 
-                try {
-                    $identity->secret2 = $encrypter->encrypt($identity->secret2);
-                    $uIdModelSub->save($identity);
+                    try {
+                        $identity->secret2 = $encrypter->encrypt($identity->secret2);
+                        $uIdModelSub->save($identity);
 
-                    $that->write('id: ' . $identity->id . ', crypté.');
-                } catch (RuntimeException $e) {
-                    $that->error('id: ' . $identity->id . ', ' . $e->getMessage());
+                        $that->write('id: ' . $identity->id . ', crypté.');
+                    } catch (RuntimeException $e) {
+                        $that->error('id: ' . $identity->id . ', ' . $e->getMessage());
+                    }
                 }
             },
         );
@@ -151,17 +134,19 @@ class Hmac extends Command
 
         $uIdModel->where('type', 'hmac_sha256')->orderBy('id')->chunk(
             100,
-            static function ($identity) use ($uIdModelSub, $encrypter, $that): void {
-                if (! $encrypter->isEncrypted($identity->secret2)) {
-                    $that->write('id: ' . $identity->id . ', non crypté, ignoré.');
+            static function ($identities) use ($uIdModelSub, $encrypter, $that): void {
+                foreach ($identities as $identity) {
+                    if (! $encrypter->isEncrypted($identity->secret2)) {
+                        $that->write('id: ' . $identity->id . ', non crypté, ignoré.');
 
-                    return;
+                        return;
+                    }
+
+                    $identity->secret2 = $encrypter->decrypt($identity->secret2);
+                    $uIdModelSub->save($identity);
+
+                    $that->write('id: ' . $identity->id . ', decrypté.');
                 }
-
-                $identity->secret2 = $encrypter->decrypt($identity->secret2);
-                $uIdModelSub->save($identity);
-
-                $that->write('id: ' . $identity->id . ', decrypté.');
             },
         );
     }
@@ -181,18 +166,51 @@ class Hmac extends Command
 
         $uIdModel->where('type', 'hmac_sha256')->orderBy('id')->chunk(
             100,
-            static function ($identity) use ($uIdModelSub, $encrypter, $that): void {
-                if ($encrypter->isEncryptedWithCurrentKey($identity->secret2)) {
-                    $that->write('id: ' . $identity->id . ', déjà chiffré avec la clé actuelle, il est ignoré.');
+            static function ($identities) use ($uIdModelSub, $encrypter, $that): void {
+                foreach ($identities as $identity) {
+                    if ($encrypter->isEncryptedWithCurrentKey($identity->secret2)) {
+                        $that->write('id: ' . $identity->id . ', déjà chiffré avec la clé actuelle, il est ignoré.');
 
-                    return;
+                        return;
+                    }
+
+                    $identity->secret2 = $encrypter->decrypt($identity->secret2);
+                    $identity->secret2 = $encrypter->encrypt($identity->secret2);
+                    $uIdModelSub->save($identity);
+
+                    $that->write('id: ' . $identity->id . ', Ré-encrypté.');
                 }
+            },
+        );
+    }
 
-                $identity->secret2 = $encrypter->decrypt($identity->secret2);
-                $identity->secret2 = $encrypter->encrypt($identity->secret2);
-                $uIdModelSub->save($identity);
+    /**
+     * Annule toutes les clés/jetons HMAC pour chaque utilisateur.
+     */
+    public function invalidateAll(): void
+    {
+        $uIdModel    = new UserIdentityModel();
+        $uIdModelSub = new UserIdentityModel();
 
-                $that->write('id: ' . $identity->id . ', Ré-encrypté.');
+        $that = $this;
+
+        $uIdModel->where('type', 'hmac_sha256')->orderBy('id')->chunk(
+            100,
+            static function ($identities) use ($uIdModelSub, $that): void {
+                foreach ($identities as $identity) {
+                    $now = Date::now();
+
+                    if (null !== $identity->expires && $identity->expires->isBefore($now)) {
+                        $that->write('id : ' . $identity->id . ', déjà expiré, ignoré.');
+
+                        return;
+                    }
+
+                    $identity->expires = $now;
+                    $uIdModelSub->save($identity);
+
+                    $that->write('id: ' . $identity->id . ', marqué comme expiré.');
+                }
             },
         );
     }
