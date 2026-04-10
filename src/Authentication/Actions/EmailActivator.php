@@ -23,7 +23,7 @@ use BlitzPHP\Schild\Exceptions\LogicException;
 use BlitzPHP\Schild\Exceptions\RuntimeException;
 use BlitzPHP\Schild\Models\UserIdentityModel;
 use BlitzPHP\Schild\Traits\Viewable;
-use BlitzPHP\Utilities\Date;
+use BlitzPHP\Utilities\DateTime\Date;
 use BlitzPHP\Utilities\String\Text;
 
 class EmailActivator implements ActionInterface

@@ -55,6 +55,14 @@ class Registrar
         ];
     }
 
+    /**
+     * Enregistre les fichiers de configurations publiable
+     */
+    public static function config(): array
+    {
+        return ['auth-groups', 'auth-jwt', 'auth-token', 'auth'];
+    }
+
     public static function validation(): array
     {
         return [
