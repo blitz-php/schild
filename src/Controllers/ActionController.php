@@ -77,9 +77,9 @@ class ActionController extends ApplicationController
      */
     public function verify()
     {
-        /* if ($this->request->userAgent()->isRobot()) {
+        if ($this->request->userAgent()->isRobot()) {
             throw PageNotFoundException::pageNotFound();
-        } */
+        }
 
         return $this->action->verify($this->request);
     }

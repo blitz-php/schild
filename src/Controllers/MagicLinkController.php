@@ -143,9 +143,9 @@ class MagicLinkController extends BaseController
             return redirect()->route('login')->withErrors(lang('Auth.magicLinkDisabled'));
         }
 
-        /* if ($this->request->userAgent()->isRobot()) {
+        if ($this->request->userAgent()->isRobot()) {
             throw PageNotFoundException::pageNotFound();
-        } */
+        }
 
         $token = $this->request->query('token');
 
