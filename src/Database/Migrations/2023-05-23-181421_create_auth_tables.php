@@ -88,7 +88,7 @@ class CreateAuthTables extends Migration
             $table->ipAddress();
             $table->string('user_agent')->nullable();
             $table->string('id_type');
-            $table->string('secret');
+            $table->string('secret')->nullable();
             $table->string('identifier');
             $table->dateTime('date');
             $table->boolean('success');
