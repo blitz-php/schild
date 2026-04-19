@@ -60,9 +60,27 @@ class User extends Entity
         'last_active' => 'datetime',
     ];
 
+	/**
+	 * {@inheritDoc}
+	 */
     protected array $fillable = [
         'username',
-    ];
+    ];  
+
+    /**
+     * {@inheritDoc}
+     */
+    protected array $hidden = [
+		'password_hash',
+		'password'
+	];
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	protected array $appends = [
+		'email',
+	];
 
     public function __construct(array $attributes = [])
     {
@@ -261,6 +279,11 @@ class User extends Entity
 
         return $this->email;
     }
+
+	public function getEmailAttribute()
+	{
+		return $this->getEmail();
+	}
 
     public function setEmail(string $email): void
     {
