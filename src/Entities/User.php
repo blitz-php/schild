@@ -14,8 +14,6 @@ declare(strict_types=1);
 namespace BlitzPHP\Schild\Entities;
 
 use BlitzPHP\Schild\Authentication\Authenticators\Session;
-use BlitzPHP\Schild\Authentication\Traits\HasAccessTokens;
-use BlitzPHP\Schild\Authentication\Traits\HasHmacTokens;
 use BlitzPHP\Schild\Authorization\Traits\Authorizable;
 use BlitzPHP\Schild\Models\LoginModel;
 use BlitzPHP\Schild\Models\UserIdentityModel;
@@ -37,8 +35,6 @@ use BlitzPHP\Wolke\SoftDeletes;
 class User extends Entity
 {
     use Authorizable;
-    use HasAccessTokens;
-    use HasHmacTokens;
     use Resettable;
     use Activatable;
     use Bannable;
