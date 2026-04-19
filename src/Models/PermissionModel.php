@@ -25,7 +25,7 @@ class PermissionModel extends BaseModel
     /**
      * {@inheritDoc}
      */
-    protected $fillable = ['user_id', 'permission', 'created_at'];
+    protected array $fillable = ['user_id', 'permission', 'created_at'];
 
     public function __construct()
     {

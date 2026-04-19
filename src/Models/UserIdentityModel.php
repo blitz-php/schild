@@ -433,7 +433,7 @@ class UserIdentityModel extends BaseModel
     {
         $identity->last_used_at = Date::now()->format('Y-m-d H:i:s');
 
-        $identity->save();
+		$this->save($identity);
     }
 
     public function deleteIdentitiesByType(User $user, string $type): void

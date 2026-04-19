@@ -27,7 +27,7 @@ class LoginModel extends BaseModel
     /**
      * {@inheritDoc}
      */
-    protected $fillable = [
+    protected array $fillable = [
         'ip_address',
         'user_agent',
         'id_type',
@@ -40,7 +40,7 @@ class LoginModel extends BaseModel
     /**
      * {@inheritDoc}
      */
-    protected $rules = [
+    protected array $rules = [
         'ip_address' => 'required',
         'id_type'    => 'required',
         'identifier' => 'nullable|string',
