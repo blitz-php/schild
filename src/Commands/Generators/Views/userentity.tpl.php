@@ -7,7 +7,7 @@ namespace {namespace};
 use BlitzPHP\Schild\Entities\User as ShieldUser;
 
 class {entityName} extends ShieldUser
-{    
+{
     /**
      * {@inheritDoc}
      */
@@ -15,7 +15,7 @@ class {entityName} extends ShieldUser
         'username',
         // Ajoutez vos propres champs ici
     ];
-    
+
     /**
      * {@inheritDoc}
      */
@@ -27,7 +27,7 @@ class {entityName} extends ShieldUser
         'last_active' => 'datetime',
         // Ajoutez vos propres casts ici
     ];
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -35,6 +35,6 @@ class {entityName} extends ShieldUser
 		'email',
         // Ajoutez vos propres attributs ici
 	];
-    
+
     // Ajoutez vos propres méthodes ici
 }

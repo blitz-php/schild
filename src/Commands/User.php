@@ -29,13 +29,10 @@ use PDO;
 
 class User extends Command
 {
-    protected string $group = 'Schild';
-
-    protected string $name = 'schild:user';
-
+    protected string $group       = 'Schild';
+    protected string $name        = 'schild:user';
     protected string $description = 'Gérer les utilisateurs de Schild.';
-
-    protected string $usage = <<<'EOL'
+    protected string $usage       = <<<'EOL'
         schild:user <action> options
 
             schild:user create -n newusername -e newuser@example.com
@@ -68,7 +65,6 @@ class User extends Command
             schild:user removegroup -n username -g mygroup
             schild:user removegroup -e user@example.com -g mygroup
         EOL;
-
     protected array $arguments = [
         'action' => <<<'EOL'
 
@@ -84,7 +80,6 @@ class User extends Command
                 removegroup: Supprimer un utilisateur d'un groupe
             EOL,
     ];
-
     protected array $options = [
         '-i'          => 'ID de l\'utilisateur',
         '-n'          => 'Nom de l\'utilisateur',
@@ -93,7 +88,6 @@ class User extends Command
         '--new-email' => 'Nouvel email de l\'utilisateur',
         '-g'          => 'Nom du groupe',
     ];
-
     private array $validActions = [
         'create', 'activate', 'deactivate', 'changename', 'changeemail',
         'delete', 'password', 'list', 'addgroup', 'removegroup',
@@ -194,7 +188,7 @@ class User extends Command
     {
         $validationRules = ValidationRules::register();
         $rules           = $validationRules['rules'];
-        
+
         $this->validationRules = $rules;
     }
 
@@ -210,37 +204,37 @@ class User extends Command
         $data = [];
 
         if ($username === null && isset($this->validationRules['username'])) {
-            $username = $this->prompt(lang('Auth.username'), null, function($value) {
+            $username = $this->prompt(lang('Auth.username'), null, function ($value) {
                 $v = Validator::make(
-                    ['username' => $value], 
-                    ['username' => $this->validationRules['username']]
+                    ['username' => $value],
+                    ['username' => $this->validationRules['username']],
                 );
                 if ($v->fails()) {
                     throw new ValidationException($v->errors()->first('username'));
                 }
-                
+
                 return $value;
             });
         }
 
         if ($email === null) {
-            $email = $this->prompt(lang('Auth.email'), null, function($value) {
+            $email = $this->prompt(lang('Auth.email'), null, function ($value) {
                 $v = Validator::make(
-                    ['email' => $value], 
-                    ['email' => $this->validationRules['email']]
+                    ['email' => $value],
+                    ['email' => $this->validationRules['email']],
                 );
                 if ($v->fails()) {
                     throw new ValidationException($v->errors()->first('email'));
                 }
-                
+
                 return $value;
             });
         }
-     
-        $password = $this->prompt(lang('Auth.password'), null, function($value) {
+
+        $password = $this->prompt(lang('Auth.password'), null, function ($value) {
             $v = Validator::make(
                 ['password' => $value],
-                ['password' => $this->validationRules['password']]
+                ['password' => $this->validationRules['password']],
             );
             if ($v->fails()) {
                 throw new ValidationException($v->errors()->first('password'));
@@ -249,10 +243,10 @@ class User extends Command
             return $value;
         });
 
-        $passwordConfirm = $this->prompt(lang('Auth.passwordConfirm'), null, function($value) use($password) {
+        $passwordConfirm = $this->prompt(lang('Auth.passwordConfirm'), null, function ($value) use ($password) {
             $v = Validator::make(
                 ['password_confirmation' => $value, 'password' => $password],
-                ['password_confirmation' => $this->validationRules['password_confirmation']]
+                ['password_confirmation' => $this->validationRules['password_confirmation']],
             );
             if ($v->fails()) {
                 throw new ValidationException($v->errors()->first('password_confirmation'));
@@ -267,7 +261,7 @@ class User extends Command
             'password'              => $password,
             'password_confirmation' => $passwordConfirm,
         ]);
-        
+
         // Run validation if the user has passed username and/or email via command line
         if ($data !== []) {
             $v = Validator::make($data, $this->validationRules);
@@ -379,21 +373,22 @@ class User extends Command
         if ($newUsername === null) {
             $newUsername = $this->prompt('New username');
         }
-        
+
         $v = Validator::make(
-            ['username' => $newUsername], 
-            ['username' => $this->validationRules['username']]
+            ['username' => $newUsername],
+            ['username' => $this->validationRules['username']],
         );
         if ($v->fails()) {
             foreach ($v->errors()->all() as $message) {
                 $this->error($message);
             }
+
             throw new CancelException('User name change aborted');
         }
 
         $userModel = model(UserModel::class);
 
-        $oldUsername    = $user->username;
+        $oldUsername = $user->username;
         $userModel->modify($user->id, ['username' => $newUsername]);
 
         $this->success('Username "' . $oldUsername . '" changed to "' . $newUsername . '"');
@@ -416,15 +411,16 @@ class User extends Command
         if ($newEmail === null) {
             $newEmail = $this->prompt('New email');
         }
-        
+
         $v = Validator::make(
-            ['email' => $newEmail], 
-            ['email' => $this->validationRules['email']]
+            ['email' => $newEmail],
+            ['email' => $this->validationRules['email']],
         );
         if ($v->fails()) {
             foreach ($v->errors()->all() as $message) {
                 $this->error($message);
             }
+
             throw new CancelException('User email change aborted');
         }
 
@@ -485,10 +481,10 @@ class User extends Command
         $user = $this->findUser('Change user password', $username, $email);
 
         if ($this->confirm('Set the password for "' . $user->username . '" ?')) {
-            $password = $this->prompt(lang('Auth.password'), null, function($value) {
+            $password = $this->prompt(lang('Auth.password'), null, function ($value) {
                 $v = Validator::make(
                     ['password' => $value],
-                    ['password' => $this->validationRules['password']]
+                    ['password' => $this->validationRules['password']],
                 );
                 if ($v->fails()) {
                     throw new ValidationException($v->errors()->first('password'));
@@ -497,10 +493,10 @@ class User extends Command
                 return $value;
             });
 
-            $this->prompt(lang('Auth.passwordConfirm'), null, function($value) use($password) {
+            $this->prompt(lang('Auth.passwordConfirm'), null, function ($value) use ($password) {
                 $v = Validator::make(
                     ['password_confirmation' => $value, 'password' => $password],
-                    ['password_confirmation' => $this->validationRules['password_confirmation']]
+                    ['password_confirmation' => $this->validationRules['password_confirmation']],
                 );
                 if ($v->fails()) {
                     throw new ValidationException($v->errors()->first('password_confirmation'));
@@ -533,13 +529,13 @@ class User extends Command
             ->select($this->tables['users'] . '.id as id, username, secret as email')
             ->leftJoin(
                 $this->tables['identities'],
-                $this->tables['users'] . '.id', 
-                '=', 
-                $this->tables['identities'] . '.user_id'
+                $this->tables['users'] . '.id',
+                '=',
+                $this->tables['identities'] . '.user_id',
             )
-            ->where(function(BaseBuilder $query) {
+            ->where(function (BaseBuilder $query): void {
                 $query->where($this->tables['identities'] . '.type', Session::ID_TYPE_EMAIL_PASSWORD)
-                        ->orWhereNull($this->tables['identities'] . '.type');
+                    ->orWhereNull($this->tables['identities'] . '.type');
             });
 
         if ($username !== null) {
@@ -577,7 +573,7 @@ class User extends Command
             $this->success('User "' . $user->username . '" added to group "' . $group . '"');
         } else {
             $this->warning(
-                'Addition of the user "' . $user->username . '" to the group "' . $group . '" cancelled'
+                'Addition of the user "' . $user->username . '" to the group "' . $group . '" cancelled',
             );
         }
     }
@@ -630,13 +626,13 @@ class User extends Command
         $userModel->select($this->tables['users'] . '.id as id, username, secret')
             ->leftJoin(
                 $this->tables['identities'],
-                $this->tables['users'] . '.id', 
-                '=', 
+                $this->tables['users'] . '.id',
+                '=',
                 $this->tables['identities'] . '.user_id',
             )
-            ->where(function(BaseBuilder $query) {
+            ->where(function (BaseBuilder $query): void {
                 $query->where($this->tables['identities'] . '.type', Session::ID_TYPE_EMAIL_PASSWORD)
-                        ->orWhereNull($this->tables['identities'] . '.type');
+                    ->orWhereNull($this->tables['identities'] . '.type');
             });
 
         $user = null;

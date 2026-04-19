@@ -24,13 +24,10 @@ use RuntimeException;
 
 class Hmac extends Command
 {
-    protected string $group = 'Schild';
-
-    protected string $name = 'schild:hmac';
-
+    protected string $group       = 'Schild';
+    protected string $name        = 'schild:hmac';
     protected string $description = 'Encrypte/Decrypte secretKey pour les tokens HMAC.';
-
-    protected string $usage = <<<'EOL'
+    protected string $usage       = <<<'EOL'
         schild:hmac <action>
             schild:hmac reencrypt
             schild:hmac encrypt
@@ -41,7 +38,6 @@ class Hmac extends Command
             La commande encrypt ne doit être exécutée que sur des clés secrètes brutes existantes (extrêmement rare).
             La commande invalidateAll ne doit être exécutée que si vous devez invalider TOUS les jetons HMAC (pour tout le monde).
         EOL;
-
     protected array $arguments = [
         'action' => <<<'EOL'
                 reencrypt : réencrypte toutes les clés secrètes HMAC lors de la rotation de la clé de chiffrement

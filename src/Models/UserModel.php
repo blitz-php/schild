@@ -312,8 +312,8 @@ class UserModel extends BaseModel
         if (! is_a($className = $this->returnType, User::class, true)) {
             $className = User::class;
         }
-		
-        return $className::unguarded(fn() => new $className($attributes));
+
+        return $className::unguarded(static fn () => new $className($attributes));
     }
 
     /**

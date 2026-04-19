@@ -60,27 +60,27 @@ class User extends Entity
         'last_active' => 'datetime',
     ];
 
-	/**
-	 * {@inheritDoc}
-	 */
+    /**
+     * {@inheritDoc}
+     */
     protected array $fillable = [
         'username',
-    ];  
+    ];
 
     /**
      * {@inheritDoc}
      */
     protected array $hidden = [
-		'password_hash',
-		'password'
-	];
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	protected array $appends = [
-		'email',
-	];
+        'password_hash',
+        'password',
+    ];
+
+    /**
+     * {@inheritDoc}
+     */
+    protected array $appends = [
+        'email',
+    ];
 
     public function __construct(array $attributes = [])
     {
@@ -106,7 +106,7 @@ class User extends Entity
     {
         return parametre('auth.tables')[$this->authTables[self::class]] ?: parent::getTable();
     }
-    
+
     /**
      * {@inheritDoc}
      *
@@ -280,10 +280,10 @@ class User extends Entity
         return $this->email;
     }
 
-	public function getEmailAttribute()
-	{
-		return $this->getEmail();
-	}
+    public function getEmailAttribute()
+    {
+        return $this->getEmail();
+    }
 
     public function setEmail(string $email): void
     {

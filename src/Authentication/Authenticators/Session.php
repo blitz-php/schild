@@ -866,16 +866,16 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
     private function setRememberMeCookie(string $rawToken): void
     {
         // Créer le cookie
-		$cookie = Cookie::create(parametre('auth.session.remember_cookie_name'), $rawToken, [
-			'expires'  => $this->calcExpires(),
-			'path'     => parametre('cookie.path'),
-			'domain'   => parametre('cookie.domain'),
-			'secure'   => parametre('cookie.secure'),
-			'httponly' => true,
-		]);
+        $cookie = Cookie::create(parametre('auth.session.remember_cookie_name'), $rawToken, [
+            'expires'  => $this->calcExpires(),
+            'path'     => parametre('cookie.path'),
+            'domain'   => parametre('cookie.domain'),
+            'secure'   => parametre('cookie.secure'),
+            'httponly' => true,
+        ]);
 
         // Enregistrez-le dans le navigateur de l'utilisateur dans un cookie.
-		setcookie($cookie->getName(), $cookie->getScalarValue(), $cookie->getOptions());
+        setcookie($cookie->getName(), $cookie->getScalarValue(), $cookie->getOptions());
         service('override', Response::class, service('response')->withCookie($cookie));
     }
 

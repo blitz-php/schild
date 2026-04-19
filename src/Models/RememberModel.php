@@ -45,9 +45,9 @@ class RememberModel extends BaseModel
     /**
      * Stocke un jeton de rappel pour l'utilisateur.
      */
-    public function rememberUser(User $user, string $selector, string $hashedValidator, string|DateTimeInterface $expires): void
+    public function rememberUser(User $user, string $selector, string $hashedValidator, DateTimeInterface|string $expires): void
     {
-		$expires = $expires instanceof DateTimeInterface ? $expires : Date::parse($expires);
+        $expires = $expires instanceof DateTimeInterface ? $expires : Date::parse($expires);
 
         $return = $this->insert([
             'user_id'         => $user->id,
