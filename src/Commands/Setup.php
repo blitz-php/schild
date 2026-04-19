@@ -58,13 +58,18 @@ class Setup extends Command
         $this->publishConfigAuthGroups($force);
         
         // Publier les configurations selon le type
-        match(true) {
-            str_contains($appType, 'web')       => $this->setupWebSpecific(),
-            str_contains($appType, 'api-jwt')   => $this->publishApi('jwt', $force),
-            str_contains($appType, 'api-token') => $this->publishApi('tokens', $force),
-            str_contains($appType, 'api-full')  => $this->publishApiFull($force),
-            default => true,
-        };
+		if (str_contains($appType, 'web')) {
+			$this->setupWebSpecific();
+		}
+		if (str_contains($appType, 'api-jwt')) {
+			$this->publishApi('jwt', $force);
+		}
+		if (str_contains($appType, 'api-token')) {
+			$this->publishApi('tokens', $force);
+		}
+		if (str_contains($appType, 'api-full')) {
+			$this->publishApiFull($force);
+		}
 
         // Demander si on configure l'email (utile pour l'envoi de notifications)
         if ($this->confirm('Voulez-vous configurer l\'envoi d\'emails (nécessaire pour l\'activation, 2FA, liens magiques) ?', 'y')) {
@@ -217,7 +222,10 @@ class Setup extends Command
 
     private function setupRoutes(): void
     {
-        $file = 'Config/routes.php';
+		$files = config('routing.route_files', []);
+		$files = array_filter($files, fn($f) => str_ends_with($f, 'web.php'));
+
+		$file = $files !== [] ? array_shift($files) : 'Config/routes.php';
 
         $check   = 'service(\'auth\')->routes($routes);';
         $pattern = '/(.*)(\n' . preg_quote('$routes->', '/') . '[^\n]+?;\n)/su';
@@ -228,7 +236,11 @@ class Setup extends Command
 
     private function setupApiRoutes(): void
     {
-        $file = 'Config/routes.php';
+		
+		$files = config('routing.route_files', []);
+		$files = array_filter($files, fn($f) => str_ends_with($f, 'api.php'));
+
+		$file = $files !== [] ? array_shift($files) : 'Config/routes.php';
 
         // On ajoute un groupe /api avec le namespace API
         $apiRoutes = <<<'PHP'
@@ -438,6 +450,7 @@ PHP;
     private function runMigrations(): void
     {
         $this->eol()->call('migrate', options: ['--namespace' => 'BlitzPHP\\Schild']);
+		$this->eol();
     }
 
     /**
