@@ -176,7 +176,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
      */
     public function startUpAction(string $type, User $user): bool
     {
-        if ('' === $actionClass = config('auth.actions.' . $type, '')) {
+        if ('' === $actionClass = config('auth.actions.' . $type) ?? '') {
             return false;
         }
 
@@ -856,26 +856,27 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
         $this->setRememberMeCookie($rawToken);
     }
 
-    private function calcExpires(): string
+    private function calcExpires(): Date
     {
         $rememberLength = (int) parametre('auth.session.remember_length');
 
-        return Date::now()->addSeconds($rememberLength)->format('Y-m-d H:i:s');
+        return Date::now()->addSeconds($rememberLength);
     }
 
     private function setRememberMeCookie(string $rawToken): void
     {
-        // Enregistrez-le dans le navigateur de l'utilisateur dans un cookie.
         // Créer le cookie
-        service('override', Response::class, service('response')->withCookie(
-            Cookie::create(parametre('auth.session.remember_cookie_name'), $rawToken, [
-                'expires'  => parametre('auth.session.remember_length'),
-                'path'     => parametre('cookie.path'),
-                'domain'   => parametre('cookie.domain'),
-                'secure'   => parametre('cookie.secure'),
-                'httponly' => true,
-            ]),
-        ));
+		$cookie = Cookie::create(parametre('auth.session.remember_cookie_name'), $rawToken, [
+			'expires'  => $this->calcExpires(),
+			'path'     => parametre('cookie.path'),
+			'domain'   => parametre('cookie.domain'),
+			'secure'   => parametre('cookie.secure'),
+			'httponly' => true,
+		]);
+
+        // Enregistrez-le dans le navigateur de l'utilisateur dans un cookie.
+		setcookie($cookie->getName(), $cookie->getScalarValue(), $cookie->getOptions());
+        service('override', Response::class, service('response')->withCookie($cookie));
     }
 
     /**
