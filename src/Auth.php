@@ -130,11 +130,20 @@ class Auth
      */
     public function routes(RouteCollection &$routes, array $config = []): void
     {
-        $namespace = $config['namespace'] ?? 'BlitzPHP\Schild\Controllers';
-
-        $routes->group('/', ['namespace' => $namespace], static function (RouteCollection $routes) use ($config): void {
+		$namespace = $config['namespace'] ?? 'BlitzPHP\Schild\Controllers';
+		$prefix    = $config['prefix'] ?? '/';
+		
+        $routes->group($prefix, ['namespace' => $namespace], static function (RouteCollection $routes) use ($config): void {
             foreach (Registrar::routes() as $name => $row) {
-                if (! isset($config['except']) || ! in_array($name, $config['except'], true)) {
+                $shouldInclude = true;
+
+                if (isset($config['only'])) {
+                    $shouldInclude = in_array($name, $config['only'], true);
+                } elseif (isset($config['except'])) {
+                    $shouldInclude = !in_array($name, $config['except'], true);
+                }
+            
+                if ($shouldInclude) {
                     foreach ($row as $params) {
                         $options = isset($params[3])
                             ? ['as' => $params[3]]
