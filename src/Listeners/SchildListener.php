@@ -16,12 +16,23 @@ namespace BlitzPHP\Schild\Listeners;
 use BlitzPHP\Contracts\Event\EventInterface;
 use BlitzPHP\Contracts\Event\EventListenerInterface;
 use BlitzPHP\Contracts\Event\EventManagerInterface;
+use BlitzPHP\Schild\Middlewares\AuthMiddleware;
 
-class AuthListener implements EventListenerInterface
+class SchildListener implements EventListenerInterface
 {
     public function listen(EventManagerInterface $event): void
     {
+        $event->on('app:init', fn ($e) => $this->onInit($e));
         $event->on('schild:login', fn ($e) => $this->onLogin($e));
+    }
+
+    private function onInit(EventInterface $event): void
+    {
+        // Enregistre les garde aupres du middleware d'autentification
+        $guards = config('auth.guards', []);
+        if ($guards !== []) {
+            AuthMiddleware::guard($guards);
+        }
     }
 
     private function onLogin(EventInterface $event): void
