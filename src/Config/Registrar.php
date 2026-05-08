@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace BlitzPHP\Schild\Config;
 
-use BlitzPHP\Schild\Authentication\Passwords\ValidationRules as PasswordRules;
 use BlitzPHP\Schild\Collectors\Auth;
 use BlitzPHP\Schild\Middlewares\AuthMiddleware;
 use BlitzPHP\Schild\Middlewares\AuthRates;
@@ -62,15 +61,6 @@ class Registrar
     public static function config(): array
     {
         return ['auth-groups', 'auth-jwt', 'auth-token', 'auth'];
-    }
-
-    public static function validation(): array
-    {
-        return [
-            'ruleSets' => [
-                PasswordRules::class,
-            ],
-        ];
     }
 
     public static function toolbar(): array
