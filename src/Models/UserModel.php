@@ -331,6 +331,7 @@ class UserModel extends BaseModel
         return $this->select($fields)
             ->where([$this->table . '.id' => $id])
             ->whereNull($this->table . '.deleted_at')
+			->where($this->tables['identities'] . '.type', Session::ID_TYPE_EMAIL_PASSWORD)
             ->join($this->tables['identities'], $this->table . '.id', '=', $this->tables['identities'] . '.user_id')
             ->first($this->returnType);
     }

@@ -225,7 +225,7 @@ class UserIdentityModel extends BaseModel
 
         return $this->where('user_id', $user->id)
             ->where('id', $id)
-            ->update(['expires' => $expiresAt]);
+            ->update(['expires' => $expiresAt]) > 0;
     }
 
     // HMAC

@@ -100,7 +100,7 @@ class AuthMiddleware extends BaseMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         // Récupération du nom du garde : d'abord depuis la propriété (si configurée), sinon depuis la config globale
-        $guard = $this->guard ?? parametre('auth.default_authenticator', 'session');
+        $guard = $this->guard ?? parametre('auth.default_authenticator') ?? 'session';
 
         if (! isset(static::$guards[$guard])) {
             throw new InvalidArgumentException(

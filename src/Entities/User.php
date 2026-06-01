@@ -63,13 +63,6 @@ class User extends Entity
     /**
      * {@inheritDoc}
      */
-    protected array $fillable = [
-        'username',
-    ];
-
-    /**
-     * {@inheritDoc}
-     */
     protected array $hidden = [
         'password_hash',
         'password',
