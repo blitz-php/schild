@@ -22,7 +22,6 @@ use BlitzPHP\Schild\Entities\User as UserEntity;
 use BlitzPHP\Schild\Exceptions\UserNotFoundException;
 use BlitzPHP\Schild\Exceptions\ValidationException;
 use BlitzPHP\Schild\Models\GroupModel;
-use BlitzPHP\Schild\Models\UserModel;
 use BlitzPHP\Schild\Validation\ValidationRules;
 use BlitzPHP\Validation\Validator;
 use PDO;
@@ -276,9 +275,9 @@ class User extends Command
 
         unset($data['password_confirmation']);
 
-        $userModel = model(UserModel::class);
+		$userModel = auth()->getProvider();
 
-        $user = new UserEntity($data);
+        $user = $userModel->newUserEntity($data);
 
         // Validate the group
         if ($group !== null && ! $this->validateGroup($group)) {
@@ -325,7 +324,7 @@ class User extends Command
         $user = $this->findUser('Activate user', $username, $email);
 
         if ($this->confirm('Activate the user ' . $user->username . ' ?')) {
-            $userModel = model(UserModel::class);
+            $userModel = auth()->getProvider();
 
             $userModel->modify($user->id, ['active' => 1]);
 
@@ -346,7 +345,7 @@ class User extends Command
         $user = $this->findUser('Deactivate user', $username, $email);
 
         if ($this->confirm('Deactivate the user ' . $user->username . ' ?')) {
-            $userModel = model(UserModel::class);
+            $userModel = auth()->getProvider();
 
             $userModel->modify($user->id, ['active' => 0]);
 
@@ -386,7 +385,7 @@ class User extends Command
             throw new CancelException('User name change aborted');
         }
 
-        $userModel = model(UserModel::class);
+		$userModel = auth()->getProvider();
 
         $oldUsername = $user->username;
         $userModel->modify($user->id, ['username' => $newUsername]);
@@ -424,7 +423,7 @@ class User extends Command
             throw new CancelException('User email change aborted');
         }
 
-        $userModel = model(UserModel::class);
+		$userModel = auth()->getProvider();
 
         $user->setEmail($newEmail);
         $userModel->save($user);
@@ -441,7 +440,7 @@ class User extends Command
      */
     private function delete(int $userid = 0, ?string $username = null, ?string $email = null): void
     {
-        $userModel = model(UserModel::class);
+        $userModel = auth()->getProvider();
 
         if ($userid !== 0) {
             $user = $userModel->findById($userid);
@@ -505,7 +504,7 @@ class User extends Command
                 return $value;
             });
 
-            $userModel = model(UserModel::class);
+            $userModel = auth()->getProvider();
 
             $user->password = $password;
             $userModel->save($user);
@@ -524,7 +523,8 @@ class User extends Command
      */
     private function list(?string $username = null, ?string $email = null): void
     {
-        $userModel = model(UserModel::class)->asArray();
+		$userModel = auth()->getProvider()->asArray();
+
         $userModel
             ->select($this->tables['users'] . '.id as id, username, secret as email')
             ->leftJoin(
@@ -621,7 +621,7 @@ class User extends Command
             }
         }
 
-        $userModel = model(UserModel::class);
+        $userModel = auth()->getProvider();
 
         $userModel->select($this->tables['users'] . '.id as id, username, secret')
             ->leftJoin(
