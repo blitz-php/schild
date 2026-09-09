@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace BlitzPHP\Schild\Authorization\Traits;
 
+use BlitzPHP\Schild\Authorization\PermissionMatcher;
 use BlitzPHP\Schild\Exceptions\AuthorizationException;
 use BlitzPHP\Schild\Exceptions\LogicException;
 use BlitzPHP\Schild\Models\GroupModel;
@@ -239,7 +240,7 @@ trait Authorizable
      * Vérifie les autorisations d'utilisateur et leurs autorisations de groupe
      * pour voir si l'utilisateur dispose d'une autorisation spécifique.
      *
-     * @param string $permission chaînes composées d'une portée et d'une action, comme les users.create
+     * @param string $permissions Chaîne(s) d'autorisation, généralement séparées par des points, comme `users.create`
      */
     public function can(string ...$permissions): bool
     {
@@ -253,18 +254,10 @@ trait Authorizable
         $matrix = parametre('auth-groups.matrix');
 
         foreach ($permissions as $permission) {
-            // L'autorisation doit contenir une portée et une action
-            if (! str_contains($permission, '.')) {
-                throw new LogicException(
-                    'Une autorisation doit être une chaîne composée d\'une portée et d\'une action, comme `users.create`.'
-                    . ' Autorisation non valide: ' . $permission,
-                );
-            }
-
             $permission = strtolower($permission);
 
             // Vérifier les autorisations de l'utilisateur
-            if (in_array($permission, $this->permissionsCache, true)) {
+            if (PermissionMatcher::matches($permission, $this->permissionsCache)) {
                 return true;
             }
 
@@ -273,14 +266,7 @@ trait Authorizable
             }
 
             foreach ($this->groupCache as $group) {
-                // Vérifier correspondance exacte
-                if (isset($matrix[$group]) && in_array($permission, $matrix[$group], true)) {
-                    return true;
-                }
-
-                // Vérifier match joker
-                $check = substr($permission, 0, strpos($permission, '.')) . '.*';
-                if (isset($matrix[$group]) && in_array($check, $matrix[$group], true)) {
+                if (isset($matrix[$group]) && PermissionMatcher::matches($permission, $matrix[$group])) {
                     return true;
                 }
             }
