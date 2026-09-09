@@ -20,7 +20,7 @@ use BlitzPHP\Schild\Models\TokenLoginModel;
 use BlitzPHP\Schild\Models\UserIdentityModel;
 use BlitzPHP\Schild\Models\UserModel;
 use BlitzPHP\Schild\Result;
-use BlitzPHP\Utilities\Date;
+use BlitzPHP\Utilities\DateTime\Date;
 
 class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
 {
@@ -63,7 +63,7 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
                     $credentials['token'] ?? '',
                     false,
                     $ipAddress,
-                    $userAgent
+                    $userAgent,
                 );
             }
 
@@ -82,7 +82,7 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
                     false,
                     $ipAddress,
                     $userAgent,
-                    $user->id
+                    $user->id,
                 );
             }
 
@@ -106,7 +106,7 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
                 true,
                 $ipAddress,
                 $userAgent,
-                $this->user->id
+                $this->user->id,
             );
         }
 
@@ -144,6 +144,17 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
         }
 
         assert($token->last_used_at instanceof Date || $token->last_used_at === null);
+
+        // Est expiré ?
+        if (
+            $token->last_used_at
+            && $token->last_used_at->isBefore(Date::now())
+        ) {
+            return new Result([
+                'success' => false,
+                'reason'  => lang('Auth.oldToken'),
+            ]);
+        }
 
         // N'a pas été utilisé depuis longtemps
         if (
@@ -206,7 +217,7 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
         }
 
         $user->setAccessToken(
-            $user->getAccessToken($this->getBearerToken())
+            $user->getAccessToken($this->getBearerToken()),
         );
 
         $this->login($user);

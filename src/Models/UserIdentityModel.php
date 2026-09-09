@@ -14,19 +14,43 @@ declare(strict_types=1);
 namespace BlitzPHP\Schild\Models;
 
 use BlitzPHP\Schild\Authentication\Authenticators\AccessTokens;
+use BlitzPHP\Schild\Authentication\Authenticators\HmacSha256;
 use BlitzPHP\Schild\Authentication\Authenticators\Session;
+use BlitzPHP\Schild\Authentication\HMAC\HmacEncrypter;
 use BlitzPHP\Schild\Entities\AccessToken;
 use BlitzPHP\Schild\Entities\User;
 use BlitzPHP\Schild\Entities\UserIdentity;
 use BlitzPHP\Schild\Exceptions\DatabaseException;
 use BlitzPHP\Schild\Exceptions\LogicException;
-use BlitzPHP\Utilities\Date;
+use BlitzPHP\Utilities\DateTime\Date;
 use BlitzPHP\Utilities\String\Text;
-use InvalidArgumentException;
 
 class UserIdentityModel extends BaseModel
 {
+    /**
+     * {@inheritDoc}
+     */
     protected string $returnType = UserIdentity::class;
+
+    /**
+     * {@inheritDoc}
+     */
+    protected bool $useTimestamps = true;
+
+    /**
+     * {@inheritDoc}
+     */
+    protected array $fillable = [
+        'user_id',
+        'type',
+        'name',
+        'secret',
+        'secret2',
+        'expires',
+        'extra',
+        'force_reset',
+        'last_used_at',
+    ];
 
     public function __construct()
     {
@@ -40,14 +64,11 @@ class UserIdentityModel extends BaseModel
      *
      * @throws DatabaseException
      */
-    public function create(null|array|object $data = null, bool $returnID = true): void
+    public function create(array|object $data, bool $returnId = true): void
     {
-        if (null === $data) {
-            throw new InvalidArgumentException('$data doit etre un objet ou un tableau');
-        }
         $this->disableDBDebug();
 
-        $return = parent::create($data, $returnID);
+        $return = parent::create($data, $returnId);
 
         $this->checkQueryReturn($return);
     }
@@ -55,27 +76,27 @@ class UserIdentityModel extends BaseModel
     /**
      * Crée une nouvelle identité pour cet utilisateur avec une combinaison email/mot de passe.
      *
-     * @phpstan-param array{email: string, password: string} $credentials
+     * @param array{email: string, password: string} $credentials
      */
     public function createEmailIdentity(User $user, array $credentials): void
     {
         $this->checkUserId($user);
 
-        $className = $this->returnType;
-        $identity  = new $className();
-        $identity->forceFill([
+        $return = parent::create([
             'user_id' => $user->id,
             'type'    => Session::ID_TYPE_EMAIL_PASSWORD,
             'secret'  => $credentials['email'],
             'secret2' => service('passwords')->hash($credentials['password']),
-        ])->save();
+        ]);
+
+        $this->checkQueryReturn($return);
     }
 
     private function checkUserId(User $user): void
     {
         if ($user->id === null) {
             throw new LogicException(
-                '"$user->id" est nul. Vous ne devez pas utiliser l\'objet utilisateur incomplet.'
+                '"$user->id" est nul. Vous ne devez pas utiliser l\'objet utilisateur incomplet.',
             );
         }
     }
@@ -83,8 +104,8 @@ class UserIdentityModel extends BaseModel
     /**
      * Créer une identité avec un code à 6 chiffres pour l'action d'authentification
      *
-     * @phpstan-param array{type: string, name: string, extra: string} $data
-     * @param callable $codeGenerator générer un code secret
+     * @param array{type: string, name: string, extra: string} $data
+     * @param callable                                         $codeGenerator générer un code secret
      *
      * @return string secret
      */
@@ -118,25 +139,26 @@ class UserIdentityModel extends BaseModel
     /**
      * Génère un nouveau token d'accès personnel pour l'utilisateur.
      *
-     * @param string   $name   Nom du token
-     * @param string[] $scopes Autorisations accordées par le token
+     * @param string       $name   Nom du token
+     * @param list<string> $scopes Autorisations accordées par le token
      */
-    public function generateAccessToken(User $user, string $name, array $scopes = ['*']): AccessToken
+    public function generateAccessToken(User $user, string $name, array $scopes = ['*'], ?Date $expiresAt = null): AccessToken
     {
         $this->checkUserId($user);
 
-        $return = $this->insert([
+        $return = parent::create([
             'type'    => AccessTokens::ID_TYPE_ACCESS_TOKEN,
             'user_id' => $user->id,
             'name'    => $name,
             'secret'  => hash('sha256', $rawToken = Text::random(64)),
+            'expires' => $expiresAt,
             'extra'   => serialize($scopes),
         ]);
 
         $this->checkQueryReturn($return);
 
         /** @var AccessToken $token */
-        $token = $this->where(['id' => $this->lastID()])->first(AccessToken::class);
+        $token = $this->where($this->primaryKey, $this->lastInsertId)->first(AccessToken::class);
 
         $token->raw_token = $rawToken;
 
@@ -177,7 +199,7 @@ class UserIdentityModel extends BaseModel
     }
 
     /**
-     * @return AccessToken[]
+     * @return list<AccessToken>
      */
     public function getAllAccessTokens(User $user): array
     {
@@ -188,6 +210,150 @@ class UserIdentityModel extends BaseModel
             ->where('type', AccessTokens::ID_TYPE_ACCESS_TOKEN)
             ->orderBy($this->primaryKey)
             ->all(AccessToken::class);
+    }
+
+    /**
+     * Met à jour ou définit la date d'expiration de l'AccessToken ou du HMAC Token d'un utilisateur en fonction de son ID.
+     *
+     * @param mixed $id
+     *
+     * @return bool Renvoie true si la date d'expiration a été définie ou mise à jour.
+     */
+    public function setIdentityExpirationById($id, User $user, ?Date $expiresAt = null): bool
+    {
+        $this->checkUserId($user);
+
+        return $this->where('user_id', $user->id)
+            ->where('id', $id)
+            ->update(['expires' => $expiresAt]) > 0;
+    }
+
+    // HMAC
+    /**
+     * Recherche et récupération du jeton d'accès HMAC à partir du jeton seul
+     *
+     * @return ?AccessToken Objet AccessToken HMAC complet
+     */
+    public function getHmacTokenByKey(string $key): ?AccessToken
+    {
+        return $this
+            ->where('type', HmacSha256::ID_TYPE_HMAC_TOKEN)
+            ->where('secret', $key)
+            ->first(AccessToken::class);
+    }
+
+    /**
+     * Génère un nouveau jeton d'accès personnel pour l'utilisateur.
+     *
+     * @param string       $name   Nom du jeton
+     * @param list<string> $scopes Autorisations accordées par le jeton
+     */
+    public function generateHmacToken(User $user, string $name, array $scopes = ['*'], ?Date $expiresAt = null): AccessToken
+    {
+        $this->checkUserId($user);
+
+        $encrypter    = new HmacEncrypter();
+        $rawSecretKey = $encrypter->generateSecretKey();
+        $secretKey    = $encrypter->encrypt($rawSecretKey);
+
+        $return = parent::create([
+            'type'    => HmacSha256::ID_TYPE_HMAC_TOKEN,
+            'user_id' => $user->id,
+            'name'    => $name,
+            'secret'  => bin2hex(random_bytes(16)), // Key
+            'secret2' => $secretKey,
+            'expires' => $expiresAt,
+            'extra'   => serialize($scopes),
+        ]);
+
+        $this->checkQueryReturn($return);
+
+        /** @var AccessToken $token */
+        $token = $this->where($this->primaryKey, $this->lastInsertId)->first(AccessToken::class);
+
+        $token->raw_secret_key = $rawSecretKey;
+
+        return $token;
+    }
+
+    /**
+     * Récupère l'objet Token correspondant au jeton HMAC sélectionné.
+     * Remarque : ces jetons ne sont pas hachés, car ils sont considérés comme des secrets partagés.
+     *
+     * @param string $key Chaîne de la clé HMAC
+     *
+     * @return ?AccessToken Jeton d'accès HMAC complet
+     */
+    public function getHmacToken(User $user, string $key): ?AccessToken
+    {
+        $this->checkUserId($user);
+
+        return $this->where('user_id', $user->id)
+            ->where('type', HmacSha256::ID_TYPE_HMAC_TOKEN)
+            ->where('secret', $key)
+            ->first(AccessToken::class);
+    }
+
+    /**
+     * Compte tenu de l'ID, renvoie le jeton d'accès donné.
+     *
+     * @param int|string $id
+     *
+     * @return ?AccessToken Jeton d'accès HMAC complet
+     */
+    public function getHmacTokenById($id, User $user): ?AccessToken
+    {
+        $this->checkUserId($user);
+
+        return $this->where('user_id', $user->id)
+            ->where('type', HmacSha256::ID_TYPE_HMAC_TOKEN)
+            ->where('id', $id)
+            ->first(AccessToken::class);
+    }
+
+    /**
+     * Récupère tous les jetons HMAC des utilisateurs
+     *
+     * @return list<AccessToken>
+     */
+    public function getAllHmacTokens(User $user): array
+    {
+        $this->checkUserId($user);
+
+        return $this
+            ->where('user_id', $user->id)
+            ->where('type', HmacSha256::ID_TYPE_HMAC_TOKEN)
+            ->sortAsc($this->primaryKey)
+            ->all(AccessToken::class);
+    }
+
+    /**
+     * Supprime tous les jetons HMAC pour la clé donnée.
+     */
+    public function revokeHmacToken(User $user, string $key): void
+    {
+        $this->checkUserId($user);
+
+        $return = $this->where('user_id', $user->id)
+            ->where('type', HmacSha256::ID_TYPE_HMAC_TOKEN)
+            ->where('secret', $key)
+            ->delete();
+
+        $this->checkQueryReturn($return);
+    }
+
+    /**
+     * Révoque tous les jetons d'accès pour cet utilisateur.
+     */
+    public function revokeAllHmacTokens(User $user): void
+    {
+        $this->checkUserId($user);
+
+        $return = $this->where('user_id', $user->id)
+            ->where('type', HmacSha256::ID_TYPE_HMAC_TOKEN)
+            ->delete();
+
+        $this->checkQueryReturn($return);
     }
 
     /**
@@ -207,24 +373,23 @@ class UserIdentityModel extends BaseModel
     /**
      * Renvoie toutes les identités.
      *
-     * @return UserIdentity[]
+     * @return list<UserIdentity>
      */
     public function getIdentities(User $user): array
     {
         $this->checkUserId($user);
-        $className = $this->returnType;
 
-        return $className::where('user_id', $user->id)->orderBy($this->primaryKey)->all();
+        return $this->where('user_id', $user->id)->orderBy($this->primaryKey)->findAll()->all();
     }
 
     /**
-     * @param int[]|string[] $userIds
+     * @param list<int>|list<string> $userIds
      *
-     * @return UserIdentity[]
+     * @return list<UserIdentity>
      */
     public function getIdentitiesByUserIds(array $userIds): array
     {
-        return $this->whereIn('user_id', $userIds)->orderBy($this->primaryKey)->all($this->returnType);
+        return $this->whereIn('user_id', $userIds)->orderBy($this->primaryKey)->findAll()->all();
     }
 
     /**
@@ -243,9 +408,9 @@ class UserIdentityModel extends BaseModel
     /**
      * Renvoie toutes les identités pour les types spécifiques.
      *
-     * @param string[] $types
+     * @param list<string> $types
      *
-     * @return UserIdentity[]
+     * @return list<UserIdentity>
      */
     public function getIdentitiesByTypes(User $user, array $types): array
     {
@@ -268,7 +433,7 @@ class UserIdentityModel extends BaseModel
     {
         $identity->last_used_at = Date::now()->format('Y-m-d H:i:s');
 
-        $identity->save();
+        $this->save($identity);
     }
 
     public function deleteIdentitiesByType(User $user, string $type): void
@@ -329,7 +494,7 @@ class UserIdentityModel extends BaseModel
     /**
      * Forcer la réinitialisation du mot de passe pour plusieurs utilisateurs.
      *
-     * @param int[]|string[] $userIds
+     * @param list<int>|list<string> $userIds
      */
     public function forceMultiplePasswordReset(array $userIds): void
     {

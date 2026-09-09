@@ -61,27 +61,26 @@ class Auth extends BaseCollector
      */
     public function display(): string
     {
-        if ($this->auth->loggedIn()) {
-            $user        = $this->auth->user();
-            $groups      = $user->getGroups();
-            $permissions = $user->getPermissions();
-
-            $groupsForUser      = implode(', ', $groups);
-            $permissionsForUser = implode(', ', $permissions);
-
-            $html = '<h3>Utilisateur actuel</h3>';
-            $html .= '<table><tbody>';
-            $html .= "<tr><td style='width:150px;'>User ID</td><td>#{$user->id}</td></tr>";
-            $html .= "<tr><td>Nom d'utilisateur</td><td>{$user->username}</td></tr>";
-            $html .= "<tr><td>Email</td><td>{$user->email}</td></tr>";
-            $html .= "<tr><td>Groupes</td><td>{$groupsForUser}</td></tr>";
-            $html .= "<tr><td>Permissions</td><td>{$permissionsForUser}</td></tr>";
-            $html .= '</tbody></table>';
-        } else {
-            $html = '<p>Non connecté.</p>';
+        if (! $this->auth->loggedIn()) {
+            return '<p>Non connecté.</p>';
         }
 
-        return $html;
+        $user        = $this->auth->user();
+        $groups      = implode(', ', $user->getGroups());
+        $permissions = implode(', ', $user->getPermissions());
+
+        return <<<HTML
+                <h3>Utilisateur actuel</h3>
+                <table>
+                    <tbody>
+                        <tr><td width="150">User ID</td><td>#{$user->id}</td></tr>
+                        <tr><td>Nom d'utilisateur</td><td>{$user->username}</td></tr>
+                        <tr><td>Email</td><td>{$user->email}</td></tr>
+                        <tr><td>Groupes</td><td>{$groups}</td></tr>
+                        <tr><td>Permissions</td><td>{$permissions}</td></tr>
+                    </tbody>
+                </table>
+            HTML;
     }
 
     /**

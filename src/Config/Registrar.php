@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace BlitzPHP\Schild\Config;
 
-use BlitzPHP\Schild\Authentication\Passwords\ValidationRules as PasswordRules;
 use BlitzPHP\Schild\Collectors\Auth;
+use BlitzPHP\Schild\Middlewares\AuthMiddleware;
 use BlitzPHP\Schild\Middlewares\AuthRates;
 use BlitzPHP\Schild\Middlewares\ChainAuth;
 use BlitzPHP\Schild\Middlewares\ForcePasswordReset;
@@ -35,33 +35,32 @@ class Registrar
     {
         return [
             'aliases' => [
-                'session'     => SessionAuth::class,
-                'tokens'      => TokenAuth::class,
-                'hmac'        => HmacAuth::class,
-                'chain'       => ChainAuth::class,
-                'auth-rates'  => AuthRates::class,
-                'group'       => Group::class,
-                'permission'  => Permission::class,
-                'force-reset' => ForcePasswordReset::class,
-                'jwt'         => JWTAuth::class,
-                'guest'       => Guest::class,
+				'auth-rates'  => AuthRates::class,
+				'force-reset' => ForcePasswordReset::class,
+				'group'       => Group::class,
+				'permission'  => Permission::class,
+				'auth'        => AuthMiddleware::class,
 
-                'auth.session' => SessionAuth::class,
-                'auth.tokens'  => TokenAuth::class,
-                'auth.hmac'    => HmacAuth::class,
-                'auth.chain'   => ChainAuth::class,
-                'auth.jwt'     => JWTAuth::class,
+				/**
+				 * Seulement pour la retrocompatibilité
+				 * Utilisez `auth:session`, `auth:tokens`,...
+				 */
+				'session' => SessionAuth::class,
+				'tokens'  => TokenAuth::class,
+				'hmac'    => HmacAuth::class,
+				'chain'   => ChainAuth::class,
+				'jwt'     => JWTAuth::class,
+				'guest'   => Guest::class,
             ],
         ];
     }
 
-    public static function validation(): array
+    /**
+     * Enregistre les fichiers de configurations publiable
+     */
+    public static function config(): array
     {
-        return [
-            'ruleSets' => [
-                PasswordRules::class,
-            ],
-        ];
+        return ['auth-groups', 'auth-jwt', 'auth-token', 'auth'];
     }
 
     public static function toolbar(): array

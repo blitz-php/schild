@@ -43,7 +43,7 @@ class AuthRates implements MiddlewareInterface
         if ($throttler->check(md5($request->clientIp()), 10, MINUTE, 1) === false) {
             return service('response')->withStatus(
                 429,
-                lang('Auth.throttled', [$throttler->getTokenTime()]) // message
+                lang('Auth.throttled', [$throttler->getTokenTime()]), // message
             );
         }
 

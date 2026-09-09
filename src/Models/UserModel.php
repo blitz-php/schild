@@ -20,7 +20,7 @@ use BlitzPHP\Schild\Entities\User;
 use BlitzPHP\Schild\Entities\UserIdentity;
 use BlitzPHP\Schild\Exceptions\InvalidArgumentException;
 use BlitzPHP\Schild\Exceptions\ValidationException;
-use BlitzPHP\Utilities\Date;
+use BlitzPHP\Utilities\DateTime\Date;
 use PDO;
 
 /**
@@ -31,10 +31,10 @@ class UserModel extends BaseModel
     protected string $returnType   = User::class;
     protected bool $useSoftDeletes = true;
     protected bool $useTimestamps  = true;
-    protected array $afterFind     = ['fetchIdentities'];
+    protected array $afterFind     = ['fetchIdentities', 'fetchGroups', 'fetchPermissions'];
     protected array $afterInsert   = ['saveEmailIdentity'];
     protected array $afterUpdate   = ['saveEmailIdentity'];
-    protected array $allowedFields = [
+    protected array $fillable      = [
         'username',
         'status',
         'status_message',
@@ -46,6 +46,18 @@ class UserModel extends BaseModel
      * Indique si les enregistrements d'identité doivent être inclus lorsque les enregistrements d'utilisateur sont extraits de la base de données.
      */
     protected bool $fetchIdentities = false;
+
+    /**
+     * Faut-il inclure les groupes
+     * lors de la récupération des enregistrements utilisateur depuis la base de données ?
+     */
+    protected bool $fetchGroups = false;
+
+    /**
+     * Faut-il inclure les autorisations
+     * lorsque les enregistrements utilisateur sont récupérés depuis la base de données ?
+     */
+    protected bool $fetchPermissions = false;
 
     /**
      * Sauvegarder l'utilisateur pour afterInsert et afterUpdate
@@ -65,6 +77,26 @@ class UserModel extends BaseModel
     public function withIdentities(): self
     {
         $this->fetchIdentities = true;
+
+        return $this;
+    }
+
+    /**
+     * Cochez la case find* pour inclure les groupes
+     */
+    public function withGroups(): self
+    {
+        $this->fetchGroups = true;
+
+        return $this;
+    }
+
+    /**
+     * Cochez la case find* pour inclure les permissions
+     */
+    public function withPermissions(): self
+    {
+        $this->fetchPermissions = true;
 
         return $this;
     }
@@ -101,6 +133,10 @@ class UserModel extends BaseModel
 
         $mappedUsers = $this->assignIdentities($data, $identities);
 
+        if ($data['singleton'] && ! isset($data['id'])) {
+            $data['id'] = $data['data']->id;
+        }
+
         $data['data'] = $data['singleton'] ? $mappedUsers[$data['id']] : $mappedUsers;
 
         return $data;
@@ -109,11 +145,10 @@ class UserModel extends BaseModel
     /**
      * Cartographie nos utilisateurs par ID pour simplifier l'attribution des identites
      *
-     * @param array          $data       Event $data
-     * @param UserIdentity[] $identities
+     * @param array              $data       Event $data
+     * @param list<UserIdentity> $identities
      *
-     * @return User[] UserId => User object
-     * @phpstan-return array<int|string, User> UserId => User object
+     * @return list<User> UserId => User object
      */
     private function assignIdentities(array $data, array $identities): array
     {
@@ -147,6 +182,113 @@ class UserModel extends BaseModel
     }
 
     /**
+     * Remplit les groupes pour tous les enregistrements
+     * renvoyés par une méthode find*. Appelé
+     * automatiquement lorsque $this->fetchGroups == true
+     *
+     * Callback d'événement du modèle appelé par `afterFind`.
+     */
+    protected function fetchGroups(array $data): array
+    {
+        if (! $this->fetchGroups) {
+            return $data;
+        }
+
+        $userIds = $data['singleton']
+            ? array_column($data, 'id')
+            : array_column($data['data'], 'id');
+
+        if ($userIds === []) {
+            return $data;
+        }
+
+        /** @var GroupModel $groupModel */
+        $groupModel = model(GroupModel::class);
+
+        // Recuperer les groupes pour tous les utilisateurs
+        $groups = $groupModel->getGroupsByUserIds($userIds);
+
+        $mappedUsers = $this->assignProperties($data, $groups, 'groups');
+
+        if ($data['singleton'] && ! isset($data['id'])) {
+            $data['id'] = $data['data']->id;
+        }
+
+        $data['data'] = $data['singleton'] ? $mappedUsers[$data['id']] : $mappedUsers;
+
+        return $data;
+    }
+
+    /**
+     * Remplit les permissions pour tous les enregistrements
+     * renvoyés par une méthode find*. Appelé
+     * automatiquement lorsque $this->fetchPermissions == true
+     *
+     * Callback d'événement du modèle appelé par `afterFind`.
+     */
+    protected function fetchPermissions(array $data): array
+    {
+        if (! $this->fetchPermissions) {
+            return $data;
+        }
+
+        $userIds = $data['singleton']
+            ? array_column($data, 'id')
+            : array_column($data['data'], 'id');
+
+        if ($userIds === []) {
+            return $data;
+        }
+
+        /** @var PermissionModel $permissionModel */
+        $permissionModel = model(PermissionModel::class);
+
+        $permissions = $permissionModel->getPermissionsByUserIds($userIds);
+
+        $mappedUsers = $this->assignProperties($data, $permissions, 'permissions');
+
+        if ($data['singleton'] && ! isset($data['id'])) {
+            $data['id'] = $data['data']->id;
+        }
+
+        $data['data'] = $data['singleton'] ? $mappedUsers[$data['id']] : $mappedUsers;
+
+        return $data;
+    }
+
+    /**
+     * Répertorier nos utilisateurs par identifiant pour faciliter leur attribution
+     *
+     * @param list<array>            $properties
+     * @param 'groups'|'permissions' $type
+     *
+     * @return list<User> UserId => Objet User
+     */
+    private function assignProperties(array $data, array $properties, string $type): array
+    {
+        $mappedUsers = [];
+
+        $users = $data['singleton'] ? [$data['data']] : $data['data'];
+
+        foreach ($users as $user) {
+            $mappedUsers[$user->id] = $user;
+        }
+        unset($users);
+
+        // Construction du nom de la methode
+        $method = 'set' . ucfirst($type) . 'Cache';
+
+        // Attribuer des propriétés à tous les utilisateurs (tableau vide si aucune propriété n'est trouvée)
+        foreach ($mappedUsers as $userId => $user) {
+            $propertyArray = $properties[$userId] ?? [];
+            $user->{$method}($propertyArray);
+        }
+        unset($properties);
+
+        return $mappedUsers;
+    }
+
+    /**
      * Ajoute un utilisateur au groupe par défaut.
      * Utilisé lors de l'enregistrement.
      */
@@ -171,7 +313,7 @@ class UserModel extends BaseModel
             $className = User::class;
         }
 
-        return new $className($attributes);
+        return $className::unguarded(static fn () => new $className($attributes));
     }
 
     /**
@@ -189,7 +331,8 @@ class UserModel extends BaseModel
         return $this->select($fields)
             ->where([$this->table . '.id' => $id])
             ->whereNull($this->table . '.deleted_at')
-            ->join($this->tables['identities'], [$this->table . '.id' => $this->tables['identities'] . '.user_id'])
+			->where($this->tables['identities'] . '.type', Session::ID_TYPE_EMAIL_PASSWORD)
+            ->join($this->tables['identities'], $this->table . '.id', '=', $this->tables['identities'] . '.user_id')
             ->first($this->returnType);
     }
 
@@ -205,7 +348,7 @@ class UserModel extends BaseModel
             $this->tables['identities'] . '.secret As email',
             $this->tables['identities'] . '.secret2 As password_hash',
         ])
-            ->join($this->tables['identities'], [$this->tables['identities'] . '.user_id' => $this->table . '.id'])
+            ->join($this->tables['identities'], $this->tables['identities'] . '.user_id', '=', $this->table . '.id')
             ->where($this->tables['identities'] . '.type', Session::ID_TYPE_EMAIL_PASSWORD)
             ->whereNull($this->table . '.deleted_at');
 
@@ -255,14 +398,14 @@ class UserModel extends BaseModel
         foreach ($credentials as $key => $value) {
             $builder->where(
                 'LOWER(' . $this->table . ".{$key})",
-                strtolower($value)
+                strtolower($value),
             );
         }
 
         if ($email !== null) {
             $builder->where(
                 'LOWER(' . $this->tables['identities'] . '.secret)',
-                strtolower($email)
+                strtolower($email),
             );
         }
 
@@ -280,7 +423,7 @@ class UserModel extends BaseModel
     }
 
     /**
-     *Remplacez la méthode `insert()` du BaseModel.
+     * Surchage la méthode `create()` du BaseModel.
      * Si vous passez l'objet Utilisateur, insère également l'identité de l'e-mail.
      *
      * @param array|User $data
@@ -289,20 +432,20 @@ class UserModel extends BaseModel
      *
      * @throws ValidationException
      */
-    public function insert($data = null, bool $returnID = true)
+    public function create($data, bool $returnId = true)
     {
         // Clone User object pour ne pas modifier l'objet passé.
         $this->tempUser = $data instanceof User ? clone $data : null;
 
-        $result = parent::insert($data, true);
+        $result = parent::create($data, $returnId);
 
         $this->checkQueryReturn($result);
 
-        return $returnID ? $this->insertID() : $result;
+        return $returnId ? $this->lastInsertId : $result;
     }
 
     /**
-     * Surcharge la méthode `update()` du BaseModel.
+     * Surcharge la méthode `modify()` du BaseModel.
      * Si vous passez l'objet User, l'identité Email est également mise à jour.
      *
      * @param array|int|string|null $id
@@ -312,14 +455,14 @@ class UserModel extends BaseModel
      *
      * @throws ValidationException
      */
-    public function update($id = null, $data = null): bool
+    public function modify($id = null, $data = null): bool
     {
         // Clone l'objet Utilisateur pour ne pas modifier l'objet transmis.
         $this->tempUser = $data instanceof User ? clone $data : null;
 
         try {
             /** @throws DataException */
-            $result = parent::where(['id' => $id])->update($data);
+            $result = parent::modify($id, $data);
         } catch (DataException $e) {
             // Lorsque $data est un tableau.
             if ($this->tempUser === null) {
@@ -378,7 +521,7 @@ class UserModel extends BaseModel
         // Insertion
         if ($this->tempUser->id === null) {
             /** @var User $user */
-            $user = $this->find($this->db->insertID());
+            $user = $this->find($this->lastInsertId());
 
             // Si vous obtenez l'identité (email/mot de passe), l'objet User doit avoir l'id.
             $this->tempUser->id = $user->id;

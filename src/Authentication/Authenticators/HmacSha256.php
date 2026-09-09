@@ -21,7 +21,7 @@ use BlitzPHP\Schild\Models\TokenLoginModel;
 use BlitzPHP\Schild\Models\UserIdentityModel;
 use BlitzPHP\Schild\Models\UserModel;
 use BlitzPHP\Schild\Result;
-use BlitzPHP\Utilities\Date;
+use BlitzPHP\Utilities\DateTime\Date;
 
 class HmacSha256 extends BaseAuthenticator implements AuthenticatorInterface
 {
@@ -65,7 +65,7 @@ class HmacSha256 extends BaseAuthenticator implements AuthenticatorInterface
                     $credentials['token'] ?? '',
                     false,
                     $ipAddress,
-                    $userAgent
+                    $userAgent,
                 );
             }
 
@@ -84,7 +84,7 @@ class HmacSha256 extends BaseAuthenticator implements AuthenticatorInterface
                     false,
                     $ipAddress,
                     $userAgent,
-                    $user->id
+                    $user->id,
                 );
             }
 
@@ -108,7 +108,7 @@ class HmacSha256 extends BaseAuthenticator implements AuthenticatorInterface
                 true,
                 $ipAddress,
                 $userAgent,
-                $this->user->id
+                $this->user->id,
             );
         }
 
@@ -129,7 +129,7 @@ class HmacSha256 extends BaseAuthenticator implements AuthenticatorInterface
                 'success' => false,
                 'reason'  => lang(
                     'Auth.noToken',
-                    [config('auth-token.authenticator_header.hmac')]
+                    [config('auth-token.authenticator_header.hmac')],
                 ),
             ]);
         }
@@ -171,7 +171,7 @@ class HmacSha256 extends BaseAuthenticator implements AuthenticatorInterface
         if (
             isset($token->last_used_at)
             && $token->last_used_at->isBefore(
-                Date::now()->subSeconds(config('auth-token.unused_token_lifetime'))
+                Date::now()->subSeconds(config('auth-token.unused_token_lifetime')),
             )
         ) {
             return new Result([
@@ -231,7 +231,7 @@ class HmacSha256 extends BaseAuthenticator implements AuthenticatorInterface
         }
 
         $user->setHmacToken(
-            $user->getHmacToken($this->getHmacKeyFromToken())
+            $user->getHmacToken($this->getHmacKeyFromToken()),
         );
 
         $this->login($user);

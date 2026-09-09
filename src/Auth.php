@@ -41,7 +41,7 @@ class Auth
     /**
      * Version actuelle de BlitzPHP Schild
      */
-    public const VERSION = '1.0.0-beta.1';
+    public const VERSION = '1.0.0-rc';
 
     protected ?Authentication $authenticate = null;
 
@@ -130,11 +130,20 @@ class Auth
      */
     public function routes(RouteCollection &$routes, array $config = []): void
     {
-        $namespace = $config['namespace'] ?? 'BlitzPHP\Schild\Controllers';
-
-        $routes->group('/', ['namespace' => $namespace], static function (RouteCollection $routes) use ($config): void {
+		$namespace = $config['namespace'] ?? 'BlitzPHP\Schild\Controllers';
+		$prefix    = $config['prefix'] ?? '/';
+		
+        $routes->group($prefix, ['namespace' => $namespace], static function (RouteCollection $routes) use ($config): void {
             foreach (Registrar::routes() as $name => $row) {
-                if (! isset($config['except']) || ! in_array($name, $config['except'], true)) {
+                $shouldInclude = true;
+
+                if (isset($config['only'])) {
+                    $shouldInclude = in_array($name, $config['only'], true);
+                } elseif (isset($config['except'])) {
+                    $shouldInclude = !in_array($name, $config['except'], true);
+                }
+            
+                if ($shouldInclude) {
                     foreach ($row as $params) {
                         $options = isset($params[3])
                             ? ['as' => $params[3]]
@@ -172,7 +181,7 @@ class Auth
      * de répéter le code ici et pour leur permettre d'avoir leurs propres fonctionnalités
      * supplémentaires en plus de celles requises, comme la fonctionnalité "se souvenir de moi".
      *
-     * @param string[] $args
+     * @param list<string> $args
      *
      * @throws AuthenticationException
      */

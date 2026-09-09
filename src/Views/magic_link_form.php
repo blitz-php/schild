@@ -9,7 +9,7 @@
         <div class="card-body">
             <h5 class="card-title mb-5"><?= lang('Auth.useMagicLink') ?></h5>
 
-            <?php if($error = $errors->line('default')) : ?>
+            <?php if ($error = $errors->line('default')) : ?>
 				<div class="alert alert-danger" role="alert"><?= $error ?></div>
 			<?php elseif ($errors->count()): ?>
 				<div class="alert alert-danger" role="alert">

@@ -14,38 +14,24 @@ declare(strict_types=1);
 namespace BlitzPHP\Schild\Commands;
 
 use BlitzPHP\Cli\Console\Command;
+use BlitzPHP\Database\Builder\BaseBuilder;
 use BlitzPHP\Schild\Authentication\Authenticators\Session;
+use BlitzPHP\Schild\Commands\Exceptions\BadInputException;
+use BlitzPHP\Schild\Commands\Exceptions\CancelException;
 use BlitzPHP\Schild\Entities\User as UserEntity;
-use BlitzPHP\Schild\Models\UserModel;
+use BlitzPHP\Schild\Exceptions\UserNotFoundException;
+use BlitzPHP\Schild\Exceptions\ValidationException;
+use BlitzPHP\Schild\Models\GroupModel;
+use BlitzPHP\Schild\Validation\ValidationRules;
+use BlitzPHP\Validation\Validator;
 use PDO;
-use Throwable;
 
 class User extends Command
 {
-    private array $validActions = [
-        'create', 'activate', 'deactivate', 'changename', 'changeemail',
-        'delete', 'password', 'list', 'addgroup', 'removegroup',
-    ];
-
-    /**
-     * @var string
-     */
-    protected $group = 'Schild';
-
-    /**
-     * @var string
-     */
-    protected $name = 'schild:user';
-
-    /**
-     * @var string
-     */
-    protected $description = 'Gérer les utilisateurs de Schild.';
-
-    /**
-     * @var string
-     */
-    protected $usage = <<<'EOL'
+    protected string $group       = 'Schild';
+    protected string $name        = 'schild:user';
+    protected string $description = 'Gérer les utilisateurs de Schild.';
+    protected string $usage       = <<<'EOL'
         schild:user <action> options
 
             schild:user create -n newusername -e newuser@example.com
@@ -78,11 +64,7 @@ class User extends Command
             schild:user removegroup -n username -g mygroup
             schild:user removegroup -e user@example.com -g mygroup
         EOL;
-
-    /**
-     * {@inheritDoc}
-     */
-    protected $arguments = [
+    protected array $arguments = [
         'action' => <<<'EOL'
 
                 create:      Créer un nouvel utilisateur
@@ -97,17 +79,17 @@ class User extends Command
                 removegroup: Supprimer un utilisateur d'un groupe
             EOL,
     ];
-
-    /**
-     * {@inheritDoc}
-     */
-    protected $options = [
+    protected array $options = [
         '-i'          => 'ID de l\'utilisateur',
         '-n'          => 'Nom de l\'utilisateur',
         '-e'          => 'Email de l\'utilisateur',
         '--new-name'  => 'Nouveau nom d\'utilisateur',
         '--new-email' => 'Nouvel email de l\'utilisateur',
         '-g'          => 'Nom du groupe',
+    ];
+    private array $validActions = [
+        'create', 'activate', 'deactivate', 'changename', 'changeemail',
+        'delete', 'password', 'list', 'addgroup', 'removegroup',
     ];
 
     /**
@@ -125,7 +107,7 @@ class User extends Command
     /**
      * {@inheritDoc}
      */
-    public function execute(array $params)
+    public function handle()
     {
         $this->setTables();
         $this->setValidationRules();
@@ -133,8 +115,7 @@ class User extends Command
         $action = $this->argument('action');
 
         if ($action === null || ! in_array($action, $this->validActions, true)) {
-            $this->fail('Specify a valid action: ');
-            $this->write(implode(',', $this->validActions));
+            $this->fail('Indiquez une action valide: ' . implode(',', $this->validActions));
 
             return EXIT_ERROR;
         }
@@ -149,7 +130,7 @@ class User extends Command
         try {
             switch ($action) {
                 case 'create':
-                    $this->create($username, $email);
+                    $this->create($username, $email, $group);
                     break;
 
                 case 'activate':
@@ -188,7 +169,7 @@ class User extends Command
                     $this->removegroup($group, $username, $email);
                     break;
             }
-        } catch (Throwable $e) {
+        } catch (BadInputException|CancelException|UserNotFoundException $e) {
             $this->fail($e->getMessage());
 
             return EXIT_ERROR;
@@ -204,36 +185,10 @@ class User extends Command
 
     private function setValidationRules(): void
     {
-        $validationRules = new RegistrationValidationRules();
+        $validationRules = ValidationRules::register();
+        $rules           = $validationRules['rules'];
 
-        $rules = $validationRules->get();
-
-        // Remove `strong_password` because it only supports use cases
-        // to check the user's own password.
-        $passwordRules = $rules['password']['rules'];
-        if (is_string($passwordRules)) {
-            $passwordRules = explode('|', $passwordRules);
-        }
-        if (($key = array_search('strong_password[]', $passwordRules, true)) !== false) {
-            unset($passwordRules[$key]);
-        }
-        if (($key = array_search('strong_password', $passwordRules, true)) !== false) {
-            unset($passwordRules[$key]);
-        }
-
-        /** @var Auth $config */
-        $config = config('Auth');
-
-        // Add `min_length`
-        $passwordRules[] = 'min_length[' . $config->minimumPasswordLength . ']';
-
-        $rules['password']['rules'] = $passwordRules;
-
-        $this->validationRules = [
-            'username' => $rules['username'],
-            'email'    => $rules['email'],
-            'password' => $rules['password'],
-        ];
+        $this->validationRules = $rules;
     }
 
     /**
@@ -241,55 +196,121 @@ class User extends Command
      *
      * @param string|null $username Nom d'utilisateur à créer (facultatif)
      * @param string|null $email    E-mail de l'utilisateur à créer (facultatif)
+     * @param string|null $group    Groupe auquel ajouter l'utilisateur après sa création (facultatif)
      */
-    private function create(?string $username = null, ?string $email = null): void
+    private function create(?string $username = null, ?string $email = null, ?string $group = null): void
     {
         $data = [];
 
-        if ($username === null) {
-            $username = $this->prompt('Username', null, $this->validationRules['username']['rules']);
+        if ($username === null && isset($this->validationRules['username'])) {
+            $username = $this->prompt(lang('Auth.username'), null, function ($value) {
+                $v = Validator::make(
+                    ['username' => $value],
+                    ['username' => $this->validationRules['username']],
+                );
+                if ($v->fails()) {
+                    throw new ValidationException($v->errors()->first('username'));
+                }
+
+                return $value;
+            });
         }
-        $data['username'] = $username;
 
         if ($email === null) {
-            $email = $this->prompt('Email', null, $this->validationRules['email']['rules']);
+            $email = $this->prompt(lang('Auth.email'), null, function ($value) {
+                $v = Validator::make(
+                    ['email' => $value],
+                    ['email' => $this->validationRules['email']],
+                );
+                if ($v->fails()) {
+                    throw new ValidationException($v->errors()->first('email'));
+                }
+
+                return $value;
+            });
         }
-        $data['email'] = $email;
 
-        $password = $this->prompt(
-            'Password',
-            null,
-            $this->validationRules['password']['rules']
-        );
-        $passwordConfirm = $this->prompt(
-            'Password confirmation',
-            null,
-            $this->validationRules['password']['rules']
-        );
-
-        if ($password !== $passwordConfirm) {
-            throw new BadInputException("The passwords don't match");
-        }
-        $data['password'] = $password;
-
-        // Run validation if the user has passed username and/or email via command line
-        $validation = Services::validation();
-        $validation->setRules($this->validationRules);
-
-        if (! $validation->run($data)) {
-            foreach ($validation->getErrors() as $message) {
-                $this->write($message, 'red');
+        $password = $this->prompt(lang('Auth.password'), null, function ($value) {
+            $v = Validator::make(
+                ['password' => $value],
+                ['password' => $this->validationRules['password']],
+            );
+            if ($v->fails()) {
+                throw new ValidationException($v->errors()->first('password'));
             }
 
-            throw new CancelException('User creation aborted');
+            return $value;
+        });
+
+        $passwordConfirm = $this->prompt(lang('Auth.passwordConfirm'), null, function ($value) use ($password) {
+            $v = Validator::make(
+                ['password_confirmation' => $value, 'password' => $password],
+                ['password_confirmation' => $this->validationRules['password_confirmation']],
+            );
+            if ($v->fails()) {
+                throw new ValidationException($v->errors()->first('password_confirmation'));
+            }
+
+            return $value;
+        });
+
+        $data = array_filter([
+            'username'              => $username,
+            'email'                 => $email,
+            'password'              => $password,
+            'password_confirmation' => $passwordConfirm,
+        ]);
+
+        // Run validation if the user has passed username and/or email via command line
+        if ($data !== []) {
+            $v = Validator::make($data, $this->validationRules);
+            if ($v->fails()) {
+                foreach ($v->errors()->all() as $message) {
+                    $this->error($message);
+                }
+
+                throw new CancelException('User creation aborted');
+            }
         }
 
-        $userModel = model(UserModel::class);
+        unset($data['password_confirmation']);
 
-        $user = new UserEntity($data);
-        $userModel->save($user);
+		$userModel = auth()->getProvider();
 
-        $this->write('User "' . $username . '" created', 'green');
+        $user = $userModel->newUserEntity($data);
+
+        // Validate the group
+        if ($group !== null && ! $this->validateGroup($group)) {
+            throw new CancelException('Invalid group: "' . $group . '"');
+        }
+
+        if ($username === null) {
+            $userModel->save($user);
+            $this->success('New User created');
+        } else {
+            $userModel->save($user);
+            $this->success('User "' . $username . '" created');
+        }
+
+        $user = $userModel->findById($userModel->lastInsertId());
+
+        if ($group === null) {
+            // Ajouter l'utilisateur au groupe par défaut
+            $userModel->addToDefaultGroup($user);
+
+            $this->success('The user is added to the default group.');
+        } else {
+            $user->addGroup($group);
+
+            $this->success('The user is added to group "' . $group . '".');
+        }
+    }
+
+    private function validateGroup(string $group): bool
+    {
+        $groupModel = model(GroupModel::class);
+
+        return $groupModel->isValidGroup($group);
     }
 
     /**
@@ -302,17 +323,14 @@ class User extends Command
     {
         $user = $this->findUser('Activate user', $username, $email);
 
-        $confirm = $this->prompt('Activate the user ' . $user->username . ' ?', ['y', 'n']);
+        if ($this->confirm('Activate the user ' . $user->username . ' ?')) {
+            $userModel = auth()->getProvider();
 
-        if ($confirm === 'y') {
-            $userModel = model(UserModel::class);
+            $userModel->modify($user->id, ['active' => 1]);
 
-            $user->active = 1;
-            $userModel->save($user);
-
-            $this->write('User "' . $user->username . '" activated', 'green');
+            $this->success('User "' . $user->username . '" activated');
         } else {
-            $this->write('User "' . $user->username . '" activation cancelled', 'yellow');
+            $this->warning('User "' . $user->username . '" activation cancelled');
         }
     }
 
@@ -326,17 +344,14 @@ class User extends Command
     {
         $user = $this->findUser('Deactivate user', $username, $email);
 
-        $confirm = $this->prompt('Deactivate the user "' . $username . '" ?', ['y', 'n']);
+        if ($this->confirm('Deactivate the user ' . $user->username . ' ?')) {
+            $userModel = auth()->getProvider();
 
-        if ($confirm === 'y') {
-            $userModel = model(UserModel::class);
+            $userModel->modify($user->id, ['active' => 0]);
 
-            $user->active = 0;
-            $userModel->save($user);
-
-            $this->write('User "' . $user->username . '" deactivated', 'green');
+            $this->success('User "' . $user->username . '" deactivated');
         } else {
-            $this->write('User "' . $user->username . '" deactivation cancelled', 'yellow');
+            $this->warning('User "' . $user->username . '" deactivation cancelled');
         }
     }
 
@@ -350,35 +365,32 @@ class User extends Command
     private function changename(
         ?string $username = null,
         ?string $email = null,
-        ?string $newUsername = null
+        ?string $newUsername = null,
     ): void {
         $user = $this->findUser('Change username', $username, $email);
 
         if ($newUsername === null) {
-            $newUsername = $this->prompt('New username', null, $this->validationRules['username']['rules']);
-        } else {
-            // Run validation if the user has passed username and/or email via command line
-            $validation = Services::validation();
-            $validation->setRules([
-                'username' => $this->validationRules['username'],
-            ]);
-
-            if (! $validation->run(['username' => $newUsername])) {
-                foreach ($validation->getErrors() as $message) {
-                    $this->write($message, 'red');
-                }
-
-                throw new CancelException('User name change aborted');
-            }
+            $newUsername = $this->prompt('New username');
         }
 
-        $userModel = model(UserModel::class);
+        $v = Validator::make(
+            ['username' => $newUsername],
+            ['username' => $this->validationRules['username']],
+        );
+        if ($v->fails()) {
+            foreach ($v->errors()->all() as $message) {
+                $this->error($message);
+            }
 
-        $oldUsername    = $user->username;
-        $user->username = $newUsername;
-        $userModel->save($user);
+            throw new CancelException('User name change aborted');
+        }
 
-        $this->write('Username "' . $oldUsername . '" changed to "' . $newUsername . '"', 'green');
+		$userModel = auth()->getProvider();
+
+        $oldUsername = $user->username;
+        $userModel->modify($user->id, ['username' => $newUsername]);
+
+        $this->success('Username "' . $oldUsername . '" changed to "' . $newUsername . '"');
     }
 
     /**
@@ -391,34 +403,32 @@ class User extends Command
     private function changeemail(
         ?string $username = null,
         ?string $email = null,
-        ?string $newEmail = null
+        ?string $newEmail = null,
     ): void {
         $user = $this->findUser('Change email', $username, $email);
 
         if ($newEmail === null) {
-            $newEmail = $this->prompt('New email', null, $this->validationRules['email']['rules']);
-        } else {
-            // Run validation if the user has passed username and/or email via command line
-            $validation = Services::validation();
-            $validation->setRules([
-                'email' => $this->validationRules['email'],
-            ]);
-
-            if (! $validation->run(['email' => $newEmail])) {
-                foreach ($validation->getErrors() as $message) {
-                    $this->write($message, 'red');
-                }
-
-                throw new CancelException('User email change aborted');
-            }
+            $newEmail = $this->prompt('New email');
         }
 
-        $userModel = model(UserModel::class);
+        $v = Validator::make(
+            ['email' => $newEmail],
+            ['email' => $this->validationRules['email']],
+        );
+        if ($v->fails()) {
+            foreach ($v->errors()->all() as $message) {
+                $this->error($message);
+            }
 
-        $user->email = $newEmail;
+            throw new CancelException('User email change aborted');
+        }
+
+		$userModel = auth()->getProvider();
+
+        $user->setEmail($newEmail);
         $userModel->save($user);
 
-        $this->write('Email for "' . $user->username . '" changed to ' . $newEmail, 'green');
+        $this->success('Email for "' . $user->username . '" changed to ' . $newEmail);
     }
 
     /**
@@ -430,7 +440,7 @@ class User extends Command
      */
     private function delete(int $userid = 0, ?string $username = null, ?string $email = null): void
     {
-        $userModel = model(UserModel::class);
+        $userModel = auth()->getProvider();
 
         if ($userid !== 0) {
             $user = $userModel->findById($userid);
@@ -440,17 +450,12 @@ class User extends Command
             $user = $this->findUser('Delete user', $username, $email);
         }
 
-        $confirm = $this->prompt(
-            'Delete the user "' . $user->username . '" (' . $user->email . ') ?',
-            ['y', 'n']
-        );
+        if ($this->confirm('Delete the user "' . $user->username . '" (' . $user->email . ') ?')) {
+            $userModel->remove($user->id, true);
 
-        if ($confirm === 'y') {
-            $userModel->delete($user->id, true);
-
-            $this->write('User "' . $user->username . '" deleted', 'green');
+            $this->success('User "' . $user->username . '" deleted');
         } else {
-            $this->write('User "' . $user->username . '" deletion cancelled', 'yellow');
+            $this->warning('User "' . $user->username . '" deletion cancelled');
         }
     }
 
@@ -474,32 +479,39 @@ class User extends Command
     {
         $user = $this->findUser('Change user password', $username, $email);
 
-        $confirm = $this->prompt('Set the password for "' . $user->username . '" ?', ['y', 'n']);
+        if ($this->confirm('Set the password for "' . $user->username . '" ?')) {
+            $password = $this->prompt(lang('Auth.password'), null, function ($value) {
+                $v = Validator::make(
+                    ['password' => $value],
+                    ['password' => $this->validationRules['password']],
+                );
+                if ($v->fails()) {
+                    throw new ValidationException($v->errors()->first('password'));
+                }
 
-        if ($confirm === 'y') {
-            $password = $this->prompt(
-                'Password',
-                null,
-                $this->validationRules['password']['rules']
-            );
-            $passwordConfirm = $this->prompt(
-                'Password confirmation',
-                null,
-                $this->validationRules['password']['rules']
-            );
+                return $value;
+            });
 
-            if ($password !== $passwordConfirm) {
-                throw new BadInputException("The passwords don't match");
-            }
+            $this->prompt(lang('Auth.passwordConfirm'), null, function ($value) use ($password) {
+                $v = Validator::make(
+                    ['password_confirmation' => $value, 'password' => $password],
+                    ['password_confirmation' => $this->validationRules['password_confirmation']],
+                );
+                if ($v->fails()) {
+                    throw new ValidationException($v->errors()->first('password_confirmation'));
+                }
 
-            $userModel = model(UserModel::class);
+                return $value;
+            });
+
+            $userModel = auth()->getProvider();
 
             $user->password = $password;
             $userModel->save($user);
 
-            $this->write('Password for "' . $user->username . '" set', 'green');
+            $this->success('Password for "' . $user->username . '" set');
         } else {
-            $this->write('Password setting for "' . $user->username . '" cancelled', 'yellow');
+            $this->warning('Password setting for "' . $user->username . '" cancelled');
         }
     }
 
@@ -511,21 +523,20 @@ class User extends Command
      */
     private function list(?string $username = null, ?string $email = null): void
     {
-        $userModel = model(UserModel::class);
+		$userModel = auth()->getProvider()->asArray();
+
         $userModel
             ->select($this->tables['users'] . '.id as id, username, secret as email')
-            ->join(
+            ->leftJoin(
                 $this->tables['identities'],
-                $this->tables['users'] . '.id = ' . $this->tables['identities'] . '.user_id',
-                'LEFT'
+                $this->tables['users'] . '.id',
+                '=',
+                $this->tables['identities'] . '.user_id',
             )
-            ->groupStart()
-            ->where($this->tables['identities'] . '.type', Session::ID_TYPE_EMAIL_PASSWORD)
-            ->orGroupStart()
-            ->where($this->tables['identities'] . '.type', null)
-            ->groupEnd()
-            ->groupEnd()
-            ->asArray();
+            ->where(function (BaseBuilder $query): void {
+                $query->where($this->tables['identities'] . '.type', Session::ID_TYPE_EMAIL_PASSWORD)
+                    ->orWhereNull($this->tables['identities'] . '.type');
+            });
 
         if ($username !== null) {
             $userModel->like('username', $username);
@@ -537,7 +548,7 @@ class User extends Command
         $this->write("Id\tUser");
 
         foreach ($userModel->findAll() as $user) {
-            $this->write($user['id'] . "\t" . $user['username'] . ' (' . $user['email'] . ')');
+            $this->eol()->write($user['id'] . "\t" . $user['username'] . ' (' . $user['email'] . ')');
         }
     }
 
@@ -551,24 +562,18 @@ class User extends Command
     private function addgroup($group = null, $username = null, $email = null): void
     {
         if ($group === null) {
-            $group = $this->prompt('Group', null, 'required');
+            $group = $this->prompt('Group');
         }
 
         $user = $this->findUser('Add user to group', $username, $email);
 
-        $confirm = $this->prompt(
-            'Add the user "' . $user->username . '" to the group "' . $group . '" ?',
-            ['y', 'n']
-        );
-
-        if ($confirm === 'y') {
+        if ($this->confirm('Add the user "' . $user->username . '" to the group "' . $group . '" ?')) {
             $user->addGroup($group);
 
-            $this->write('User "' . $user->username . '" added to group "' . $group . '"', 'green');
+            $this->success('User "' . $user->username . '" added to group "' . $group . '"');
         } else {
-            $this->write(
+            $this->warning(
                 'Addition of the user "' . $user->username . '" to the group "' . $group . '" cancelled',
-                'yellow'
             );
         }
     }
@@ -583,22 +588,17 @@ class User extends Command
     private function removegroup($group = null, $username = null, $email = null): void
     {
         if ($group === null) {
-            $group = $this->prompt('Group', null, 'required');
+            $group = $this->prompt('Group');
         }
 
         $user = $this->findUser('Remove user from group', $username, $email);
 
-        $confirm = $this->prompt(
-            'Remove the user "' . $user->username . '" from the group "' . $group . '" ?',
-            ['y', 'n']
-        );
-
-        if ($confirm === 'y') {
+        if ($this->confirm('Remove the user "' . $user->username . '" from the group "' . $group . '" ?')) {
             $user->removeGroup($group);
 
-            $this->write('User "' . $user->username . '" removed from group "' . $group . '"', 'green');
+            $this->success('User "' . $user->username . '" removed from group "' . $group . '"');
         } else {
-            $this->write('Removal of the user "' . $user->username . '" from the group "' . $group . '" cancelled', 'yellow');
+            $this->warning('Removal of the user "' . $user->username . '" from the group "' . $group . '" cancelled');
         }
     }
 
@@ -609,32 +609,37 @@ class User extends Command
      * @param string|null $username User name to search for (optional)
      * @param string|null $email    User email to search for (optional)
      */
-    private function findUser($question = '', $username = null, $email = null): UserEntity
+    private function findUser(string $question = '', ?string $username = null, ?string $email = null): UserEntity
     {
         if ($username === null && $email === null) {
             $choice = $this->choice($question . ' par nom d\'utilisateur ou email ?', ['u', 'e']);
 
             if ($choice === 'u') {
-                $username = $this->prompt('Nom d\'utilisateur', null, 'required');
+                $username = $this->prompt('Nom d\'utilisateur');
             } elseif ($choice === 'e') {
-                $email = $this->prompt('Email', null, 'required');
+                $email = $this->prompt('Email');
             }
         }
 
-        $userModel = model(UserModel::class)
-            ->select($this->tables['users'] . '.id as id, username, secret')
+        $userModel = auth()->getProvider();
+
+        $userModel->select($this->tables['users'] . '.id as id, username, secret')
             ->leftJoin(
                 $this->tables['identities'],
-                [$this->tables['users'] . '.id' => $this->tables['identities'] . '.user_id'],
+                $this->tables['users'] . '.id',
+                '=',
+                $this->tables['identities'] . '.user_id',
             )
-            ->where($this->tables['identities'] . '.type', Session::ID_TYPE_EMAIL_PASSWORD)
-            ->orWhereNull($this->tables['identities'] . '.type');
+            ->where(function (BaseBuilder $query): void {
+                $query->where($this->tables['identities'] . '.type', Session::ID_TYPE_EMAIL_PASSWORD)
+                    ->orWhereNull($this->tables['identities'] . '.type');
+            });
 
         $user = null;
         if ($username !== null) {
-            $user = $userModel->where(static fn ($b) => $b->where('username', $username))->first(PDO::FETCH_ASSOC);
+            $user = $userModel->where('username', $username)->first(PDO::FETCH_ASSOC);
         } elseif ($email !== null) {
-            $user = $userModel->where(static fn ($b) => $b->where('secret', $email))->first(PDO::FETCH_ASSOC);
+            $user = $userModel->where('secret', $email)->first(PDO::FETCH_ASSOC);
         }
 
         $this->checkUserExists($user);

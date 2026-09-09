@@ -13,13 +13,14 @@ declare(strict_types=1);
 
 namespace BlitzPHP\Schild\Controllers;
 
+use BlitzPHP\Exceptions\PageNotFoundException;
 use BlitzPHP\Http\Redirection;
 use BlitzPHP\Schild\Authentication\Authenticators\Session;
 use BlitzPHP\Schild\Models\LoginModel;
 use BlitzPHP\Schild\Models\UserIdentityModel;
 use BlitzPHP\Schild\Models\UserModel;
 use BlitzPHP\Schild\Validation\ValidationRules;
-use BlitzPHP\Utilities\Date;
+use BlitzPHP\Utilities\DateTime\Date;
 use BlitzPHP\Utilities\String\Text;
 use BlitzPHP\Validation\Validation;
 use BlitzPHP\Validation\Validator;
@@ -47,7 +48,7 @@ class MagicLinkController extends BaseController
     /**
      * Affiche la vue permettant de saisir leur adresse e-mail afin qu'un e-mail puisse leur être envoyé.
      *
-     * @return RedirectResponse|string
+     * @return Redirection|string
      */
     public function loginView()
     {
@@ -65,7 +66,7 @@ class MagicLinkController extends BaseController
     /**
      * Reçoit l'e-mail de l'utilisateur, crée le hachage vers une identité d'utilisateur et envoie un e-mail à l'adresse e-mail indiquée.
      *
-     * @return RedirectResponse|string
+     * @return Redirection|string
      */
     public function loginAction()
     {
@@ -142,6 +143,10 @@ class MagicLinkController extends BaseController
             return redirect()->route('login')->withErrors(lang('Auth.magicLinkDisabled'));
         }
 
+        if ($this->request->userAgent()->isRobot()) {
+            throw PageNotFoundException::pageNotFound();
+        }
+
         $token = $this->request->query('token');
 
         /** @var UserIdentityModel $identityModel */
@@ -204,7 +209,7 @@ class MagicLinkController extends BaseController
     private function recordLoginAttempt(
         string $identifier,
         bool $success,
-        $userId = null
+        $userId = null,
     ): void {
         /** @var LoginModel $loginModel */
         $loginModel = model(LoginModel::class);
@@ -215,7 +220,7 @@ class MagicLinkController extends BaseController
             $success,
             $this->request->ip(),
             (string) $this->request->userAgent(),
-            $userId
+            $userId,
         );
     }
 

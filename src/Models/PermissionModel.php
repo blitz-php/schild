@@ -17,7 +17,15 @@ use BlitzPHP\Schild\Entities\User;
 
 class PermissionModel extends BaseModel
 {
+    /**
+     * {@inheritDoc}
+     */
     protected string $returnType = 'array';
+
+    /**
+     * {@inheritDoc}
+     */
+    protected array $fillable = ['user_id', 'permission', 'created_at'];
 
     public function __construct()
     {
@@ -31,7 +39,7 @@ class PermissionModel extends BaseModel
         $rows = $this->builder()
             ->select('permission')
             ->where('user_id', $user->id)
-            ->result($this->returnType);
+            ->result('array');
 
         return array_column($rows, 'permission');
     }
@@ -60,5 +68,28 @@ class PermissionModel extends BaseModel
             ->delete();
 
         $this->checkQueryReturn($return);
+    }
+
+    /**
+     * @param list<int>|list<string> $userIds
+     *
+     * @return array<int, array>
+     */
+    public function getPermissionsByUserIds(array $userIds): array
+    {
+        $permissions = $this->builder()
+            ->select('user_id, permission')
+            ->whereIn('user_id', $userIds)
+            ->orderBy($this->primaryKey)
+            ->result('array');
+
+        return array_map(
+            array_keys(...),
+            array_reduce($permissions, static function ($carry, $item) {
+                $carry[$item['user_id']][$item['permission']] = true;
+
+                return $carry;
+            }, []),
+        );
     }
 }

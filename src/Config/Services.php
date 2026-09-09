@@ -25,11 +25,11 @@ class Services extends BaseServices
      */
     public static function auth(bool $shared = true): Auth
     {
-        if ($shared && isset(static::$instances[Auth::class])) {
-            return static::$instances[Auth::class];
+        if ($shared) {
+            return static::sharedInstance('auth');
         }
 
-        return static::$instances[Auth::class] = new Auth((object) config('auth'));
+        return new Auth((object) config('auth'));
     }
 
     /**
@@ -37,11 +37,11 @@ class Services extends BaseServices
      */
     public static function passwords(bool $shared = true): Passwords
     {
-        if ($shared && isset(static::$instances[Passwords::class])) {
-            return static::$instances[Passwords::class];
+        if ($shared) {
+            return static::sharedInstance('passwords');
         }
 
-        return static::$instances[Passwords::class] = new Passwords((object) config('auth'));
+        return new Passwords((object) config('auth'));
     }
 
     /**
@@ -49,10 +49,10 @@ class Services extends BaseServices
      */
     public static function jwtManager(bool $shared = true): JwtManager
     {
-        if ($shared && isset(static::$instances[JwtManager::class])) {
-            return static::$instances[JwtManager::class];
+        if ($shared) {
+            return static::sharedInstance('jwtManager');
         }
 
-        return static::$instances[JwtManager::class] = new JwtManager();
+        return new JwtManager();
     }
 }

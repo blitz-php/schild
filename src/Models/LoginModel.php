@@ -15,11 +15,39 @@ namespace BlitzPHP\Schild\Models;
 
 use BlitzPHP\Schild\Entities\Login;
 use BlitzPHP\Schild\Entities\User;
-use BlitzPHP\Utilities\Date;
+use BlitzPHP\Utilities\DateTime\Date;
 
 class LoginModel extends BaseModel
 {
+    /**
+     * {@inheritDoc}
+     */
     protected string $returnType = Login::class;
+
+    /**
+     * {@inheritDoc}
+     */
+    protected array $fillable = [
+        'ip_address',
+        'user_agent',
+        'id_type',
+        'identifier',
+        'user_id',
+        'date',
+        'success',
+    ];
+
+    /**
+     * {@inheritDoc}
+     */
+    protected array $rules = [
+        'ip_address' => 'required',
+        'id_type'    => 'required',
+        'identifier' => 'nullable|string',
+        'user_agent' => 'nullable|string',
+        'user_id'    => 'nullable',
+        'date'       => 'required',
+    ];
 
     public function __construct()
     {
@@ -42,7 +70,7 @@ class LoginModel extends BaseModel
         bool $success,
         ?string $ipAddress = null,
         ?string $userAgent = null,
-        $userId = null
+        $userId = null,
     ): void {
         $this->disableDBDebug();
 
