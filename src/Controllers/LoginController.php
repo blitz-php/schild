@@ -29,7 +29,7 @@ class LoginController extends BaseController
     public function loginView()
     {
         if (auth()->loggedIn()) {
-            return redirect()->to(($this->config->loginRedirect)());
+            return redirect()->to(($this->config->loginRedirect)())->withCookies();
         }
 
         /** @var Session $authenticator */
@@ -71,12 +71,12 @@ class LoginController extends BaseController
 
         // Si une action a été définie pour la connexion, démarrez-la.
         if ($authenticator->hasAction()) {
-            return redirect()->route('auth-action-show');
+            return redirect()->route('auth-action-show')->withCookies();
         }
 
         $this->event->emit('schild:login', $user = $result->extraInfo());
 
-        return redirect()->to(($this->config->loginRedirect)());
+        return redirect()->to(($this->config->loginRedirect)())->withCookies();
     }
 
     /**
