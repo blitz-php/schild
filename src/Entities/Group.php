@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace BlitzPHP\Schild\Entities;
 
+use BlitzPHP\Schild\Authorization\PermissionMatcher;
+
 /**
  * Représente un seul groupe d'utilisateurs et fournit des fonctions utilitaires.
  */
@@ -75,15 +77,9 @@ class Group extends Entity
     {
         $this->populatePermissions();
 
-        // Vérifier la correspondance exacte
-        if (! empty($this->permissions) && in_array($permission, $this->permissions, true)) {
-            return true;
-        }
-
-        // Vérifier la correspondance générique
-        $check = substr($permission, 0, strpos($permission, '.')) . '.*';
-
-        return ! empty($this->permissions) && in_array($check, $this->permissions, true);
+        return $this->permissions !== null
+            && $this->permissions !== []
+            && PermissionMatcher::matches($permission, $this->permissions);
     }
 
     /**
