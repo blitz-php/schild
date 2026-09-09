@@ -165,8 +165,6 @@ class HmacSha256 extends BaseAuthenticator implements AuthenticatorInterface
             ]);
         }
 
-        assert($token->last_used_at instanceof Date || $token->last_used_at === null);
-
         // N'a pas été utilisé depuis longtemps
         if (
             isset($token->last_used_at)
@@ -263,9 +261,7 @@ class HmacSha256 extends BaseAuthenticator implements AuthenticatorInterface
      */
     public function getHmacAuthTokens(?string $fullToken = null): ?array
     {
-        if (! isset($fullToken)) {
-            $fullToken = $this->getFullHmacToken();
-        }
+        $fullToken ??= $this->getFullHmacToken();
 
         if (isset($fullToken)) {
             return preg_split('/:/', $fullToken, -1, PREG_SPLIT_NO_EMPTY);

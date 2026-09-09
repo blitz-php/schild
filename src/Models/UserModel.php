@@ -121,7 +121,6 @@ class UserModel extends BaseModel
             return $data;
         }
 
-        /** @var UserIdentityModel $identityModel */
         $identityModel = model(UserIdentityModel::class);
 
         // Recuperons les identités de tous les utilisateurs
@@ -202,7 +201,6 @@ class UserModel extends BaseModel
             return $data;
         }
 
-        /** @var GroupModel $groupModel */
         $groupModel = model(GroupModel::class);
 
         // Recuperer les groupes pour tous les utilisateurs
@@ -240,7 +238,6 @@ class UserModel extends BaseModel
             return $data;
         }
 
-        /** @var PermissionModel $permissionModel */
         $permissionModel = model(PermissionModel::class);
 
         $permissions = $permissionModel->getPermissionsByUserIds($userIds);

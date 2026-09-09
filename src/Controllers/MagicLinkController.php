@@ -88,7 +88,6 @@ class MagicLinkController extends BaseController
             return redirect()->route('magic-link')->withErrors(lang('Auth.invalidEmail', [$email]))->withInput();
         }
 
-        /** @var UserIdentityModel $identityModel */
         $identityModel = model(UserIdentityModel::class);
 
         // Supprimer toutes les identités de lien magique précédentes
@@ -150,7 +149,6 @@ class MagicLinkController extends BaseController
 
         $token = $this->request->query('token');
 
-        /** @var UserIdentityModel $identityModel */
         $identityModel = model(UserIdentityModel::class);
 
         $identity = $identityModel->getIdentityBySecret(Session::ID_TYPE_MAGIC_LINK, $token);
@@ -219,7 +217,6 @@ class MagicLinkController extends BaseController
         bool $success,
         $userId = null,
     ): void {
-        /** @var LoginModel $loginModel */
         $loginModel = model(LoginModel::class);
 
         $loginModel->recordLoginAttempt(
