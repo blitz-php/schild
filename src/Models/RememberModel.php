@@ -14,26 +14,12 @@ declare(strict_types=1);
 namespace BlitzPHP\Schild\Models;
 
 use BlitzPHP\Schild\Entities\User;
-use BlitzPHP\Utilities\DateTime\Date;
-use DateTimeInterface;
+use BlitzPHP\Utilities\Date;
 use stdClass;
 
 class RememberModel extends BaseModel
 {
-    /**
-     * {@inheritDoc}
-     */
     protected string $returnType = 'object';
-
-    /**
-     * {@inheritDoc}
-     */
-    protected array $fillable = [
-        'selector',
-        'hashedValidator',
-        'user_id',
-        'expires',
-    ];
 
     public function __construct()
     {
@@ -45,15 +31,13 @@ class RememberModel extends BaseModel
     /**
      * Stocke un jeton de rappel pour l'utilisateur.
      */
-    public function rememberUser(User $user, string $selector, string $hashedValidator, DateTimeInterface|string $expires): void
+    public function rememberUser(User $user, string $selector, string $hashedValidator, string $expires): void
     {
-        $expires = $expires instanceof DateTimeInterface ? $expires : Date::parse($expires);
-
         $return = $this->insert([
             'user_id'         => $user->id,
             'selector'        => $selector,
             'hashedValidator' => $hashedValidator,
-            'expires'         => $expires->format('Y-m-d H:i:s'),
+            'expires'         => Date::parse($expires)->format('Y-m-d H:i:s'),
         ]);
 
         $this->checkQueryReturn($return);
@@ -78,7 +62,7 @@ class RememberModel extends BaseModel
     }
 
     /**
-     * Supprime tous les jetons de connexion persistants (remember-me) pour un seul utilisateur
+     * Supprime tous les jetons de connexion persistants (remember-me) pour un seul utilisateur 
      * sur tous les appareils avec lesquels il s'est connecté.
      */
     public function purgeRememberTokens(User $user): void

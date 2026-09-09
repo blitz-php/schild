@@ -17,7 +17,7 @@ use BlitzPHP\Schild\Exceptions\AuthorizationException;
 use BlitzPHP\Schild\Exceptions\LogicException;
 use BlitzPHP\Schild\Models\GroupModel;
 use BlitzPHP\Schild\Models\PermissionModel;
-use BlitzPHP\Utilities\DateTime\Date;
+use BlitzPHP\Utilities\Date;
 
 trait Authorizable
 {
@@ -102,22 +102,6 @@ trait Authorizable
         $this->saveGroups();
 
         return $this;
-    }
-
-    /**
-     * Définir manuellement le cache des groupes
-     */
-    public function setGroupsCache(array $groups): void
-    {
-        $this->groupCache = $groups;
-    }
-
-    /**
-     * Définir manuellement le cache des permissions
-     */
-    public function setPermissionsCache(array $permissions): void
-    {
-        $this->permissionsCache = $permissions;
     }
 
     /**
@@ -257,7 +241,7 @@ trait Authorizable
             if (! str_contains($permission, '.')) {
                 throw new LogicException(
                     'Une autorisation doit être une chaîne composée d\'une portée et d\'une action, comme `users.create`.'
-                    . ' Autorisation non valide: ' . $permission,
+                    . ' Autorisation non valide: ' . $permission
                 );
             }
 
@@ -364,8 +348,8 @@ trait Authorizable
     }
 
     /**
-     * @param         GroupModel|PermissionModel $model
-     * @phpstan-param 'group'|'permission'       $type
+     * @phpstan-param 'group'|'permission' $type
+     * @param GroupModel|PermissionModel $model
      */
     private function saveGroupsOrPermissions(string $type, $model, array $cache): void
     {
@@ -394,12 +378,12 @@ trait Authorizable
                 ];
             }
 
-            $model->bulkInsert($inserts);
+            $model->bulckInsert($inserts);
         }
     }
 
     /**
-     * @return list<string>
+     * @return string[]
      */
     private function getConfigPermissions(): array
     {

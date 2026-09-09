@@ -64,8 +64,8 @@ class JWT extends BaseAuthenticator implements AuthenticatorInterface
     {
         $config = (object) config('auth-jwt');
 
-        /** @var Request $request */
-        $request = service('request');
+         /** @var Request $request */
+         $request = service('request');
 
         $ipAddress = $request->ip();
         $userAgent = (string) $request->userAgent();
@@ -80,7 +80,7 @@ class JWT extends BaseAuthenticator implements AuthenticatorInterface
                     $credentials['token'] ?? '',
                     false,
                     $ipAddress,
-                    $userAgent,
+                    $userAgent
                 );
             }
 
@@ -98,7 +98,7 @@ class JWT extends BaseAuthenticator implements AuthenticatorInterface
                     false,
                     $ipAddress,
                     $userAgent,
-                    $user->id,
+                    $user->id
                 );
             }
 
@@ -120,7 +120,7 @@ class JWT extends BaseAuthenticator implements AuthenticatorInterface
                 true,
                 $ipAddress,
                 $userAgent,
-                $this->user->id,
+                $this->user->id
             );
         }
 
@@ -141,7 +141,7 @@ class JWT extends BaseAuthenticator implements AuthenticatorInterface
                 'success' => false,
                 'reason'  => lang(
                     'Auth.noToken',
-                    [config('auth-jwt.authenticator_header')],
+                    [config('auth-jwt.authenticator_header')]
                 ),
             ]);
         }

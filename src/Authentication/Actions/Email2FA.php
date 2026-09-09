@@ -22,7 +22,7 @@ use BlitzPHP\Schild\Entities\UserIdentity;
 use BlitzPHP\Schild\Exceptions\RuntimeException;
 use BlitzPHP\Schild\Models\UserIdentityModel;
 use BlitzPHP\Schild\Traits\Viewable;
-use BlitzPHP\Utilities\DateTime\Date;
+use BlitzPHP\Utilities\Date;
 use BlitzPHP\Utilities\String\Text;
 
 /**
@@ -56,7 +56,7 @@ class Email2FA implements ActionInterface
      * Génère le nombre aléatoire, l'enregistre en tant qu'identité temporaire avec l'utilisateur
      * et envoie un e-mail à l'utilisateur avec le code, puis affiche le formulaire pour accepter les 6 chiffres
      *
-     * @return Redirection|string
+     * @return RedirectResponse|string
      */
     public function handle(Request $request)
     {
@@ -152,7 +152,7 @@ class Email2FA implements ActionInterface
                 'name'  => 'login',
                 'extra' => lang('Auth.need2FA'),
             ],
-            $generator,
+            $generator
         );
     }
 
@@ -166,7 +166,7 @@ class Email2FA implements ActionInterface
 
         return $identityModel->getIdentityByType(
             $user,
-            $this->type,
+            $this->type
         );
     }
 

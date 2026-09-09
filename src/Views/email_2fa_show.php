@@ -1,8 +1,4 @@
-<?php
-
-use BlitzPHP\Schild\Entities\User;
-
-?><?= $this->extend(config('auth.views.layout')) ?>
+<?= $this->extend(config('auth.views.layout')) ?>
 
 <?= $this->section('title', lang('Auth.email2FATitle')) ?>
 
@@ -15,7 +11,7 @@ use BlitzPHP\Schild\Entities\User;
 
             <p><?= lang('Auth.confirmEmailAddress') ?></p>
 
-            <?php if ($error = $errors->line('default')) : ?>
+            <?php if($error = $errors->line('default')) : ?>
 				<div class="alert alert-danger" role="alert"><?= $error ?></div>
 			<?php elseif ($errors->count()): ?>
 				<div class="alert alert-danger" role="alert">
@@ -31,7 +27,7 @@ use BlitzPHP\Schild\Entities\User;
                 <div class="mb-2">
                     <input type="email" class="form-control" name="email"
                         inputmode="email" autocomplete="email" placeholder="<?= lang('Auth.email') ?>"
-                        <?php /** @var User $user */ ?>
+                        <?php /** @var \BlitzPHP\Schild\Entities\User $user */ ?>
                         value="<?= old('email', $user->email) ?>" required />
                 </div>
 

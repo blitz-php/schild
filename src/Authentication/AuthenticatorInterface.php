@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace BlitzPHP\Schild\Authentication;
 
 use BlitzPHP\Schild\Entities\User;
-use BlitzPHP\Schild\Exceptions\AuthenticationException;
 use BlitzPHP\Schild\Result;
 
 interface AuthenticatorInterface

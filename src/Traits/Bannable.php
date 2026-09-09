@@ -34,9 +34,9 @@ trait Bannable
         $users = auth()->getProvider();
 
         $users->modify($this->id, [
-            'status'         => $this->status,
-            'status_message' => $this->status_message,
-        ]);
+			'status'         => $this->status,
+			'status_message' => $this->status_message,
+		]);
 
         return $this;
     }
@@ -52,9 +52,9 @@ trait Bannable
         $users = auth()->getProvider();
 
         $users->modify($this->id, [
-            'status'         => $this->status,
-            'status_message' => $this->status_message,
-        ]);
+			'status'         => $this->status,
+			'status_message' => $this->status_message,
+		]);
 
         return $this;
     }

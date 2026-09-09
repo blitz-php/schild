@@ -13,12 +13,9 @@ declare(strict_types=1);
 
 namespace BlitzPHP\Schild\Entities;
 
-use BlitzPHP\Utilities\DateTime\Date;
-
 /**
  * Représente un jeton d'accès personnel unique, utilisé pour authentifier les utilisateurs pour une API.
  *
- * @property Date|string|null $expires
  * @property Date|string|null $last_used_at
  */
 class AccessToken extends Entity

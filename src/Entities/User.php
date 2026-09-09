@@ -14,38 +14,53 @@ declare(strict_types=1);
 namespace BlitzPHP\Schild\Entities;
 
 use BlitzPHP\Schild\Authentication\Authenticators\Session;
+use BlitzPHP\Schild\Authentication\Traits\HasAccessTokens;
+use BlitzPHP\Schild\Authentication\Traits\HasHmacTokens;
 use BlitzPHP\Schild\Authorization\Traits\Authorizable;
 use BlitzPHP\Schild\Models\LoginModel;
 use BlitzPHP\Schild\Models\UserIdentityModel;
 use BlitzPHP\Schild\Traits\Activatable;
 use BlitzPHP\Schild\Traits\Bannable;
 use BlitzPHP\Schild\Traits\Resettable;
-use BlitzPHP\Utilities\DateTime\Date;
 use BlitzPHP\Wolke\SoftDeletes;
 
 /**
- * @property string|null             $email
- * @property int|string|null         $id
- * @property list<UserIdentity>|null $identities
- * @property Date|null               $last_active
- * @property string|null             $password
- * @property string|null             $password_hash
- * @property string|null             $username
+ * @property string|null         $email
+ * @property int|string|null     $id
+ * @property UserIdentity[]|null $identities
+ * @property Date|null           $last_active
+ * @property string|null         $password
+ * @property string|null         $password_hash
+ * @property string|null         $username
  */
 class User extends Entity
 {
     use Authorizable;
+    use HasAccessTokens;
+    use HasHmacTokens;
     use Resettable;
     use Activatable;
     use Bannable;
     use SoftDeletes;
 
     /**
-     * @var list<UserIdentity>|null
+     * @var UserIdentity[]|null
      */
     private ?array $identities = null;
 
     public ?string $email = null;
+
+    /**
+     * @var string[]
+     * @phpstan-var list<string>
+     * @psalm-var list<string>
+     */
+    protected $dates = [
+        'created_at',
+        'updated_at',
+        'deleted_at',
+        'last_active',
+    ];
 
     /**
      * {@inheritDoc}
@@ -57,38 +72,11 @@ class User extends Entity
         'active'      => 'boolean',
         'permissions' => 'array',
         'groups'      => 'array',
-        'last_active' => 'datetime',
     ];
 
-    /**
-     * {@inheritDoc}
-     */
-    protected array $hidden = [
-        'password_hash',
-        'password',
+    protected array $fillable = [
+        'username',
     ];
-
-    /**
-     * {@inheritDoc}
-     */
-    protected array $appends = [
-        'email',
-    ];
-
-    public function __construct(array $attributes = [])
-    {
-        parent::__construct($attributes);
-
-        if (isset($attributes['email'])) {
-            $this->setEmail($attributes['email']);
-        }
-        if (isset($attributes['password'])) {
-            $this->setPassword($attributes['password']);
-        }
-        if (isset($attributes['password_hash'])) {
-            $this->setPasswordHash($attributes['password_hash']);
-        }
-    }
 
     /**
      * {@inheritDoc}
@@ -159,7 +147,7 @@ class User extends Entity
      *
      * @param string $type 'all' renvoie toutes les identités.
      *
-     * @return list<UserIdentity>
+     * @return UserIdentity[]
      */
     public function getIdentities(string $type = 'all'): array
     {
@@ -206,11 +194,15 @@ class User extends Entity
      */
     public function getEmailIdentity(): ?UserIdentity
     {
+        if ($this->authIdentities) {
+            $this->identities[] = $this->authIdentities;
+        }
+
         return $this->getIdentity(Session::ID_TYPE_EMAIL_PASSWORD);
     }
 
     /**
-     * Si $email, $password, ou $password_hash ont été mis à jour,
+     * Si $email, $password, ou $password_hash ont été mis à jour, 
      * l'enregistrement de l'identité électronique de l'utilisateur sera mis à jour avec les valeurs correctes.
      */
     public function saveEmailIdentity(): bool
@@ -244,9 +236,7 @@ class User extends Entity
             $identity->secret2 = $this->password_hash;
         }
 
-        $identityModel = model(UserIdentityModel::class);
-
-        return $identityModel->save($identity);
+        return $identity->save();
     }
 
     /**
@@ -271,11 +261,6 @@ class User extends Entity
         }
 
         return $this->email;
-    }
-
-    public function getEmailAttribute()
-    {
-        return $this->getEmail();
     }
 
     public function setEmail(string $email): void

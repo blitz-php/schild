@@ -93,12 +93,6 @@ return [
      * - register: \BlitzPHP\Schild\Authentication\Actions\EmailActivator::class
      * - login:    \BlitzPHP\Schild\Authentication\Actions\Email2FA::class
      *
-     * Actions personnalisées et exigences :
-     *
-     * - Toutes les actions doivent implémenter l'interface \BlitzPHP\Schild\Authentication\Actions\ActionInterface.
-     * - Les actions peuvent implémenter l'interface \BlitzPHP\Schild\Authentication\Actions\ConditionalActionInterface afin de ne s'appliquer qu'à certains utilisateurs.
-     * - Les actions personnalisées pour "register" doivent avoir un nom de classe se terminant par le suffixe "Activator" (par exemple, `CustomSmsActivator`) afin de garantir leur bon fonctionnement.
-     *
      * @var array<string, class-string<ActionInterface>|null>
      */
     'actions' => [
@@ -142,7 +136,8 @@ return [
      * Chaque authentificateur répertorié sera vérifié.
      * Si aucune correspondance n'est trouvée, le suivant dans la chaîne sera vérifié.
      *
-     * @var list<string>
+     * @var string[]
+     * @phpstan-var list<string>
      */
     'authentication_chain' => [
         'session',
@@ -272,7 +267,7 @@ return [
      * Vous pouvez ajouter des classes personnalisées tant qu'elles adhèrent à
      * BlitzPHP\Schild\Authentication\Passwords\ValidatorInterface.
      *
-     * @var list<class-string<ValidatorInterface>>
+     * @var class-string<ValidatorInterface>[]
      */
     'password_validators' => [
         CompositionValidator::class,
@@ -388,7 +383,7 @@ return [
     /**
      * @var ?string
      */
-    'db_group' => null,
+    'db_group' => 'default',
 
     /**
      * --------------------------------------------------------------------
@@ -425,7 +420,7 @@ return [
      */
     'loginRedirect' => static function (): string {
         $session = session();
-        $url     = $session->getTempdata('beforeLoginUrl') ?? parametre('auth.redirects.login');
+        $url     = $session->getTempdata('beforeLoginUrl') ?? config('auth.redirects.login');
 
         return call_user_func(config('auth.getUrl'), $url);
     },
@@ -482,15 +477,23 @@ return [
      * @param string $url une URL absolue ou une route nommée ou simplement un chemin URI
      */
     'getUrl' => static function (string $url): string {
-        return match (true) {
-            // L'URL est un chemin absolu
-            str_starts_with($url, 'http://') || str_starts_with($url, 'https://') => $url,
+        // Pour s'adapter à tous les modèles d'URL
+        $final_url = '';
 
-            // L'URL est une route nommée
-            link_to($url) !== '' => rtrim(url_to($url), '/ '),
+        switch (true) {
+            case str_starts_with($url, 'http://') || str_starts_with($url, 'https://')  : // L'URL commence par 'http' ou 'https'. Par exemple. http://exemple.com
+                $final_url = $url;
+                break;
 
-            // L'URL est un chemin URI
-            default => rtrim(site_url($url), '/ '),
-        };
+            case link_to($url) !== '': // L'URL est une route nommée
+                $final_url = rtrim(url_to($url), '/ ');
+                break;
+
+            default: // L'URL est une route (chemin URI)
+                $final_url = rtrim(site_url($url), '/ ');
+                break;
+        }
+
+        return $final_url;
     },
 ];

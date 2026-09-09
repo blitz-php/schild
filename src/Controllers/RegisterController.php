@@ -15,6 +15,7 @@ namespace BlitzPHP\Schild\Controllers;
 
 use BlitzPHP\Http\Redirection;
 use BlitzPHP\Schild\Authentication\Authenticators\Session;
+use BlitzPHP\Schild\Entities\User;
 use BlitzPHP\Schild\Models\UserModel;
 use BlitzPHP\Schild\Validation\ValidationRules;
 use BlitzPHP\Validation\Validation;
@@ -78,7 +79,8 @@ class RegisterController extends BaseController
         }
 
         // Enregistrer l'utilisateur
-        $user = $users->newUserEntity(collect($validation->valid())->except('email', 'password')->all());
+        $user = $this->getUserEntity();
+        $user->fill(collect($validation->valid())->except('email', 'password')->all());
 
         // Solution de contournement pour l'inscription/la connexion par e-mail uniquement
         if ($user->username === null) {
@@ -106,7 +108,7 @@ class RegisterController extends BaseController
 
         // Si une action a été définie pour l'enregistrement, démarrez-la.
         if ($authenticator->startUpAction('register', $user)) {
-            return redirect()->route('auth-action-show');
+            return redirect()->to('auth/a/show');
         }
 
         // Activer l'utilisateur
@@ -129,6 +131,14 @@ class RegisterController extends BaseController
         assert($provider instanceof UserModel, 'Config Auth.user_provider n\'est pas un UserProvider valide.');
 
         return $provider;
+    }
+
+    /**
+     * Renvoie la classe Entity qui doit être utilisée
+     */
+    protected function getUserEntity(): User
+    {
+        return $this->getUserProvider()->newUserEntity();
     }
 
     /**

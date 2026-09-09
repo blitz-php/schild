@@ -17,15 +17,7 @@ use BlitzPHP\Schild\Entities\User;
 
 class GroupModel extends BaseModel
 {
-    /**
-     * {@inheritDoc}
-     */
     protected string $returnType = 'array';
-
-    /**
-     * {@inheritDoc}
-     */
-    protected array $fillable = ['user_id', 'group', 'created_at'];
 
     public function __construct()
     {
@@ -39,7 +31,7 @@ class GroupModel extends BaseModel
         $rows = $this->builder()
             ->select('group')
             ->where('user_id', $user->id)
-            ->result('array');
+            ->result($this->returnType);
 
         return array_column($rows, 'group');
     }
@@ -78,28 +70,5 @@ class GroupModel extends BaseModel
         $allowedGroups = array_keys(parametre('auth-groups.groups'));
 
         return in_array($group, $allowedGroups, true);
-    }
-
-    /**
-     * @param list<int>|list<string> $userIds
-     *
-     * @return array<int, array>
-     */
-    public function getGroupsByUserIds(array $userIds): array
-    {
-        $groups = $this->builder()
-            ->select('user_id, group')
-            ->whereIn('user_id', $userIds)
-            ->orderBy($this->primaryKey)
-            ->result('array');
-
-        return array_map(
-            array_keys(...),
-            array_reduce($groups, static function ($carry, $item) {
-                $carry[$item['user_id']][$item['group']] = true;
-
-                return $carry;
-            }, []),
-        );
     }
 }

@@ -16,7 +16,6 @@ namespace BlitzPHP\Schild\Authentication\Authenticators;
 use BlitzPHP\Http\Request;
 use BlitzPHP\Http\Response;
 use BlitzPHP\Schild\Authentication\Actions\ActionInterface;
-use BlitzPHP\Schild\Authentication\Actions\ConditionalActionInterface;
 use BlitzPHP\Schild\Authentication\AuthenticatorInterface;
 use BlitzPHP\Schild\Authentication\Passwords;
 use BlitzPHP\Schild\Entities\User;
@@ -30,7 +29,7 @@ use BlitzPHP\Schild\Models\UserIdentityModel;
 use BlitzPHP\Schild\Models\UserModel;
 use BlitzPHP\Schild\Result;
 use BlitzPHP\Session\Cookie\Cookie;
-use BlitzPHP\Utilities\DateTime\Date;
+use BlitzPHP\Utilities\Date;
 use stdClass;
 
 class Session extends BaseAuthenticator implements AuthenticatorInterface
@@ -87,7 +86,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
             throw new SecurityException(
                 'Config\Security::$csrfProtection is set to \'cookie\'.'
                 . ' Same-site attackers may bypass the CSRF protection.'
-                . ' Please set it to \'session\'.',
+                . ' Please set it to \'session\'.'
             );
         }
     }
@@ -168,25 +167,21 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
         return $result;
     }
 
-     /**
-     * Si une action a été définie et s'applique à l'utilisateur, lancez-la.
+    /**
+     * Si une action a été définie, lancez-la.
      *
      * @param string $type 'register', 'login'
      *
-     * @return bool Indique si l'action a été lancée ou non.
+     * @return bool Si l'action a été définie ou non.
      */
     public function startUpAction(string $type, User $user): bool
     {
-        if ('' === $actionClass = config('auth.actions.' . $type) ?? '') {
+        if (null === $actionClass = config('auth.actions.' . $type)) {
             return false;
         }
 
         /** @var ActionInterface $action */
         $action = service('container')->make($actionClass); // @phpstan-ignore-line
-
-        if (! $this->actionAppliesToUser($action, $user)) {
-            return false;
-        }
 
         // Créer une identité pour l'action.
         $action->createIdentity($user);
@@ -259,7 +254,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
         bool $success,
         string $ipAddress,
         string $userAgent,
-        $userId = null,
+        $userId = null
     ): void {
         // Determine le type d'identificateur que nous devons utiliser (email ou username).
         // Les champs standard seraient l'e-mail, le nom d'utilisateur, mais n'importe quelle colonne dans config('auth.valid_fields') peut être utilisée.
@@ -285,7 +280,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
             $success,
             $ipAddress,
             $userAgent,
-            $userId,
+            $userId
         );
     }
 
@@ -452,20 +447,13 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
 
         $authActions = parametre('auth.actions');
 
-        foreach ($authActions as $type => $actionClass) {
-            if ($actionClass === null || $actionClass === '') {
+        foreach ($authActions as $actionClass) {
+            if ($actionClass === null) {
                 continue;
             }
 
             /** @var ActionInterface $action */
             $action = service('container')->make($actionClass);  // @phpstan-ignore-line
-
-            if (
-                ! $this->actionAppliesToUser($action, $this->user)
-                && ! $this->inactiveUserNeedsRegisterAction($type, $this->user)
-            ) {
-                continue;
-            }
 
             $identity = $this->userIdentityModel->getIdentityByType($this->user, $action->getType());
 
@@ -485,53 +473,35 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
     /**
      * Obtient des identités pour l'action
      *
-     * @return list<UserIdentity>
+     * @return UserIdentity[]
      */
     private function getIdentitiesForAction(User $user): array
     {
         return $this->userIdentityModel->getIdentitiesByTypes(
             $user,
-            $this->getActionTypes($user),
+            $this->getActionTypes()
         );
     }
 
     /**
-     * @return list<string>
+     * @return string[]
      */
-    private function getActionTypes(User $user): array
+    private function getActionTypes(): array
     {
         $actions = parametre('auth.actions');
         $types   = [];
 
-        foreach ($actions as $type => $actionClass) {
-            if ($actionClass === null || $actionClass === '') {
+        foreach ($actions as $actionClass) {
+            if ($actionClass === null) {
                 continue;
             }
 
             /** @var ActionInterface $action */
             $action  = service('container')->make($actionClass);  // @phpstan-ignore-line
-            
-            if (
-                ! $this->actionAppliesToUser($action, $user)
-                && ! $this->inactiveUserNeedsRegisterAction($type, $user)
-            ) {
-                continue;
-            }
-            
             $types[] = $action->getType();
         }
 
         return $types;
-    }
-
-    private function actionAppliesToUser(ActionInterface $action, User $user): bool
-    {
-        return ! $action instanceof ConditionalActionInterface || $action->appliesTo($user);
-    }
-
-    private function inactiveUserNeedsRegisterAction(int|string $type, User $user): bool
-    {
-        return $type === 'register' && ! $user->active;
     }
 
     /**
@@ -651,7 +621,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
                 'L\'utilisateur a des informations sur l\'utilisateur dans la session, donc déjà connecté ou en attente de connexion.'
                 . ' Si un utilisateur connecté se reconnecte avec un autre compte, les données de session de l\'utilisateur précédent seront utilisées comme nouvel utilisateur.'
                 . ' Corrigez votre code pour empêcher les utilisateurs de se connecter sans se déconnecter ou supprimer les données de session.'
-                . ' user_id: ' . $userId,
+                . ' user_id: ' . $userId
             );
         }
 
@@ -669,8 +639,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
         $this->setSessionUserKey('id', $user->id);
 
         // Une fois connecté, assurez-vous que les en-têtes de contrôle du cache sont en place
-
-        service('override', Response::class, service('response')->noCache());
+        service('set', Response::class, service('response')->noCache());
     }
 
     /**
@@ -738,7 +707,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
                 'L\'utilisateur a des identités pour l\'action, il ne peut donc pas terminer la connexion.'
                 . ' Si vous souhaitez commencer à vous connecter avec l\'action auth, utilisez plutôt startLogin().'
                 . ' Ou supprimez les identités pour action dans la base de données.'
-                . ' user_id: ' . $user->id,
+                . ' user_id: ' . $user->id
             );
         }
         // Vérifiez auth_action dans la session
@@ -747,7 +716,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
                 'L\'utilisateur a une action d\'authentification dans la session, il ne peut donc pas terminer la connexion.'
                 . ' Si vous souhaitez commencer à vous connecter avec l\'action auth, utilisez plutôt startLogin().'
                 . ' Ou supprimez `auth_action` et `auth_action_message` dans les données de session.'
-                . ' user_id: ' . $user->id,
+                . ' user_id: ' . $user->id
             );
         }
 
@@ -781,7 +750,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
     private function removeRememberCookie(): void
     {
         // Supprimer le cookie remember-me
-        service('override', Response::class, service('response')->withoutCookie(
+        service('set', Response::class, service('response')->withoutCookie(
             config('auth.session.remember_cookie_name'),
             config('cookie.path'),
             config('cookie.domain'),
@@ -803,9 +772,10 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
         // Détruisez les données de session - mais assurez-vous qu'une session est toujours disponible pour les messages flash, etc.
         $session     = session();
         $sessionData = $session->get();
-
-        foreach (array_keys($sessionData) as $key) {
-            $session->remove($key);
+        if (isset($sessionData)) {
+            foreach (array_keys($sessionData) as $key) {
+                $session->remove($key);
+            }
         }
 
         // Régénérez l'ID de session pour une touche de sécurité supplémentaire.
@@ -880,33 +850,32 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
             $user,
             $selector,
             $this->hashValidator($validator),
-            $expires,
+            $expires
         );
 
         $this->setRememberMeCookie($rawToken);
     }
 
-    private function calcExpires(): Date
+    private function calcExpires(): string
     {
-        $rememberLength = (int) parametre('auth.session.remember_length');
+        $timestamp = Date::now()->getTimestamp() + parametre('auth.session.remember_length');
 
-        return Date::now()->addSeconds($rememberLength);
+        return Date::createFromTimestamp($timestamp)->format('Y-m-d H:i:s');
     }
 
     private function setRememberMeCookie(string $rawToken): void
     {
-        // Créer le cookie
-        $cookie = Cookie::create(parametre('auth.session.remember_cookie_name'), $rawToken, [
-            'expires'  => $this->calcExpires(),
-            'path'     => parametre('cookie.path'),
-            'domain'   => parametre('cookie.domain'),
-            'secure'   => parametre('cookie.secure'),
-            'httponly' => true,
-        ]);
-
         // Enregistrez-le dans le navigateur de l'utilisateur dans un cookie.
-        setcookie($cookie->getName(), $cookie->getScalarValue(), $cookie->getOptions());
-        service('override', Response::class, service('response')->withCookie($cookie));
+        // Créer le cookie
+        service('set', Response::class, service('response')->withCookie(
+            Cookie::create(parametre('auth.session.remember_cookie_name'), $rawToken, [
+                'expires'  => parametre('auth.session.remember_length'),
+                'path'     => parametre('cookie.path'),
+                'domain'   => parametre('cookie.domain'),
+                'secure'   => parametre('cookie.secure'),
+                'httponly' => true,
+            ])
+        ));
     }
 
     /**

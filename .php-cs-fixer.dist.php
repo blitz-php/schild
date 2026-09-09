@@ -35,5 +35,5 @@ return Factory::create(new Blitz(), $overrides, $options)->forLibrary(
     'Blitz PHP framework - Schild',
     'Dimitri Sitchet Tomkeu',
     'devcode.dst@gmail.com',
-    2023,
+    2023
 );

@@ -37,29 +37,17 @@ trait CheckQueryReturnTrait
         }
     }
 
-    protected function hasDebug(): bool
-    {
-        return $this->db->getConfig('debug');
-    }
-
-    protected function setDbDebug(bool $value): void
-    {
-        $config = array_merge($this->db->getConfig(), ['debug' => $value]);
-
-        $propertyConfig = $this->getPropertyConfig();
-        $propertyConfig->setValue($this->db, $config);
-    }
-
     protected function disableDBDebug(): void
     {
-        if (! $this->hasDebug()) {
+        if (! $this->db->debug) {
             // `DBDebug` is false. Do nothing.
             return;
         }
 
-        $this->currentDBDebug = true;
+        $this->currentDBDebug = $this->db->debug;
 
-        $this->setDbDebug(false);
+        $propertyDBDebug = $this->getPropertyDBDebug();
+        $propertyDBDebug->setValue($this->db, false);
     }
 
     protected function restoreDBDebug(): void
@@ -69,15 +57,18 @@ trait CheckQueryReturnTrait
             return;
         }
 
-        $this->setDbDebug($this->currentDBDebug);
+        $propertyDBDebug = $this->getPropertyDBDebug();
+        $propertyDBDebug->setValue($this->db, $this->currentDBDebug);
 
         $this->currentDBDebug = null;
     }
 
-    protected function getPropertyConfig(): ReflectionProperty
+    protected function getPropertyDBDebug(): ReflectionProperty
     {
-        $refClass = new ReflectionObject($this->db);
+        $refClass    = new ReflectionObject($this->db);
+        $refProperty = $refClass->getProperty('debug');
+        $refProperty->setAccessible(true);
 
-        return $refClass->getProperty('config');
+        return $refProperty;
     }
 }

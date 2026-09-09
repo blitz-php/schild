@@ -29,7 +29,7 @@ class ActionController extends ApplicationController
     /**
      * Effectuer une première vérification pour savoir si l'action est valide ou non.
      *
-     * @param list<string> $params
+     * @param string[] $params
      *
      * @return Response|string
      */
@@ -77,10 +77,6 @@ class ActionController extends ApplicationController
      */
     public function verify()
     {
-        if ($this->request->userAgent()->isRobot()) {
-            throw PageNotFoundException::pageNotFound();
-        }
-
         return $this->action->verify($this->request);
     }
 }

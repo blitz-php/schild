@@ -11,7 +11,7 @@
 
             <p><?= lang('Auth.emailConfirmCode') ?></p>
 
-			<?php if ($error = $errors->line('default')) : ?>
+			<?php if($error = $errors->line('default')) : ?>
 				<div class="alert alert-danger" role="alert"><?= $error ?></div>
 			<?php elseif ($errors->count()): ?>
 				<div class="alert alert-danger" role="alert">

@@ -44,7 +44,7 @@ class FirebaseAdapter implements JwtAdapterInterface
             throw new SchildInvalidArgumentException(
                 'Jeu de clés invalide: "' . $keyset . '". ' . $e->getMessage(),
                 0,
-                $e,
+                $e
             );
         } catch (DomainException $e) {
             // l'algorithme fourni n'est pas pris en charge OU
@@ -70,7 +70,7 @@ class FirebaseAdapter implements JwtAdapterInterface
             logger()->error(
                 '[Schild] ' . Helpers::classBasename($this) . '::' . __FUNCTION__
                 . '(' . __LINE__ . ') '
-                . $e::class . ': ' . $e->getMessage(),
+                . get_class($e) . ': ' . $e->getMessage()
             );
 
             throw InvalidTokenException::invalidToken($e);
@@ -110,7 +110,7 @@ class FirebaseAdapter implements JwtAdapterInterface
             if ($passphrase !== '') {
                 $key = openssl_pkey_get_private(
                     $config->keys[$keyset][0]['private'],
-                    $passphrase,
+                    $passphrase
                 );
             } else {
                 $key = $config->keys[$keyset][0]['private'];

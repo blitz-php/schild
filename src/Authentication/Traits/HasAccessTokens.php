@@ -15,7 +15,6 @@ namespace BlitzPHP\Schild\Authentication\Traits;
 
 use BlitzPHP\Schild\Entities\AccessToken;
 use BlitzPHP\Schild\Models\UserIdentityModel;
-use BlitzPHP\Utilities\DateTime\Date;
 
 /**
  * Fournit les fonctionnalités nécessaires pour générer, révoquer et récupérer des jetons d'accès personnels.
@@ -32,14 +31,14 @@ trait HasAccessTokens
     /**
      * Génère un nouveau jeton d'accès personnel pour cet utilisateur.
      *
-     * @param list<string> $scopes Autorisations accordées par le jeton
+     * @param string[] $scopes Autorisations accordées par le jeton
      */
-    public function generateAccessToken(string $name, array $scopes = ['*'], ?Date $expiresAt = null): AccessToken
+    public function generateAccessToken(string $name, array $scopes = ['*']): AccessToken
     {
         /** @var UserIdentityModel $identityModel */
         $identityModel = model(UserIdentityModel::class);
 
-        return $identityModel->generateAccessToken($this, $name, $scopes, $expiresAt);
+        return $identityModel->generateAccessToken($this, $name, $scopes);
     }
 
     /**
@@ -78,7 +77,7 @@ trait HasAccessTokens
     /**
      * Récupère tous les jetons d'accès personnels pour cet utilisateur.
      *
-     * @return list<AccessToken>
+     * @return AccessToken[]
      */
     public function accessTokens(): array
     {
@@ -158,59 +157,5 @@ trait HasAccessTokens
         $this->currentAccessToken = $accessToken;
 
         return $this;
-    }
-
-    /**
-     * Vérifie si le jeton d'accès fourni a expiré.
-     */
-    public function isAccessTokenExpired(AccessToken $accessToken): bool
-    {
-        return $accessToken->expires instanceof Date && $accessToken->expires->isBefore(Date::now());
-    }
-
-    /**
-     * Définit une date d'expiration pour les jetons d'accès par ID.
-     *
-     * @return bool Renvoie true si la date d'expiration a été définie ou mise à jour.
-     */
-    public function updateAccessTokenExpiration(int $id, Date $expiresAt): bool
-    {
-        /** @var UserIdentityModel $identityModel */
-        $identityModel = model(UserIdentityModel::class);
-        $result        = $identityModel->setIdentityExpirationById($id, $this, $expiresAt);
-
-        if ($result) {
-            // Actualiser currentAccessToken avec les données mises à jour
-            $this->currentAccessToken = $identityModel->getAccessTokenById($id, $this);
-        }
-
-        return $result;
-    }
-
-    /**
-     * Supprime la date d'expiration des jetons d'accès par ID.
-     *
-     * @return bool Renvoie « true » si la date d'expiration est définie ou mise à jour.
-     */
-    public function removeAccessTokenExpiration(int $id): bool
-    {
-        /** @var UserIdentityModel $identityModel */
-        $identityModel = model(UserIdentityModel::class);
-        $result        = $identityModel->setIdentityExpirationById($id, $this);
-
-        if ($result) {
-            // Actualiser currentAccessToken avec les données mises à jour
-            $this->currentAccessToken = $identityModel->getAccessTokenById($id, $this);
-        }
-
-        return $result;
-    }
-
-    /**
-     * Vérifie si le jeton d'accès a une date d'expiration définie
-     */
-    public function canAccessTokenExpire(AccessToken $accessToken): bool
-    {
-        return $accessToken->expires !== null;
     }
 }

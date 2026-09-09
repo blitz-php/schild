@@ -15,7 +15,6 @@ namespace BlitzPHP\Schild\Authentication\Traits;
 
 use BlitzPHP\Schild\Entities\AccessToken;
 use BlitzPHP\Schild\Models\UserIdentityModel;
-use BlitzPHP\Utilities\DateTime\Date;
 use ReflectionException;
 
 /**
@@ -33,17 +32,17 @@ trait HasHmacTokens
     /**
      * Génère un nouveau jeton HMAC personnel pour cet utilisateur.
      *
-     * @param string       $name   Nom du jeton
-     * @param list<string> $scopes Autorisations accordées par le jeton
+     * @param string   $name   Nom du jeton
+     * @param string[] $scopes Autorisations accordées par le jeton
      *
      * @throws ReflectionException
      */
-    public function generateHmacToken(string $name, array $scopes = ['*'], ?Date $expiresAt = null): AccessToken
+    public function generateHmacToken(string $name, array $scopes = ['*']): AccessToken
     {
         /** @var UserIdentityModel $identityModel */
         $identityModel = model(UserIdentityModel::class);
 
-        return $identityModel->generateHmacToken($this, $name, $scopes, $expiresAt);
+        return $identityModel->generateHmacToken($this, $name, $scopes);
     }
 
     /**
@@ -71,7 +70,7 @@ trait HasHmacTokens
     /**
      * Récupère tous les jetons HMAC personnels pour cet utilisateur.
      *
-     * @return list<AccessToken>
+     * @return AccessToken[]
      */
     public function hmacTokens(): array
     {
@@ -151,59 +150,5 @@ trait HasHmacTokens
         $this->currentHmacToken = $accessToken;
 
         return $this;
-    }
-
-    /**
-     * Vérifie si le jeton HMAC fourni a expiré.
-     */
-    public function isHmacTokenExpired(AccessToken $hmacToken): bool
-    {
-        return $hmacToken->expires instanceof Date && $hmacToken->expires->isBefore(Date::now());
-    }
-
-    /**
-     * Définit une date d'expiration pour le jeton HMAC par ID.
-     *
-     * @return bool Renvoie true si la date d'expiration est définie ou mise à jour.
-     */
-    public function updateHmacTokenExpiration(int $id, Date $expiresAt): bool
-    {
-        /** @var UserIdentityModel $identityModel */
-        $identityModel = model(UserIdentityModel::class);
-        $result        = $identityModel->setIdentityExpirationById($id, $this, $expiresAt);
-
-        if ($result) {
-            // actualise currentHmacToken avec les données mises à jour
-            $this->currentHmacToken = $identityModel->getHmacTokenById($id, $this);
-        }
-
-        return $result;
-    }
-
-    /**
-     * Supprime la date d'expiration du jeton HMAC par ID.
-     *
-     * @return bool Renvoie true si la date d'expiration est supprimée
-     */
-    public function removeHmacTokenExpiration(int $id): bool
-    {
-        /** @var UserIdentityModel $identityModel */
-        $identityModel = model(UserIdentityModel::class);
-        $result        = $identityModel->setIdentityExpirationById($id, $this);
-
-        if ($result) {
-            // actualise currentHmacToken avec les données mises à jour
-            $this->currentHmacToken = $identityModel->getHmacTokenById($id, $this);
-        }
-
-        return $result;
-    }
-
-    /**
-     * Vérifie si le jeton HMAC actuel a une date d'expiration définie
-     */
-    public function canHmacTokenExpire(AccessToken $hmacToken): bool
-    {
-        return $hmacToken->expires !== null;
     }
 }

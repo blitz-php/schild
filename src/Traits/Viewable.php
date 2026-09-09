@@ -21,7 +21,7 @@ trait Viewable
      * Fournit aux systèmes tiers un moyen de remplacer simplement la façon dont la vue est convertie en HTML
      * pour s'intégrer à leurs propres systèmes de templates.
      */
-    protected function view(string $view, array $data = [], array $options = []): View
+    protected function view(string $view, ?array $data = [], ?array $options = []): View
     {
         return view($view, $data, $options);
     }
