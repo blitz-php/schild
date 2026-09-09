@@ -16,6 +16,7 @@ namespace BlitzPHP\Schild\Controllers;
 use BlitzPHP\Exceptions\PageNotFoundException;
 use BlitzPHP\Http\Redirection;
 use BlitzPHP\Schild\Authentication\Authenticators\Session;
+use BlitzPHP\Schild\Entities\User;
 use BlitzPHP\Schild\Models\LoginModel;
 use BlitzPHP\Schild\Models\UserIdentityModel;
 use BlitzPHP\Schild\Models\UserModel;
@@ -187,17 +188,24 @@ class MagicLinkController extends BaseController
             return redirect()->route('auth-action-show')->withErrors(lang('Auth.needActivate'));
         }
 
+        $user = $this->provider->findById($identity->user_id);
+
+        // Lancer toute action de connexion qui a été définie.
+        if ($user instanceof User && $authenticator->startUpAction('login', $user) && $authenticator->hasAction($user->id)) {
+            $this->recordLoginAttempt($identifier, true, $user->id);
+            $authenticator->setPendingLoginMethod(Session::ID_TYPE_MAGIC_LINK);
+
+            return redirect()->route('auth-action-show');
+        }
+
+        $authenticator->setPendingLoginMethod(Session::ID_TYPE_MAGIC_LINK);
+
         // Connecter l'utilisateur
         $authenticator->loginById($identity->user_id);
 
         $user = $authenticator->getUser();
 
         $this->recordLoginAttempt($identifier, true, $user->id);
-
-        // Donnez au développeur un moyen de connaître l'utilisateur connecté via un lien magique.
-        session()->setTempdata('magicLogin', true);
-
-        $this->event->emit('schild:magicLogin');
 
         // Obtenez notre URL de redirection de connexion
         return redirect()->to(($this->config->loginRedirect)());
