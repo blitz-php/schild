@@ -160,20 +160,20 @@ class MagicLinkController extends BaseController
             $this->recordLoginAttempt($identifier, false);
 
             $credentials = ['magicLinkToken' => $token];
-            $this->event->emit('schild:magicLink.failedLogin', $credentials);
+            $this->event->emit('schild:magicLink.failedLogin', argv: $credentials);
 
             return redirect()->route('magic-link')->withErrors(lang('Auth.magicTokenNotFound'));
         }
 
         // Supprimez l'entrée db afin qu'elle ne puisse plus être utilisée.
-        $identity->delete();
+        $identityModel->remove($identity->id);
 
         // Jeton expiré ?
         if (Date::now()->isAfter($identity->expires)) {
             $this->recordLoginAttempt($identifier, false);
 
             $credentials = ['magicLinkToken' => $token];
-            $this->event->emit('schild:magicLink.failedLogin', $credentials);
+            $this->event->emit('schild:magicLink.failedLogin', argv: $credentials);
 
             return redirect()->route('magic-link')->withErrors(lang('Auth.magicLinkExpired'));
         }

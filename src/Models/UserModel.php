@@ -291,7 +291,7 @@ class UserModel extends BaseModel
      */
     public function addToDefaultGroup(User $user): void
     {
-        $defaultGroup = config('auth-groups.default_group');
+        $defaultGroup = parametre('auth-groups.default_group');
         $groupModel   = model(GroupModel::class);
 
         if (empty($defaultGroup) || ! $groupModel->isValidGroup($defaultGroup)) {
@@ -548,7 +548,7 @@ class UserModel extends BaseModel
         assert($user->last_active instanceof Date);
 
         // Chaîne de date sûre pour la base de données
-        $last_active = $user->last_active->format('Y-m-d H:i:s');
+        $last_active = $this->timeToDate($user->last_active);
 
         $this->builder()
             ->where('id', $user->id)
