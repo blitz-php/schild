@@ -53,6 +53,10 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
     private const STATE_PENDING   = 2; // 2FA ou activation requise.
     private const STATE_LOGGED_IN = 3;
 
+    // Marqueurs de session pour la connexion sans mot de passe
+    private const MAGIC_LOGIN_TEMP_DATA = 'magicLogin';
+    private const PENDING_LOGIN_METHOD  = 'auth_action_login_method';
+
     /**
      * L'état d'authentification de l'utilisateur
      */
@@ -127,7 +131,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
 
             // Déclenchez un événement en cas d'échec afin que les développeurs aient la possibilité de leur faire savoir que quelqu'un a tenté de se connecter à leur compte
             unset($credentials['password']);
-            service('event')->emit('schild:failedLogin', $credentials);
+            service('event')->emit('schild:failedLogin', argv: $credentials);
 
             return $result;
         }
@@ -177,7 +181,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
      */
     public function startUpAction(string $type, User $user): bool
     {
-        if ('' === $actionClass = config('auth.actions.' . $type) ?? '') {
+        if ('' === $actionClass = parametre('auth.actions.' . $type) ?? '') {
             return false;
         }
 
@@ -249,6 +253,34 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
 
         // une connexion réussie
         service('event')->emit('schild:login', $user);
+
+        // Termine la notification de connexion sans mot de passe après toute tentative de connexion en attente.
+        $this->completePendingLoginMethod();
+    }
+
+    /**
+     * Indique que l'action de connexion en cours provient d'une méthode de connexion sans mot de passe.
+     */
+    public function setPendingLoginMethod(string $method): void
+    {
+        $this->setSessionUserKey(self::PENDING_LOGIN_METHOD, $method);
+    }
+
+    private function completePendingLoginMethod(): void
+    {
+        $method = $this->getSessionUserKey(self::PENDING_LOGIN_METHOD);
+
+        if ($method === null) {
+            return;
+        }
+
+        $this->removeSessionUserKey(self::PENDING_LOGIN_METHOD);
+
+        if ($method === self::ID_TYPE_MAGIC_LINK) {
+            session()->setTempdata(self::MAGIC_LOGIN_TEMP_DATA, true);
+
+            service('event')->emit('schild:magicLogin');
+        }
     }
 
     /**
@@ -765,7 +797,7 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
 
             // Réinitialisez pour ne pas gâcher les futurs appels.
             $this->shouldRemember = false;
-        } elseif ($this->getRememberMeToken()) {
+        } elseif ($this->getRememberMeToken() !== null) {
             $this->removeRememberCookie();
 
             // @TODO supprimer l'enregistrement de jeton.
@@ -893,6 +925,9 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
         return Date::now()->addSeconds($rememberLength);
     }
 
+    /**
+     * @param non-empty-string $rawToken
+     */
     private function setRememberMeCookie(string $rawToken): void
     {
         // Créer le cookie
