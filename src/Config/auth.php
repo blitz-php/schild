@@ -96,6 +96,7 @@ return [
      * Actions personnalisées et exigences :
      *
      * - Toutes les actions doivent implémenter l'interface \BlitzPHP\Schild\Authentication\Actions\ActionInterface.
+     * - Les actions peuvent implémenter l'interface \BlitzPHP\Schild\Authentication\Actions\ConditionalActionInterface afin de ne s'appliquer qu'à certains utilisateurs.
      * - Les actions personnalisées pour "register" doivent avoir un nom de classe se terminant par le suffixe "Activator" (par exemple, `CustomSmsActivator`) afin de garantir leur bon fonctionnement.
      *
      * @var array<string, class-string<ActionInterface>|null>
@@ -424,7 +425,7 @@ return [
      */
     'loginRedirect' => static function (): string {
         $session = session();
-        $url     = $session->getTempdata('beforeLoginUrl') ?? config('auth.redirects.login');
+        $url     = $session->getTempdata('beforeLoginUrl') ?? parametre('auth.redirects.login');
 
         return call_user_func(config('auth.getUrl'), $url);
     },

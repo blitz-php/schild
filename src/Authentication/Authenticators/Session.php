@@ -16,6 +16,7 @@ namespace BlitzPHP\Schild\Authentication\Authenticators;
 use BlitzPHP\Http\Request;
 use BlitzPHP\Http\Response;
 use BlitzPHP\Schild\Authentication\Actions\ActionInterface;
+use BlitzPHP\Schild\Authentication\Actions\ConditionalActionInterface;
 use BlitzPHP\Schild\Authentication\AuthenticatorInterface;
 use BlitzPHP\Schild\Authentication\Passwords;
 use BlitzPHP\Schild\Entities\User;
@@ -167,12 +168,12 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
         return $result;
     }
 
-    /**
-     * Si une action a été définie, lancez-la.
+     /**
+     * Si une action a été définie et s'applique à l'utilisateur, lancez-la.
      *
      * @param string $type 'register', 'login'
      *
-     * @return bool Si l'action a été définie ou non.
+     * @return bool Indique si l'action a été lancée ou non.
      */
     public function startUpAction(string $type, User $user): bool
     {
@@ -182,6 +183,10 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
 
         /** @var ActionInterface $action */
         $action = service('container')->make($actionClass); // @phpstan-ignore-line
+
+        if (! $this->actionAppliesToUser($action, $user)) {
+            return false;
+        }
 
         // Créer une identité pour l'action.
         $action->createIdentity($user);
@@ -447,13 +452,20 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
 
         $authActions = parametre('auth.actions');
 
-        foreach ($authActions as $actionClass) {
+        foreach ($authActions as $type => $actionClass) {
             if ($actionClass === null || $actionClass === '') {
                 continue;
             }
 
             /** @var ActionInterface $action */
             $action = service('container')->make($actionClass);  // @phpstan-ignore-line
+
+            if (
+                ! $this->actionAppliesToUser($action, $this->user)
+                && ! $this->inactiveUserNeedsRegisterAction($type, $this->user)
+            ) {
+                continue;
+            }
 
             $identity = $this->userIdentityModel->getIdentityByType($this->user, $action->getType());
 
@@ -479,29 +491,47 @@ class Session extends BaseAuthenticator implements AuthenticatorInterface
     {
         return $this->userIdentityModel->getIdentitiesByTypes(
             $user,
-            $this->getActionTypes(),
+            $this->getActionTypes($user),
         );
     }
 
     /**
      * @return list<string>
      */
-    private function getActionTypes(): array
+    private function getActionTypes(User $user): array
     {
         $actions = parametre('auth.actions');
         $types   = [];
 
-        foreach ($actions as $actionClass) {
+        foreach ($actions as $type => $actionClass) {
             if ($actionClass === null || $actionClass === '') {
                 continue;
             }
 
             /** @var ActionInterface $action */
             $action  = service('container')->make($actionClass);  // @phpstan-ignore-line
+            
+            if (
+                ! $this->actionAppliesToUser($action, $user)
+                && ! $this->inactiveUserNeedsRegisterAction($type, $user)
+            ) {
+                continue;
+            }
+            
             $types[] = $action->getType();
         }
 
         return $types;
+    }
+
+    private function actionAppliesToUser(ActionInterface $action, User $user): bool
+    {
+        return ! $action instanceof ConditionalActionInterface || $action->appliesTo($user);
+    }
+
+    private function inactiveUserNeedsRegisterAction(int|string $type, User $user): bool
+    {
+        return $type === 'register' && ! $user->active;
     }
 
     /**

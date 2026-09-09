@@ -55,12 +55,13 @@ class SessionAuth implements MiddlewareInterface
                 // Si une action est definie pour le register, on l'utilisateur doit la faire.
                 if ($authenticator->startUpAction('register', $user)) {
                     return redirect()->route('auth-action-show')
-                        ->with('error', lang('Auth.activationBlocked'));
+                        ->withErrors(lang('Auth.activationBlocked'));
                 }
 
                 $authenticator->logout();
 
-                return redirect()->route('login')->withErrors(lang('Auth.activationBlocked'));
+                return redirect()->to(call_user_func(config('auth.logoutRedirect')))
+                    ->withErrors(lang('Auth.activationBlocked'));
             }
 
             return $handler->handle($request);
