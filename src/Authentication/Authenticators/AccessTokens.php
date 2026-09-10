@@ -127,11 +127,10 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
             ]);
         }
 
-        if (str_starts_with($credentials['token'], 'Bearer')) {
-            $credentials['token'] = trim(substr($credentials['token'], 6));
+        if (str_starts_with((string) $credentials['token'], 'Bearer')) {
+            $credentials['token'] = trim(substr((string) $credentials['token'], 6));
         }
 
-        /** @var UserIdentityModel $identityModel */
         $identityModel = model(UserIdentityModel::class);
 
         $token = $identityModel->getAccessTokenByRawToken($credentials['token']);
@@ -143,12 +142,10 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
             ]);
         }
 
-        assert($token->last_used_at instanceof Date || $token->last_used_at === null);
-
         // Est expiré ?
         if (
-            $token->last_used_at
-            && $token->last_used_at->isBefore(Date::now())
+            $token->expires
+            && $token->expires->isBefore(Date::now())
         ) {
             return new Result([
                 'success' => false,
@@ -167,7 +164,7 @@ class AccessTokens extends BaseAuthenticator implements AuthenticatorInterface
             ]);
         }
 
-        $token->last_used_at = Date::now()->format('Y-m-d H:i:s');
+        $token->last_used_at = Date::now();
 
         if ($token->hasChanged()) {
             $identityModel->save($token);

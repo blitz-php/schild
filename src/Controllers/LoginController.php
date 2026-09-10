@@ -24,7 +24,7 @@ class LoginController extends BaseController
     /**
      * Affiche le formulaire de connexion au site.
      *
-     * @return RedirectResponse|string
+     * @return Redirection|string
      */
     public function loginView()
     {
@@ -54,7 +54,6 @@ class LoginController extends BaseController
             return redirect()->back()->withInput()->withErrors($validation->errors());
         }
 
-        /** @var array $credentials */
         $credentials             = $this->request->only(parametre('auth.valid_fields'));
         $credentials             = array_filter($credentials);
         $credentials['password'] = $this->request->post('password');

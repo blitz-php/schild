@@ -134,14 +134,13 @@ class HmacSha256 extends BaseAuthenticator implements AuthenticatorInterface
             ]);
         }
 
-        if (str_starts_with($credentials['token'], 'HMAC-SHA256')) {
-            $credentials['token'] = trim(substr($credentials['token'], 11)); // HMAC-SHA256
+        if (str_starts_with((string) $credentials['token'], 'HMAC-SHA256')) {
+            $credentials['token'] = trim(substr((string) $credentials['token'], 11)); // HMAC-SHA256
         }
 
         // Extraire la signature UserToken et HMACSHA256 du jeton d'autorisation
         [$userToken, $signature] = $this->getHmacAuthTokens($credentials['token']);
 
-        /** @var UserIdentityModel $identityModel */
         $identityModel = model(UserIdentityModel::class);
 
         $token = $identityModel->getHmacTokenByKey($userToken);
@@ -165,8 +164,6 @@ class HmacSha256 extends BaseAuthenticator implements AuthenticatorInterface
             ]);
         }
 
-        assert($token->last_used_at instanceof Date || $token->last_used_at === null);
-
         // N'a pas été utilisé depuis longtemps
         if (
             isset($token->last_used_at)
@@ -180,7 +177,7 @@ class HmacSha256 extends BaseAuthenticator implements AuthenticatorInterface
             ]);
         }
 
-        $token->last_used_at = Date::now()->format('Y-m-d H:i:s');
+        $token->last_used_at = Date::now();
 
         if ($token->hasChanged()) {
             $identityModel->save($token);
@@ -263,9 +260,7 @@ class HmacSha256 extends BaseAuthenticator implements AuthenticatorInterface
      */
     public function getHmacAuthTokens(?string $fullToken = null): ?array
     {
-        if (! isset($fullToken)) {
-            $fullToken = $this->getFullHmacToken();
-        }
+        $fullToken ??= $this->getFullHmacToken();
 
         if (isset($fullToken)) {
             return preg_split('/:/', $fullToken, -1, PREG_SPLIT_NO_EMPTY);

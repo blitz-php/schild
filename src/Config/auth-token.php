@@ -89,7 +89,7 @@ return [
      * Les anciennes clés seront utilisées pour décrypter les clés secrètes existantes.
      * Il est recommandé d'exécuter 'php klinge schild:hmac reencrypt' pour mettre à jour les cryptages des clés secrètes existantes.
      *
-     * @see http://blitz-php.byethost14.com/docs/dev/cryptage
+     * @see http://blitz-php.byethost14.com/docs/dev/chiffrement
      *
      * @var array<string, array{key : string, driver? : string, digest? : string}>|string
      *

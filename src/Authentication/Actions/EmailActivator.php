@@ -136,7 +136,6 @@ class EmailActivator implements ActionInterface
      */
     public function createIdentity(User $user): string
     {
-        /** @var UserIdentityModel $identityModel */
         $identityModel = model(UserIdentityModel::class);
 
         // Supprimer toutes les identités précédentes pour action
@@ -160,7 +159,6 @@ class EmailActivator implements ActionInterface
      */
     private function getIdentity(User $user): ?UserIdentity
     {
-        /** @var UserIdentityModel $identityModel */
         $identityModel = model(UserIdentityModel::class);
 
         return $identityModel->getIdentityByType(
