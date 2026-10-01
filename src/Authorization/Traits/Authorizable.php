@@ -15,7 +15,6 @@ namespace BlitzPHP\Schild\Authorization\Traits;
 
 use BlitzPHP\Schild\Authorization\PermissionMatcher;
 use BlitzPHP\Schild\Exceptions\AuthorizationException;
-use BlitzPHP\Schild\Exceptions\LogicException;
 use BlitzPHP\Schild\Models\GroupModel;
 use BlitzPHP\Schild\Models\PermissionModel;
 use BlitzPHP\Utilities\DateTime\Date;
@@ -301,7 +300,6 @@ trait Authorizable
             return;
         }
 
-        /** @var GroupModel $groupModel */
         $groupModel = model(GroupModel::class);
 
         $this->groupCache = $groupModel->getForUser($this);
@@ -317,7 +315,6 @@ trait Authorizable
             return;
         }
 
-        /** @var PermissionModel $permissionModel */
         $permissionModel = model(PermissionModel::class);
 
         $this->permissionsCache = $permissionModel->getForUser($this);
@@ -328,7 +325,6 @@ trait Authorizable
      */
     private function saveGroups(): void
     {
-        /** @var GroupModel $model */
         $model = model(GroupModel::class);
 
         $cache = $this->groupCache;
@@ -341,7 +337,6 @@ trait Authorizable
      */
     private function savePermissions(): void
     {
-        /** @var PermissionModel $model */
         $model = model(PermissionModel::class);
 
         $cache = $this->permissionsCache;
@@ -350,8 +345,8 @@ trait Authorizable
     }
 
     /**
-     * @param         GroupModel|PermissionModel $model
-     * @phpstan-param 'group'|'permission'       $type
+     * @param 'group'|'permission'       $type
+     * @param GroupModel|PermissionModel $model
      */
     private function saveGroupsOrPermissions(string $type, $model, array $cache): void
     {

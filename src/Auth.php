@@ -20,6 +20,7 @@ use BlitzPHP\Schild\Config\Registrar;
 use BlitzPHP\Schild\Entities\User;
 use BlitzPHP\Schild\Exceptions\AuthenticationException;
 use BlitzPHP\Schild\Models\UserModel;
+use InvalidArgumentException;
 
 /**
  * Facade pour l'authentification
@@ -130,6 +131,12 @@ class Auth
      */
     public function routes(RouteCollection &$routes, array $config = []): void
     {
+        if (isset($config['only'], $config['except'])) {
+            throw new InvalidArgumentException(
+                'Les options "only" et "except" ne peuvent pas être utilisées simultanément.',
+            );
+        }
+
 		$namespace = $config['namespace'] ?? 'BlitzPHP\Schild\Controllers';
 		$prefix    = $config['prefix'] ?? '/';
 		

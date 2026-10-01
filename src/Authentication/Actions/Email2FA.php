@@ -15,7 +15,6 @@ namespace BlitzPHP\Schild\Authentication\Actions;
 
 use BlitzPHP\Http\Redirection;
 use BlitzPHP\Http\Request;
-use BlitzPHP\Http\ServerRequest;
 use BlitzPHP\Schild\Authentication\Authenticators\Session;
 use BlitzPHP\Schild\Entities\User;
 use BlitzPHP\Schild\Entities\UserIdentity;
@@ -107,7 +106,7 @@ class Email2FA implements ActionInterface
      *
      * @return Redirection|string
      */
-    public function verify(ServerRequest $request)
+    public function verify(Request $request)
     {
         /** @var Session $authenticator */
         $authenticator = auth('session')->getAuthenticator();
@@ -137,7 +136,6 @@ class Email2FA implements ActionInterface
      */
     public function createIdentity(User $user): string
     {
-        /** @var UserIdentityModel $identityModel */
         $identityModel = model(UserIdentityModel::class);
 
         // Supprimer toutes les identités précédentes pour action
@@ -161,7 +159,6 @@ class Email2FA implements ActionInterface
      */
     private function getIdentity(User $user): ?UserIdentity
     {
-        /** @var UserIdentityModel $identityModel */
         $identityModel = model(UserIdentityModel::class);
 
         return $identityModel->getIdentityByType(

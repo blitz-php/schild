@@ -81,9 +81,7 @@ class RegisterController extends BaseController
         $user = $users->newUserEntity(collect($validation->valid())->except('email', 'password')->all());
 
         // Solution de contournement pour l'inscription/la connexion par e-mail uniquement
-        if ($user->username === null) {
-            $user->username = null;
-        }
+        $user->username ??= null;
 
         try {
             $user->setEmail($this->request->post('email'));

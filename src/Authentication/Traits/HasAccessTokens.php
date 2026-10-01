@@ -16,6 +16,7 @@ namespace BlitzPHP\Schild\Authentication\Traits;
 use BlitzPHP\Schild\Entities\AccessToken;
 use BlitzPHP\Schild\Models\UserIdentityModel;
 use BlitzPHP\Utilities\DateTime\Date;
+use InvalidArgumentException;
 
 /**
  * Fournit les fonctionnalités nécessaires pour générer, révoquer et récupérer des jetons d'accès personnels.
@@ -33,10 +34,11 @@ trait HasAccessTokens
      * Génère un nouveau jeton d'accès personnel pour cet utilisateur.
      *
      * @param list<string> $scopes Autorisations accordées par le jeton
+     *
+     * @throws InvalidArgumentException
      */
     public function generateAccessToken(string $name, array $scopes = ['*'], ?Date $expiresAt = null): AccessToken
     {
-        /** @var UserIdentityModel $identityModel */
         $identityModel = model(UserIdentityModel::class);
 
         return $identityModel->generateAccessToken($this, $name, $scopes, $expiresAt);
@@ -47,7 +49,6 @@ trait HasAccessTokens
      */
     public function revokeAccessToken(string $rawToken): void
     {
-        /** @var UserIdentityModel $identityModel */
         $identityModel = model(UserIdentityModel::class);
 
         $identityModel->revokeAccessToken($this, $rawToken);
@@ -58,7 +59,6 @@ trait HasAccessTokens
      */
     public function revokeAccessTokenBySecret(string $secretToken): void
     {
-        /** @var UserIdentityModel $identityModel */
         $identityModel = model(UserIdentityModel::class);
 
         $identityModel->revokeAccessTokenBySecret($this, $secretToken);
@@ -69,7 +69,6 @@ trait HasAccessTokens
      */
     public function revokeAllAccessTokens(): void
     {
-        /** @var UserIdentityModel $identityModel */
         $identityModel = model(UserIdentityModel::class);
 
         $identityModel->revokeAllAccessTokens($this);
@@ -82,7 +81,6 @@ trait HasAccessTokens
      */
     public function accessTokens(): array
     {
-        /** @var UserIdentityModel $identityModel */
         $identityModel = model(UserIdentityModel::class);
 
         return $identityModel->getAllAccessTokens($this);
@@ -93,11 +91,10 @@ trait HasAccessTokens
      */
     public function getAccessToken(?string $rawToken): ?AccessToken
     {
-        if (empty($rawToken)) {
+        if ($rawToken === null || $rawToken === '') {
             return null;
         }
 
-        /** @var UserIdentityModel $identityModel */
         $identityModel = model(UserIdentityModel::class);
 
         return $identityModel->getAccessToken($this, $rawToken);
@@ -108,7 +105,6 @@ trait HasAccessTokens
      */
     public function getAccessTokenById(int $id): ?AccessToken
     {
-        /** @var UserIdentityModel $identityModel */
         $identityModel = model(UserIdentityModel::class);
 
         return $identityModel->getAccessTokenById($id, $this);
@@ -175,7 +171,6 @@ trait HasAccessTokens
      */
     public function updateAccessTokenExpiration(int $id, Date $expiresAt): bool
     {
-        /** @var UserIdentityModel $identityModel */
         $identityModel = model(UserIdentityModel::class);
         $result        = $identityModel->setIdentityExpirationById($id, $this, $expiresAt);
 
@@ -194,7 +189,6 @@ trait HasAccessTokens
      */
     public function removeAccessTokenExpiration(int $id): bool
     {
-        /** @var UserIdentityModel $identityModel */
         $identityModel = model(UserIdentityModel::class);
         $result        = $identityModel->setIdentityExpirationById($id, $this);
 

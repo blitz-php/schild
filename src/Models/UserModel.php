@@ -121,7 +121,6 @@ class UserModel extends BaseModel
             return $data;
         }
 
-        /** @var UserIdentityModel $identityModel */
         $identityModel = model(UserIdentityModel::class);
 
         // Recuperons les identités de tous les utilisateurs
@@ -202,7 +201,6 @@ class UserModel extends BaseModel
             return $data;
         }
 
-        /** @var GroupModel $groupModel */
         $groupModel = model(GroupModel::class);
 
         // Recuperer les groupes pour tous les utilisateurs
@@ -240,7 +238,6 @@ class UserModel extends BaseModel
             return $data;
         }
 
-        /** @var PermissionModel $permissionModel */
         $permissionModel = model(PermissionModel::class);
 
         $permissions = $permissionModel->getPermissionsByUserIds($userIds);
@@ -294,7 +291,7 @@ class UserModel extends BaseModel
      */
     public function addToDefaultGroup(User $user): void
     {
-        $defaultGroup = config('auth-groups.default_group');
+        $defaultGroup = parametre('auth-groups.default_group');
         $groupModel   = model(GroupModel::class);
 
         if (empty($defaultGroup) || ! $groupModel->isValidGroup($defaultGroup)) {
@@ -551,7 +548,7 @@ class UserModel extends BaseModel
         assert($user->last_active instanceof Date);
 
         // Chaîne de date sûre pour la base de données
-        $last_active = $user->last_active->format('Y-m-d H:i:s');
+        $last_active = $this->timeToDate($user->last_active);
 
         $this->builder()
             ->where('id', $user->id)

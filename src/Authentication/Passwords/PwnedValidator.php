@@ -29,6 +29,8 @@ use BlitzPHP\Schild\Result;
  */
 class PwnedValidator extends BaseValidator implements ValidatorInterface
 {
+    private const API_URL = 'https://api.pwnedpasswords.com/range/';
+
     /**
      * Vérifie le mot de passe par rapport à la base de données en ligne et
      * renvoie faux si une correspondance est trouvée. Renvoie true si aucune correspondance n'est trouvée.
@@ -44,9 +46,9 @@ class PwnedValidator extends BaseValidator implements ValidatorInterface
         $searchHash  = substr($hashedPword, 5);
 
         try {
-            $client = service('httpclient', 'https://api.pwnedpasswords.com/');
+            $client = service('httpclient');
 
-            $response = $client->accept('text/plain')->get('range/' . $rangeHash);
+            $response = $client->accept('text/plain')->get(self::API_URL . $rangeHash);
         } catch (HttpException $e) {
             $exception = AuthenticationException::HIBPCurlFail($e);
             logger()->error('[ERROR] {exception}', ['exception' => $exception]);
