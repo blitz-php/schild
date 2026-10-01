@@ -31,7 +31,7 @@ class NothingPersonalValidator extends BaseValidator implements ValidatorInterfa
     {
         $password = strtolower($password);
 
-        if ($valid = $this->isNotPersonal($password, $user) === true) {
+        if ($valid = $this->isNotPersonal($password, $user)) {
             $valid = $this->isNotSimilar($password, $user);
         }
 
