@@ -122,7 +122,15 @@ class User extends Entity
         return $attributes;
     }
 
+    /**
+     * @deprecated use authIdentity instead
+     */
     public function authIdentities()
+    {
+        return $this->authIdentity();
+    }
+
+    public function authIdentity()
     {
         return $this->hasOne(UserIdentity::class)->where('type', Session::ID_TYPE_EMAIL_PASSWORD);
     }
